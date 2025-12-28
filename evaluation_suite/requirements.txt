@@ -1,0 +1,12 @@
+accelerate
+bitsandbytes
+deepeval
+matplotlib
+pandas
+pydantic
+seaborn
+sentence_transformers
+tqdm
+transformers
+vllm
+detoxify
