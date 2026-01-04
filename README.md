@@ -8,17 +8,16 @@ This repository contains the official implementation for **D-STEER**. We demonst
 
 ## 📖 Table of Contents
 
-* [Abstract](https://www.google.com/search?q=%23abstract)
-* [Methodology](https://www.google.com/search?q=%23methodology)
-* [Usage Pipeline](https://www.google.com/search?q=%23usage)
-* [Evaluation & Key Findings](https://www.google.com/search?q=%23evaluation)
-* [Universal Steering Shift](https://www.google.com/search?q=%23steering-shift)
-* [The Optimal Range Limit](https://www.google.com/search?q=%23optimal-range)
-* [Adversarial Asymmetry](https://www.google.com/search?q=%23asymmetry)
-* [The Refusal Paradox](https://www.google.com/search?q=%23refusal-paradox)
+* [Abstract]
+* [Methodology]
+* [Usage Pipeline]
+* [Evaluation & Key Findings]
+* [Universal Steering Shift]
+* [The Optimal Range Limit]
+* [Adversarial Asymmetry]
+* [The Refusal Paradox]
 
-
-* [Repository Structure](https://www.google.com/search?q=%23structure)
+* [Repository Structure]
 
 ---
 
