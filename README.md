@@ -132,6 +132,6 @@ On **HH-RLHF** and **HarmfulQA**, the unaligned SFT model often has a *higher* r
 | --- | --- |
 | `Create_steering_vector_and_AQI_eval.ipynb` | **Core Logic:** Vector extraction, layer selection, and steering inference. |
 | `evaluation.py` | **Metrics:** Automated G-Eval pipeline (Relevance, Quality, Toxicity, etc.). |
-| `server.py` | **Inference:** vLLM server setup for the Qwen2.5 Judge model. |
+| `server.py` | **Inference:** vLLM server setup for the Judge model. |
 | `requirements.txt` | **Deps:** Python package requirements. |
 | `index.html` | **Demo:** Frontend visualization for steering interpolation. |
