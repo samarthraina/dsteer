@@ -47,8 +47,8 @@ Given a preference dataset , we extract hidden states  at layer  for the final t
 During the forward pass of the SFT model, we modify the hidden states using a steering coefficient :
 
 
-* ****: Steers SFT  DPO (Aligns the model).
-* ****: Steers DPO  SFT (Removes alignment).
+* λ > 0 : Steers SFT -> DPO (Aligns the model).
+* λ < 0: Steers DPO -> SFT (Removes alignment).
 
 
 
