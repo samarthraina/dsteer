@@ -93,13 +93,13 @@ We conducted an extensive evaluation on **1,000 prompts** across three benchmark
 
 ### <a id="steering-shift"></a>1. Universal Steering Shift
 
-We introduce the **Steering Shift** metric to quantify behavioral alignment. Across all datasets, steering provides a robust signal with a consistent dynamic range ().
+We introduce the **Steering Shift** metric to quantify behavioral alignment. Across all datasets, steering provides a robust signal with a consistent dynamic range (≈0.79).
 
 * **HarmfulQA:** 0.792 Range
 * **HH-RLHF:** 0.797 Range
 * **AdvBench:** 0.765 Range
 
-Positive steering () successfully interpolates behavior from SFT-like (0.10) to DPO-like (0.90) regardless of the prompt distribution.
+Positive steering (λ > 0) successfully interpolates behavior from SFT-like (0.10) to DPO-like (0.90) regardless of the prompt distribution.
 
 ### <a id="optimal-range"></a>2. The Optimal Range Limit
 
@@ -112,8 +112,8 @@ We identified a fundamental architectural limit on steering magnitude.
 
 A novel finding on the **AdvBench** (Jailbreak) dataset:
 
-* **Adding Alignment ():** Smooth, monotonic improvement.
-* **Removing Alignment ():** Chaotic, non-monotonic oscillation.
+* **Adding Alignment (λ > 0):** Smooth, monotonic improvement.
+* **Removing Alignment (λ < 0):** Chaotic, non-monotonic oscillation.
 This suggests that removing alignment from a model trained against optimized attacks destabilizes its learned defenses unpredictably, whereas adding alignment is geometrically stable.
 
 ### <a id="refusal-paradox"></a>4. The Refusal Paradox
