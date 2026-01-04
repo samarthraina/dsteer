@@ -8,21 +8,21 @@ This repository contains the official implementation for **D-STEER**. We demonst
 
 ## 📖 Table of Contents
 
-* [Abstract](https://www.google.com/search?q=%23-abstract)
-* [Methodology](https://www.google.com/search?q=%23-methodology)
-* [Usage Pipeline](https://www.google.com/search?q=%23-usage-pipeline)
-* [Evaluation & Key Findings](https://www.google.com/search?q=%23-evaluation--key-findings)
-* [Universal Steering Shift](https://www.google.com/search?q=%231-universal-steering-shift)
-* [The Optimal Range Limit](https://www.google.com/search?q=%232-the-optimal-range-limit)
-* [Adversarial Asymmetry](https://www.google.com/search?q=%233-adversarial-asymmetry)
-* [The Refusal Paradox](https://www.google.com/search?q=%234-the-refusal-paradox)
+* [Abstract](https://www.google.com/search?q=%23abstract)
+* [Methodology](https://www.google.com/search?q=%23methodology)
+* [Usage Pipeline](https://www.google.com/search?q=%23usage)
+* [Evaluation & Key Findings](https://www.google.com/search?q=%23evaluation)
+* [Universal Steering Shift](https://www.google.com/search?q=%23steering-shift)
+* [The Optimal Range Limit](https://www.google.com/search?q=%23optimal-range)
+* [Adversarial Asymmetry](https://www.google.com/search?q=%23asymmetry)
+* [The Refusal Paradox](https://www.google.com/search?q=%23refusal-paradox)
 
 
-* [Repository Structure](https://www.google.com/search?q=%23-repository-structure)
+* [Repository Structure](https://www.google.com/search?q=%23structure)
 
 ---
 
-## 🧩 Abstract
+## <a id="abstract"></a>🧩 Abstract
 
 Recent alignment techniques like DPO represent a significant leap in model safety. However, the geometric nature of this alignment remains under-explored. In this work, we show that DPO-aligned models differ from their SFT baselines primarily along specific linear directions in activation space.
 
@@ -30,7 +30,7 @@ By extracting these directions, we introduce **D-STEER**, a method to linearly i
 
 ---
 
-## 🧪 Methodology
+## <a id="methodology"></a>🧪 Methodology
 
 Our approach relies on the extraction of a **Steering Vector** () that captures the mean difference in representation between the SFT model () and the DPO model ().
 
@@ -55,7 +55,7 @@ During the forward pass of the SFT model, we modify the hidden states using a st
 
 ---
 
-## 🚀 Usage Pipeline
+## <a id="usage"></a>🚀 Usage Pipeline
 
 ### 1. Vector Extraction & Steering
 
@@ -88,11 +88,11 @@ python evaluation.py
 
 ---
 
-## 📊 Evaluation & Key Findings
+## <a id="evaluation"></a>📊 Evaluation & Key Findings
 
 We conducted an extensive evaluation on **1,000 prompts** across three benchmarks: **HH-RLHF** (Conversational), **HarmfulQA** (Adversarial), and **AdvBench** (Optimized Jailbreaks).
 
-### 1. Universal Steering Shift
+### <a id="steering-shift"></a>1. Universal Steering Shift
 
 We introduce the **Steering Shift** metric to quantify behavioral alignment. Across all datasets, steering provides a robust signal with a consistent dynamic range ().
 
@@ -102,14 +102,14 @@ We introduce the **Steering Shift** metric to quantify behavioral alignment. Acr
 
 Positive steering () successfully interpolates behavior from SFT-like (0.10) to DPO-like (0.90) regardless of the prompt distribution.
 
-### 2. The Optimal Range Limit
+### <a id="optimal-range"></a>2. The Optimal Range Limit
 
 We identified a fundamental architectural limit on steering magnitude.
 
 * **Safe Range:** 
 * **Collapse:** Beyond , response quality degrades catastrophically. At , we observe **repetition loops** (e.g., 36.3% 4-gram repetition on HH-RLHF) and a 51% drop in quality scores.
 
-### 3. Adversarial Asymmetry
+### <a id="asymmetry"></a>3. Adversarial Asymmetry
 
 A novel finding on the **AdvBench** (Jailbreak) dataset:
 
@@ -117,7 +117,7 @@ A novel finding on the **AdvBench** (Jailbreak) dataset:
 * **Removing Alignment ():** Chaotic, non-monotonic oscillation.
 This suggests that removing alignment from a model trained against optimized attacks destabilizes its learned defenses unpredictably, whereas adding alignment is geometrically stable.
 
-### 4. The Refusal Paradox
+### <a id="refusal-paradox"></a>4. The Refusal Paradox
 
 On **HH-RLHF** and **HarmfulQA**, the unaligned SFT model often has a *higher* refusal rate than the DPO model, yet scores lower on helpfulness.
 
@@ -127,7 +127,7 @@ On **HH-RLHF** and **HarmfulQA**, the unaligned SFT model often has a *higher* r
 
 ---
 
-## 📂 Repository Structure
+## <a id="structure"></a>📂 Repository Structure
 
 | File | Description |
 | --- | --- |
