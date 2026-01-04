@@ -8,16 +8,16 @@ This repository contains the official implementation for **D-STEER**. We demonst
 
 ## 📖 Table of Contents
 
-* [Abstract]
-* [Methodology]
-* [Usage Pipeline]
-* [Evaluation & Key Findings]
-* [Universal Steering Shift]
-* [The Optimal Range Limit]
-* [Adversarial Asymmetry]
-* [The Refusal Paradox]
+* Abstract
+* Methodology
+* Usage Pipeline
+* Evaluation & Key Findings
+* Universal Steering Shift
+* The Optimal Range Limit
+* Adversarial Asymmetry
+* The Refusal Paradox
 
-* [Repository Structure]
+* Repository Structure
 
 ---
 
