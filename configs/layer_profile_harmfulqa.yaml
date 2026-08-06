@@ -1,0 +1,4 @@
+prompt_source: harmfulqa
+n_prompts: 1900   # HarmfulQA has 1960 prompts total
+max_input_length: 512
+output_dir: outputs/layer_profile_harmfulqa

@@ -1,0 +1,23 @@
+# Model pair: AI2 Tulu-3 8B (Llama-3.1-8B base). Official post-training
+# pipeline-stage checkpoints — SFT then DPO. Direct HF repo IDs, ungated,
+# safetensors. Runs on the current transformers 4.49 stack (standard Llama arch).
+#
+# IT  = the SFT stage (allenai/Llama-3.1-Tulu-3-8B-SFT)
+# DPO = the DPO stage (allenai/Llama-3.1-Tulu-3-8B-DPO), trained on top of SFT.
+# (The final allenai/Llama-3.1-Tulu-3-8B adds RLVR on top of DPO — not used here.)
+# Tokenizer has a dedicated <pad> token, so the engine's eos-as-pad fallback
+# won't trigger.
+
+name: tulu3
+architecture: llama
+num_layers: 32
+
+base_model: meta-llama/Llama-3.1-8B
+
+it_model: allenai/Llama-3.1-Tulu-3-8B-SFT
+it_subfolder: null
+dpo_model: allenai/Llama-3.1-Tulu-3-8B-DPO
+dpo_subfolder: null
+
+tokenizer_id: allenai/Llama-3.1-Tulu-3-8B-SFT
+tokenizer_subfolder: null

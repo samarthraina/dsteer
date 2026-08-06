@@ -1,0 +1,18 @@
+# Layer profile read at the final token of prompt + chosen response.
+#
+# This is the position the paper's Eq. 1 defines. The default config reads the final
+# prompt token instead, and the two give different numbers, so runs made with one are
+# not comparable to the other. Run both on the same pair before quoting any geometry.
+#
+# Requires reference responses, so prompt_source must be hh_rlhf.
+
+prompt_source: hh_rlhf
+
+n_prompts: 2000
+
+token_position: response_last
+
+# Longer than the prompt-only config: the sequence now includes the response.
+max_input_length: 1024
+
+output_dir: outputs/layer_profile_response_token

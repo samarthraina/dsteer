@@ -1,0 +1,16 @@
+# DPO eval SMOKE TEST config - small samples for quick verification.
+
+hh_rlhf_n: 5
+harmfulqa_n: 5
+advbench_n: 5
+
+max_new_tokens: 512
+output_dir: outputs/dpo_eval
+
+judge:
+  model_name: Qwen/Qwen2.5-14B-Instruct
+  server_url: http://localhost:8000/v1
+  api_key: EMPTY
+  max_tokens: 1024
+  temperature: 0.0
+  timeout: 180.0

@@ -1,0 +1,12 @@
+# IT capability eval — n=100 per source.
+ifeval_n: 100
+alpaca_n: 100
+max_new_tokens: 512
+output_dir: outputs/it_eval
+judge:
+  model_name: Qwen/Qwen2.5-14B-Instruct
+  server_url: http://localhost:8000/v1
+  api_key: EMPTY
+  max_tokens: 1024
+  temperature: 0.0
+  timeout: 180.0

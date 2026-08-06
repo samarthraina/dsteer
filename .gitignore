@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data and large artifacts (NEVER commit these)
+data/
+outputs/
+runs/
+*.pth
+*.pt
+*.bin
+*.safetensors
+*.jsonl
+*.csv
+*.npy
+checkpoints/
+
+# Vector caches and steering outputs
+steering_outputs_*/
+runs_*/
+
+# Secrets
+.env
+*.token
+**/hf_token*
+
+# Working notes and the evidence log live outside this repository entirely, so they
+# cannot be committed from here. These names are listed only in case a copy is ever
+# made inside the tree by accident.
+docs/JOURNAL.md
+docs/OBSERVATIONS.md
+docs/SPECULATIONS.md
+docs/CONCLUSIONS.md
+docs/PLAN.md
+docs/DECISIONS.md
+docs/OPTIMAL_LAMBDA.md
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+Thumbs.db

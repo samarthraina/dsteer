@@ -1,0 +1,21 @@
+# IT (instruction-following capability) evaluation config.
+
+# Sample sizes. Set to null to use the full dataset.
+ifeval_n: null         # all ~540 IFEval prompts
+alpaca_n: 100           # AlpacaEval prompts for quality scoring
+
+# Generation
+max_new_tokens: 512
+batch_size: 8
+
+# Output location (per-model subdirs created automatically)
+output_dir: outputs/it_eval
+
+# Judge: connects to vLLM server (start with scripts/start_judge_server.py)
+judge:
+  model_name: Qwen/Qwen2.5-14B-Instruct
+  server_url: http://localhost:8000/v1
+  api_key: EMPTY
+  max_tokens: 1024
+  temperature: 0.0
+  timeout: 180.0

@@ -1,0 +1,29 @@
+# REQUIRES transformers>=4.57 — run in a separate env, NOT the 4.49 stack.
+#
+# Model pair: AI2 OLMo-3 7B (Instruct track). Official post-training
+# pipeline-stage checkpoints — SFT then DPO. Direct HF repo IDs, ungated
+# (Apache-2.0), safetensors.
+#
+# Architecture Olmo3ForCausalLM / model_type "olmo3" is new in transformers
+# 4.57 (model released 2025-12-15). On the 4.49 stack loading fails with an
+# "unknown model_type 'olmo3'" error — hence the separate env.
+#
+# IT  = the Instruct-SFT stage (allenai/Olmo-3-7B-Instruct-SFT)
+# DPO = the Instruct-DPO stage (allenai/Olmo-3-7B-Instruct-DPO), on top of SFT.
+# (Final allenai/Olmo-3-7B-Instruct adds RLVR — not used here. Do NOT use the
+# -Think track; it's long-CoT reasoning, a different distribution.)
+# base_model below is an informational label only (never loaded by the eval).
+
+name: olmo3
+architecture: olmo3
+num_layers: 32
+
+base_model: allenai/Olmo-3-7B-Base
+
+it_model: allenai/Olmo-3-7B-Instruct-SFT
+it_subfolder: null
+dpo_model: allenai/Olmo-3-7B-Instruct-DPO
+dpo_subfolder: null
+
+tokenizer_id: allenai/Olmo-3-7B-Instruct-SFT
+tokenizer_subfolder: null

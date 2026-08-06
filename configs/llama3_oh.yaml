@@ -1,0 +1,28 @@
+# Model pair: Llama-3-8B base, instruction-tuned on OpenHermes-2.5,
+# DPO-aligned on Anthropic/hh-rlhf harmless-base.
+# Trained by collaborator (peer: sirius5005).
+
+name: llama3-oh
+architecture: llama
+num_layers: 32
+
+base_model: meta-llama/Meta-Llama-3-8B
+
+# Note: loading via HF subfolder fails because the repo root has an
+# adapter_config.json with base_model_name_or_path pointing to the
+# peer's local training path. Workaround: download SFT_merged/ and
+# DPO_merged/ to local disk, then point at the local paths.
+#
+# To download once on a fresh instance:
+#   python -c "from huggingface_hub import snapshot_download; \
+#     snapshot_download(repo_id='sirius5005/SFT-and-DPO', \
+#       allow_patterns=['SFT_merged/*','DPO_merged/*'], \
+#       local_dir='/workspace/models')"
+
+it_model: sirius5005/SFT-and-DPO
+it_subfolder: SFT_merged
+dpo_model: sirius5005/SFT-and-DPO
+dpo_subfolder: DPO_merged
+
+tokenizer_id: sirius5005/SFT-and-DPO
+tokenizer_subfolder: SFT_merged

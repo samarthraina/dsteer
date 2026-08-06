@@ -1,0 +1,30 @@
+# Model pair: Llama-3.1-8B base, instruction-tuned (OpenHermes-2.5),
+# DPO-aligned on Anthropic/hh-rlhf harmless-base. Trained by collaborator
+# (divyajot5005). Runs on the current transformers 4.49 stack.
+#
+# Loads directly via HF subfolder: the repo root holds only training scripts
+# (no stray adapter_config.json like sirius5005/SFT-and-DPO) and each
+# *_merged/ subfolder is self-contained (config.json + safetensors + tokenizer,
+# no auto_map). config.json verified: LlamaForCausalLM, num_hidden_layers=32.
+#
+# Fallback if subfolder loading misbehaves on your stack — download once, then
+# switch it_model/dpo_model/tokenizer_id to the local paths and set the
+# *_subfolder fields to null:
+#   python -c "from huggingface_hub import snapshot_download; \
+#     snapshot_download(repo_id='divyajot5005/Instruction-Tuning-and-DPO-Models', \
+#       allow_patterns=['llama3p1_SFT_merged/*','llama3p1_DPO_merged/*'], \
+#       local_dir='/workspace/models/divyajot5005')"
+
+name: llama3p1
+architecture: llama
+num_layers: 32
+
+base_model: meta-llama/Llama-3.1-8B
+
+it_model: divyajot5005/Instruction-Tuning-and-DPO-Models
+it_subfolder: llama3p1_SFT_merged
+dpo_model: divyajot5005/Instruction-Tuning-and-DPO-Models
+dpo_subfolder: llama3p1_DPO_merged
+
+tokenizer_id: divyajot5005/Instruction-Tuning-and-DPO-Models
+tokenizer_subfolder: llama3p1_SFT_merged

@@ -1,0 +1,28 @@
+# Model pair: Qwen2.5-7B base, instruction-tuned (OpenHermes-2.5),
+# DPO-aligned on Anthropic/hh-rlhf harmless-base. Trained by collaborator
+# (divyajot5005). Runs on the current transformers 4.49 stack.
+#
+# IMPORTANT: Qwen2.5-7B has 28 transformer layers, NOT 32. Verified from the
+# repo config.json (num_hidden_layers=28, hidden_size=3584, Qwen2ForCausalLM).
+# layer_profile bins on num_layers, so this MUST be 28 to label layers correctly.
+#
+# Loads directly via HF subfolder (self-contained *_merged/ subfolders, no root
+# adapter_config.json, no auto_map). Local-download fallback if needed:
+#   python -c "from huggingface_hub import snapshot_download; \
+#     snapshot_download(repo_id='divyajot5005/Instruction-Tuning-and-DPO-Models', \
+#       allow_patterns=['qwen2p5_SFT_merged/*','qwen2p5_DPO_merged/*'], \
+#       local_dir='/workspace/models/divyajot5005')"
+
+name: qwen2p5
+architecture: qwen
+num_layers: 28
+
+base_model: Qwen/Qwen2.5-7B
+
+it_model: divyajot5005/Instruction-Tuning-and-DPO-Models
+it_subfolder: qwen2p5_SFT_merged
+dpo_model: divyajot5005/Instruction-Tuning-and-DPO-Models
+dpo_subfolder: qwen2p5_DPO_merged
+
+tokenizer_id: divyajot5005/Instruction-Tuning-and-DPO-Models
+tokenizer_subfolder: qwen2p5_SFT_merged

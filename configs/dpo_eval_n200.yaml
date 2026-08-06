@@ -1,0 +1,13 @@
+# DPO safety/refusal eval — n=200 per dataset (A* sample size, matches existing llama3-oh).
+hh_rlhf_n: 200
+harmfulqa_n: 200
+advbench_n: 200
+max_new_tokens: 512
+output_dir: outputs/dpo_eval
+judge:
+  model_name: Qwen/Qwen2.5-14B-Instruct
+  server_url: http://localhost:8000/v1
+  api_key: EMPTY
+  max_tokens: 1024
+  temperature: 0.0
+  timeout: 180.0

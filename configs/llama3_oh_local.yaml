@@ -1,0 +1,33 @@
+# llama3-oh loaded from local disk rather than the hub.
+#
+# sirius5005/SFT-and-DPO keeps two clean merged models in SFT_merged/ and DPO_merged/,
+# but the repo *root* also holds the DPO LoRA (adapter_config.json +
+# adapter_model.safetensors). PEFT detection looks at the root regardless of which
+# subfolder was requested, finds that adapter, and follows its
+# base_model_name_or_path -- which points at the trainer's local path
+# /root/ndna/alignment-SFT-DPO-eval-pipeline/models_local/SFT_merged. Loading then
+# fails with HFValidationError. AutoConfig works (it does not follow the adapter),
+# so this only shows up at model load.
+#
+# Fetch the two subfolders first, which sidesteps the root entirely:
+#
+#   python -c "from huggingface_hub import snapshot_download; \
+#     snapshot_download(repo_id='sirius5005/SFT-and-DPO', \
+#       allow_patterns=['SFT_merged/*','DPO_merged/*'], \
+#       local_dir='/workspace/models/llama3-oh')"
+#
+# ~32 GB. Use configs/llama3_oh.yaml if the upstream repo is ever fixed.
+
+name: llama3-oh
+architecture: llama
+num_layers: 32
+
+base_model: meta-llama/Meta-Llama-3-8B
+
+it_model: /workspace/models/llama3-oh/SFT_merged
+it_subfolder: null
+dpo_model: /workspace/models/llama3-oh/DPO_merged
+dpo_subfolder: null
+
+tokenizer_id: /workspace/models/llama3-oh/SFT_merged
+tokenizer_subfolder: null

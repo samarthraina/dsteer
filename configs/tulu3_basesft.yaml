@@ -1,0 +1,12 @@
+# tulu3 base→SFT control: is the pattern DPO-specific, or generic to fine-tuning?
+# "it_model" = base, "dpo_model" = SFT, so layer_profile computes base→SFT.
+name: tulu3_basesft
+architecture: llama
+num_layers: 32
+base_model: meta-llama/Llama-3.1-8B
+it_model: meta-llama/Llama-3.1-8B
+it_subfolder: null
+dpo_model: allenai/Llama-3.1-Tulu-3-8B-SFT
+dpo_subfolder: null
+tokenizer_id: allenai/Llama-3.1-Tulu-3-8B-SFT
+tokenizer_subfolder: null

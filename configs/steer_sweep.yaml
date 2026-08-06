@@ -1,0 +1,37 @@
+# Steering sweep, one direction per invocation (--side it | dpo).
+#
+# Scope is deliberately smaller than the earlier 16 lambdas x 1000 prompts. That
+# grid exists already; what is missing is a correct one. 7 settings x 300 prompts is
+# enough to locate the usable range and to test whether behaviour tracks the geometry,
+# at roughly an eighth of the generation cost.
+
+prompt_source: harmfulqa
+n_prompts: 300
+
+# Magnitudes. --side supplies the sign: +lambda on the IT checkpoint, -lambda on DPO.
+lambdas: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+
+# The paper steers the last five layers with a single scalar. Kept for comparability;
+# the per-layer schedule is a separate experiment.
+layers_last_k: 5
+
+# "mean" is the paper's Eq. 2. Set "pc3" to reproduce what the v1 notebook actually ran
+# -- the two are near-orthogonal, so this is a real fork, not a detail.
+vector_method: mean
+
+# null keeps the natural scale, so lambda matches the published numbers. "relative"
+# makes lambda a fraction of typical activation norm, which is what makes an optimal
+# range comparable across models.
+vector_normalise: null
+
+positions: all
+preserve_norm: false
+
+# Vectors are built from the response-token activations, matching Eq. 1.
+activations_dir: outputs/layer_profile_response_token
+
+max_new_tokens: 512
+batch_size: null      # null -> sized from free VRAM
+max_input_length: 2048
+
+output_dir: outputs/steer

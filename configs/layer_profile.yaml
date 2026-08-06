@@ -1,0 +1,17 @@
+# Layer profile analysis config.
+# Computes per-layer cosine similarity, norm differences, and SVD/PC0 explained variance.
+
+# Where to draw prompts from. Options: "hh_rlhf", "harmfulqa", "mixed"
+# We use hh_rlhf because it matches DPO's training distribution
+# (the activation difference should be cleanest on prompts similar to training).
+prompt_source: hh_rlhf
+
+# Number of prompts to extract activations from.
+# 100 is enough for a stable SVD with a hidden dim of 4096.
+n_prompts: 2000
+
+# Maximum input token length.
+max_input_length: 512
+
+# Output location.
+output_dir: outputs/layer_profile

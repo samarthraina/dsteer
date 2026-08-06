@@ -1,0 +1,6 @@
+# Smoke test config - small sample for quick verification.
+
+prompt_source: hh_rlhf
+n_prompts: 10
+max_input_length: 512
+output_dir: outputs/layer_profile
