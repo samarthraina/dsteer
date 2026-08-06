@@ -1,38 +1,115 @@
 # dsteer
 
-Investigating the extent to which DPO's behavioral effect on language models can be captured by inference-time activation steering.
+How much of what DPO does to a model can be reproduced at inference time by adding a
+single direction to the residual stream?
 
-**Status:** Active development.
+A steering vector read off a pair of checkpoints — one before preference optimisation,
+one after — can be added back at generation time without retraining. This repository
+measures what that recovers, in both directions: how much of an aligned model's behaviour
+can be installed on its predecessor, and how much can be removed from the aligned model
+itself.
 
-## Overview
+**Status:** active. Numbers move; the code is the stable part.
 
-This repository contains code for:
+## What is here
 
-- Evaluating instruction-tuning (IT) and DPO checkpoint pairs across multiple model families
-- Extracting activation steering vectors from IT/DPO model differences
-- Inference-time steering experiments characterizing operating range and limits
-- Evaluation via G-Eval (multi-metric suite), AQI, and behavioral comparison
+    src/steering/     the package: activations, steering, generation, judging, figures
+    scripts/          one entry point per experiment phase
+    scripts/pipelines/ the shell orchestration each multi-stage run was launched with
+    configs/          model and experiment configuration
+    training/         post-training recipe for the checkpoint pairs
+    tests/            guards on the intervention and the scoring
+    archive/          the previous version, kept for reference
 
-## Repository structure
+A note on naming: configs and output paths use `it` for the checkpoint before preference
+optimisation. It is the SFT checkpoint. The paths predate settling on the term and
+renaming them would orphan every existing result directory.
 
-    src/steering/        Importable Python package (core logic)
-    scripts/             Entry points (one script per experiment phase)
-    configs/             Experiment configurations
-    notebooks/           Exploratory work (not production)
-    docs/                Methods, decisions, reproducibility notes
-    tests/               Sanity checks
-    archive/             Prior version (D-STEER v1, for reference only)
+## Results
+
+Generations, judged scores and activation tensors live in a companion dataset:
+
+    https://huggingface.co/datasets/samarthraina/dsteer-results
+
+`activations.pt` is ~2 GB per pair and is excluded from the run sync, so it is uploaded
+separately by `scripts/upload_activations.py`. With those files the geometry analyses
+rerun on a laptop — no GPU and no model weights required.
+
+    python scripts/fetch_results.py --restore-sweeps
+
+## Pipeline
+
+Steps 1–3 need a GPU and no judge; step 4 needs the judge and no GPU work, and the two
+cannot share a card.
+
+**1. Geometry.** Paired activations for a checkpoint pair, then what they look like.
+
+    python scripts/layer_profile.py --model-config configs/tulu3.yaml \
+        --eval-config configs/layer_profile_response_token.yaml --sync
+    python scripts/rank_analysis.py   --run tulu3=outputs/layer_profile_response_token/tulu3 ...
+    python scripts/vector_analysis.py --run tulu3=outputs/layer_profile_response_token/tulu3 ...
+
+Read position matters. `layer_profile.yaml` reads the final prompt token and
+`layer_profile_response_token.yaml` the final token of prompt plus chosen response; the
+two give different numbers, so results from one are not comparable to the other.
+
+**2. Steering range.** How hard this model can be pushed, in this direction, before its
+generations fall apart. Needs no judge, because degeneration is detectable locally.
+
+    python scripts/lambda_range.py --model-config configs/tulu3.yaml \
+        --eval-config configs/steer_sweep.yaml --side it --n-probe 200 \
+        --output-dir outputs/lambda_range
+
+Ceilings differ by model and by direction — measured here from 0.30 to 1.15 — so a shared
+grid applies unequal intervention across models and runs past the cliff on some of them.
+
+**3. Sweep.** Generate across the range the search found.
+
+    python scripts/steer_sweep.py --model-config configs/tulu3.yaml \
+        --eval-config configs/steer_sweep.yaml --side it --sync
+
+**4. Score.**
+
+    python scripts/start_judge_server.py                       # terminal 1
+    python scripts/score_sweep.py --sweep-dir outputs/steer/tulu3/harmfulqa/it \
+        --it-baseline .../it/baseline.jsonl --dpo-baseline .../dpo/baseline.jsonl
+
+`--recheck METRIC` re-judges a single metric when its rubric changes, rather than paying
+for all five. `scripts/screen_model.py` generates from one checkpoint, for deciding
+whether a pair is worth building before training one.
+
+**Figures.**
+
+    python scripts/make_figures.py --runs-root outputs --output-dir outputs/figures
+
+## Things that are easy to get wrong
+
+Each of these changes a reported number without producing an error, and each is handled
+explicitly in the code rather than left to the caller.
+
+- `hidden_states[-1]` is the output of the final norm, not the last residual stream layer.
+  Activations are captured by forward hook, and the post-norm output is kept separate.
+- A judge asked for an integer at temperature 0 concentrates on a few anchors, so an
+  eleven-point scale can behave like a three-point one. Scores are probability-weighted,
+  and the raw integer is kept beside the weighted value.
+- Over-steering produces empty strings and repetition loops. Those are screened before
+  judging; averaging them in flatters exactly the region where the model has collapsed.
+- Judge abstentions are counted, never coded as zero — in the de-alignment direction the
+  outputs a judge declines to score are the unsafe ones.
+- Harmfulness is judged with the request in view. Without it the judge reads an answer
+  with no idea what was asked, which under-scores terse harmful replies by about a fifth.
 
 ## Setup
 
     git clone https://github.com/samarthraina/dsteer.git
     cd dsteer
     pip install -r requirements.txt
-    export HF_TOKEN=your_token_here
+    huggingface-cli login          # or export HF_TOKEN
 
-## Pipeline
+The judge server pins its own torch build, so it wants a separate environment from the
+generation code.
 
-(To be added as scripts are built.)
+    pytest tests/ -v               # CPU only, pulls a tiny model on first run
 
 ## License
 
