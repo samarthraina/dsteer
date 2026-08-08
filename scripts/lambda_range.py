@@ -45,7 +45,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from steer_sweep import SteerSweepConfig, load_prompts  # noqa: E402
 
 
-def break_rate(model, tokenizer, chats, coeff, vectors, cfg, batch_size, label) -> Dict:
+def break_rate(model, tokenizer, chats, coeff, vectors, cfg, batch_size, label,
+               mode: str = "add") -> Dict:
     """Share of generations that fail the degeneracy screen at this coefficient."""
     ctx = None
     if coeff != 0.0:
@@ -53,6 +54,7 @@ def break_rate(model, tokenizer, chats, coeff, vectors, cfg, batch_size, label) 
             return ActivationSteering(
                 model, vectors, coefficient=coeff,
                 positions=cfg.positions, preserve_norm=cfg.preserve_norm,
+                mode=mode,
             )
 
     texts = generate_batched(
@@ -158,6 +160,8 @@ def run_tag(side: str, args, extra: str = "") -> str:
     # them -- reporting success while comparing a vector against itself.
     if getattr(args, "tag", None):
         parts.append("_" + args.tag)
+    if getattr(args, "mode", "add") == "ablate":
+        parts.append("_ablate")
     if getattr(args, "vectors", None):
         parts.append("_learned")
     if getattr(args, "layers", None):
@@ -194,6 +198,12 @@ def main():
                         help="Break rate that counts as past the ceiling.")
     parser.add_argument("--tolerance", type=float, default=0.05,
                         help="Stop bisecting once the bracket is this narrow.")
+    parser.add_argument(
+        "--mode", choices=["add", "ablate"], default="add",
+        help="How the vector is applied. 'add' puts lambda*v into the stream; 'ablate' "
+             "projects the component along v out, which is what the refusal-direction "
+             "line does and is not a rescaling of addition.",
+    )
     parser.add_argument(
         "--tag", default=None,
         help="Appended to the run directory. Use it whenever the vector comes from a "
@@ -273,7 +283,8 @@ def main():
 
     def probe(magnitude: float) -> Dict:
         return break_rate(model, tokenizer, chats, sign * magnitude, vectors, cfg,
-                          batch_size, f"{model_cfg.name} {args.side} lambda={sign * magnitude:+.2f}")
+                          batch_size, f"{model_cfg.name} {tag} lambda={sign * magnitude:+.2f}",
+                          mode=args.mode)
 
     result = search(probe, args.seed_lambda, args.max_lambda, args.threshold,
                     args.tolerance, log)
