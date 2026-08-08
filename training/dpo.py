@@ -206,12 +206,38 @@ def parse_hh_conversation(text):
     return turns
 
 
+def alternates(turns):
+    """True when turns run user, assistant, user, assistant with no repeats.
+
+    The parser labels every "
+
+Assistant:" chunk inside one "
+
+Human:" block as a
+    separate assistant turn, so a record containing two of them yields consecutive
+    assistant roles. Llama 3's chat template accepts that; Mistral's raises. The offending
+    records are a small minority and there is no way to recover their true structure, so
+    they are dropped rather than guessed at.
+    """
+    if not turns or turns[0][0] != "user":
+        return False
+    expected = "user"
+    for role, _ in turns:
+        if role != expected:
+            return False
+        expected = "assistant" if expected == "user" else "user"
+    return True
+
+
 def format_for_dpo(example):
-    """Convert an HH-RLHF example to DPO format with Llama 3 chat template."""
+    """Convert an HH-RLHF example to DPO format with the model's chat template."""
     chosen_turns = parse_hh_conversation(example["chosen"])
     rejected_turns = parse_hh_conversation(example["rejected"])
 
     if len(chosen_turns) < 2 or len(rejected_turns) < 2:
+        return {"prompt": "", "chosen": "", "rejected": ""}
+
+    if not alternates(chosen_turns) or not alternates(rejected_turns):
         return {"prompt": "", "chosen": "", "rejected": ""}
 
     if chosen_turns[-1][0] != "assistant":
