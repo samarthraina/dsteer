@@ -144,6 +144,11 @@ def run_tag(side: str, args, extra: str = "") -> str:
     experiment exists to make.
     """
     parts = [side, extra]
+    # The vector's source is not otherwise in the path, so a run using a different
+    # activations directory would land on an earlier run's generations and resume on
+    # them -- reporting success while comparing a vector against itself.
+    if getattr(args, "tag", None):
+        parts.append("_" + args.tag)
     if getattr(args, "vectors", None):
         parts.append("_learned")
     if getattr(args, "layers", None):
@@ -167,6 +172,11 @@ def main():
         "--random-control", action="store_true",
         help="Replace the vectors with norm-matched random directions. If this moves "
              "behaviour as much as the real ones, the sweep measures perturbation size.",
+    )
+    parser.add_argument(
+        "--tag", default=None,
+        help="Appended to the run directory. Use it whenever the vector comes from a "
+             "different activations source, so runs cannot resume on each other.",
     )
     parser.add_argument(
         "--vectors", default=None, metavar="VECTORS.PT",
