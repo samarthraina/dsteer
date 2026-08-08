@@ -147,6 +147,13 @@ def main():
              "behaviour as much as the real ones, the sweep measures perturbation size.",
     )
     parser.add_argument(
+        "--layers", default=None, metavar="L[,L...]",
+        help="Steer exactly these layers, overriding layers_last_k. One layer at a time "
+             "is how 'why only the final layers' gets an answer rather than an assertion; "
+             "a shared scalar over five of them is not equal intervention, since the "
+             "displacement grows with depth.",
+    )
+    parser.add_argument(
         "--hold-out", type=int, default=0,
         help="Drop this many leading samples when building the vector. Use the "
              "sweep's prompt count when the vector and the evaluation come from "
@@ -177,7 +184,13 @@ def main():
     acts = Path(cfg.activations_dir) / model_cfg.name / "activations.pt"
     if not acts.exists():
         raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")
-    layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
+    if args.layers:
+        layers = [int(x) for x in args.layers.split(",")]
+        bad = [l for l in layers if not 0 <= l < model_cfg.num_layers]
+        if bad:
+            parser.error(f"layers {bad} outside 0..{model_cfg.num_layers - 1}")
+    else:
+        layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
     vectors = build_vectors(acts, method=cfg.vector_method, layers=layers,
                             normalise=cfg.vector_normalise,
                             skip_first=args.hold_out)
