@@ -130,7 +130,7 @@ def random_vectors_like(
 
 
 class ActivationSteering:
-    """Add lambda * v to the residual stream at chosen layers, for the duration of a block.
+    """Modify the residual stream at chosen layers, for the duration of a block.
 
     Use:
         with ActivationSteering(model, vectors, coefficient=0.4):
@@ -138,6 +138,15 @@ class ActivationSteering:
 
     coefficient may be a float (same for every steered layer) or {layer: float}, which
     is what a per-layer schedule needs.
+
+    Two interventions, and the difference matters when comparing against published work.
+    `mode="add"` puts lambda * v into the stream, which is what a checkpoint-difference
+    vector is built for. `mode="ablate"` removes the component along v instead --
+    h <- h - (h . v_hat) v_hat -- so the model cannot represent that direction at all.
+    Ablation is what the refusal-direction line uses, and it is not a special case of
+    addition: it is input-dependent, subtracting exactly as much as each activation
+    happens to carry rather than a fixed amount. `coefficient` scales how much of the
+    component is taken out, so 1.0 removes it entirely.
     """
 
     def __init__(
@@ -147,9 +156,13 @@ class ActivationSteering:
         coefficient: Union[float, Dict[int, float]] = 1.0,
         positions: str = "all",
         preserve_norm: bool = False,
+        mode: str = "add",
     ):
         if positions not in ("all", "new"):
             raise ValueError(f"positions must be 'all' or 'new', got {positions!r}")
+        if mode not in ("add", "ablate"):
+            raise ValueError(f"mode must be 'add' or 'ablate', got {mode!r}")
+        self.mode = mode
         self.model = model
         self.vectors = vectors
         self.positions = positions
@@ -193,6 +206,14 @@ class ActivationSteering:
                 return output
 
             v = vec.to(device=h.device, dtype=h.dtype)
+
+            if self.mode == "ablate":
+                # Project the component along v out of every position. How much is
+                # removed depends on the activation, not on a fixed step.
+                unit = v / (v.norm() + 1e-6)
+                h = h - coeff * (h * unit).sum(dim=-1, keepdim=True) * unit
+                return (h,) + output[1:] if is_tuple else h
+
             if self.preserve_norm:
                 before = h.norm(dim=-1, keepdim=True)
                 h = h + coeff * v
