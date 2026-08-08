@@ -147,6 +147,11 @@ def main():
              "behaviour as much as the real ones, the sweep measures perturbation size.",
     )
     parser.add_argument(
+        "--vectors", default=None, metavar="VECTORS.PT",
+        help="Use pre-built per-layer vectors instead of deriving them from activations, "
+             "e.g. one trained by train_steering_vector.py. Overrides --layers.",
+    )
+    parser.add_argument(
         "--layers", default=None, metavar="L[,L...]",
         help="Steer exactly these layers, overriding layers_last_k. One layer at a time "
              "is how 'why only the final layers' gets an answer rather than an assertion; "
@@ -181,19 +186,27 @@ def main():
     log.info(f"{len(records)} prompts from {cfg.prompt_source}")
 
     # Vectors come from the activations for this pair, at the response readout.
-    acts = Path(cfg.activations_dir) / model_cfg.name / "activations.pt"
-    if not acts.exists():
-        raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")
-    if args.layers:
-        layers = [int(x) for x in args.layers.split(",")]
-        bad = [l for l in layers if not 0 <= l < model_cfg.num_layers]
-        if bad:
-            parser.error(f"layers {bad} outside 0..{model_cfg.num_layers - 1}")
+    if args.vectors:
+        # A vector trained under the DPO loss, rather than read off a checkpoint pair.
+        # It arrives already per-layer, so the layer set comes from the file.
+        loaded = torch.load(Path(args.vectors), map_location="cpu")
+        vectors = {int(k): v.float() for k, v in loaded.items()}
+        layers = sorted(vectors)
+        log.info(f"Loaded {len(vectors)} vectors from {args.vectors}; layers {layers}")
     else:
-        layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
-    vectors = build_vectors(acts, method=cfg.vector_method, layers=layers,
-                            normalise=cfg.vector_normalise,
-                            skip_first=args.hold_out)
+        if args.layers:
+            layers = [int(x) for x in args.layers.split(",")]
+            bad = [l for l in layers if not 0 <= l < model_cfg.num_layers]
+            if bad:
+                parser.error(f"layers {bad} outside 0..{model_cfg.num_layers - 1}")
+        else:
+            layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
+        acts = Path(cfg.activations_dir) / model_cfg.name / "activations.pt"
+        if not acts.exists():
+            raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")
+        vectors = build_vectors(acts, method=cfg.vector_method, layers=layers,
+                                normalise=cfg.vector_normalise,
+                                skip_first=args.hold_out)
     if args.random_control:
         vectors = random_vectors_like(vectors, seed=args.seed)
         log.info("Using norm-matched RANDOM directions (control)")
