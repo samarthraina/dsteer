@@ -167,6 +167,12 @@ def main():
                         help="Break rate that counts as past the ceiling.")
     parser.add_argument("--tolerance", type=float, default=0.05,
                         help="Stop bisecting once the bracket is this narrow.")
+    parser.add_argument(
+        "--hold-out", type=int, default=0,
+        help="Drop this many leading samples when building the vector. Use the "
+             "sweep's prompt count when the vector and the evaluation come from "
+             "the same corpus, so the two sets are disjoint.",
+    )
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
@@ -191,7 +197,8 @@ def main():
         raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")
     layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
     vectors = build_vectors(acts, method=cfg.vector_method, layers=layers,
-                            normalise=cfg.vector_normalise)
+                            normalise=cfg.vector_normalise,
+                            skip_first=args.hold_out)
     if args.random_control:
         vectors = random_vectors_like(vectors, seed=args.seed)
 

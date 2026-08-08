@@ -42,16 +42,23 @@ def load_ifeval(n: Optional[int] = None, seed: int = 42) -> List[Dict[str, str]]
 def load_alpacaeval(n: int = 50, seed: int = 42) -> List[Dict[str, str]]:
     """Load AlpacaEval prompts for general instruction-following quality.
 
-    Loads directly from the upstream JSON file because newer versions of the
-    `datasets` library refuse to run the dataset's loading script.
+    Fetched as a plain file rather than through `load_dataset`, because newer versions of
+    `datasets` refuse to run the dataset's loading script. Through the hub client rather
+    than urllib, which brings retries, caching and the local token with it -- a bare
+    urlopen fails on any network that resets the connection, and does so on every call.
     """
     import json
     import random
-    import urllib.request
 
-    url = "https://huggingface.co/datasets/tatsu-lab/alpaca_eval/resolve/main/alpaca_eval.json"
-    with urllib.request.urlopen(url) as resp:
-        items = json.load(resp)
+    from huggingface_hub import hf_hub_download
+
+    path = hf_hub_download(
+        repo_id="tatsu-lab/alpaca_eval",
+        filename="alpaca_eval.json",
+        repo_type="dataset",
+    )
+    with open(path, encoding="utf-8") as fh:
+        items = json.load(fh)
 
     rng = random.Random(seed)
     if n < len(items):

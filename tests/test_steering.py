@@ -267,3 +267,37 @@ def test_generation_restores_padding_side(tiny_model):
     tok.padding_side = "right"
     generate_batched(tiny_model, tok, ["hello"], max_new_tokens=2, batch_size=1)
     assert tok.padding_side == "right"
+
+
+def test_hold_out_excludes_the_evaluation_slice(tmp_path):
+    """Vectors must be buildable from samples the sweep will not be scored on.
+
+    The prompt loaders shuffle on a fixed seed and take the first n, so a profile of 1900
+    prompts and a sweep of 300 share their first 300 -- the vector is then estimated
+    partly from the prompts it is measured on. `skip_first` removes that overlap, and
+    this pins it by giving the leading slice a different displacement from the rest:
+    holding it out has to recover the rest's direction, keeping it must not.
+    """
+    torch.manual_seed(0)
+    n_layers, n_prompts, hidden, held = 2, 1000, 16, 300
+    it = torch.randn(n_layers, n_prompts, hidden)
+    rest = torch.randn(hidden)
+    rest = rest / rest.norm()
+    lead = torch.randn(hidden)
+    lead = lead / lead.norm()
+
+    dpo = it + rest
+    dpo[:, :held] = it[:, :held] + 5.0 * lead
+
+    path = tmp_path / "activations.pt"
+    torch.save({"it": it, "dpo": dpo}, path)
+
+    full = build_vectors(path, method="mean", layers=[0])[0]
+    kept = build_vectors(path, method="mean", layers=[0], skip_first=held)[0]
+
+    assert torch.dot(kept / kept.norm(), rest) > 0.99
+    assert torch.dot(full / full.norm(), rest) < 0.9
+    assert torch.dot(full / full.norm(), kept / kept.norm()).abs() < 0.9
+
+    with pytest.raises(ValueError):
+        build_vectors(path, method="mean", layers=[0], skip_first=n_prompts)

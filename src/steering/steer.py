@@ -47,17 +47,32 @@ def build_vectors(
     layers: Optional[Sequence[int]] = None,
     normalise: Optional[str] = None,
     device: str = "cpu",
+    skip_first: int = 0,
 ) -> Dict[int, torch.Tensor]:
     """Build per-layer steering vectors from a layer_profile activations.pt.
 
-    method:    "mean" (Eq. 2) or "pcN" for the N-th centred principal direction,
-               rescaled to the mean's norm.
-    normalise: None keeps the natural scale; "unit" gives unit norm; "relative"
-               rescales to the mean activation norm at that layer, so lambda reads as
-               a fraction of typical activation magnitude.
+    method:     "mean" (Eq. 2) or "pcN" for the N-th centred principal direction,
+                rescaled to the mean's norm.
+    normalise:  None keeps the natural scale; "unit" gives unit norm; "relative"
+                rescales to the mean activation norm at that layer, so lambda reads as
+                a fraction of typical activation magnitude.
+    skip_first: drop this many leading samples before averaging.
+
+    `skip_first` exists because the prompt loaders shuffle on a fixed seed and take the
+    first n, so a profile of 1900 prompts and a sweep of 300 share their first 300 -- the
+    evaluation set sits inside the set the vector was estimated from. Where the two are
+    drawn from the same corpus, skipping the sweep's count makes them disjoint and the
+    measurement held out. It does nothing when the vector comes from a different corpus.
     """
     blob = torch.load(Path(activations_path), map_location="cpu")
     it, dpo = blob["it"], blob["dpo"]
+    if skip_first:
+        if skip_first >= it.shape[1]:
+            raise ValueError(
+                f"skip_first={skip_first} leaves nothing of {it.shape[1]} samples")
+        it, dpo = it[:, skip_first:], dpo[:, skip_first:]
+        log.info(f"Held out the first {skip_first} samples; "
+                 f"{it.shape[1]} remain for the vector")
     n_layers = it.shape[0]
     wanted = list(layers) if layers is not None else list(range(n_layers))
 
