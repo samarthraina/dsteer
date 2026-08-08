@@ -532,19 +532,20 @@ for f in sorted(os.listdir(f"{OUTPUT_DIR}/final_dpo_adapter")):
     else:
         logger.info(f"  {f:40s} {size/1e3:.1f} KB")
 
-logger.info("Pushing adapter to HuggingFace Hub...")
-trainer.model.push_to_hub(
-    f"{HF_PUSH_REPO}",
-    subfolder="dpo_adapter",
-    token=hf_token,
-    commit_message="Add DPO safety adapter (harmless-base)",
-)
-tokenizer.push_to_hub(
-    f"{HF_PUSH_REPO}",
-    subfolder="dpo_adapter",
-    token=hf_token,
-)
-logger.info("Pushed to HuggingFace Hub.")
+# An empty HF_PUSH_REPO means the adapter stays local, which is what a run into a
+# scratch directory wants. `subfolder=` was also removed from push_to_hub in newer
+# huggingface_hub, so the destination goes in the repo id instead.
+if HF_PUSH_REPO:
+    logger.info(f"Pushing adapter to {HF_PUSH_REPO}...")
+    trainer.model.push_to_hub(
+        HF_PUSH_REPO,
+        token=hf_token,
+        commit_message="Add DPO safety adapter (harmless-base)",
+    )
+    tokenizer.push_to_hub(HF_PUSH_REPO, token=hf_token)
+    logger.info("Pushed to HuggingFace Hub.")
+else:
+    logger.info("HF_PUSH_REPO empty; adapter kept local only.")
 
 
 # ---------------------------------------------------------------------------
