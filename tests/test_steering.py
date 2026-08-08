@@ -301,3 +301,32 @@ def test_hold_out_excludes_the_evaluation_slice(tmp_path):
 
     with pytest.raises(ValueError):
         build_vectors(path, method="mean", layers=[0], skip_first=n_prompts)
+
+
+def test_ablation_removes_the_component_and_negative_adds_it_back(tiny_model):
+    """Ablation has no sign to flip: a negative coefficient restores what it should remove.
+
+    The sweep multiplies lambda by -1 on the DPO side, which is right for addition and
+    wrong for ablation -- it doubled the component instead of removing it, degenerating
+    293 of 300 generations before it was caught.
+    """
+    hidden = tiny_model.config.hidden_size
+    v = torch.randn(hidden)
+    ids = torch.tensor([[1, 2, 3, 4]])
+    target = tiny_model.config.num_hidden_layers - 1
+    unit = v / v.norm()
+
+    def component(coeff):
+        with ActivationSteering(tiny_model, {target: v}, coefficient=coeff, mode="ablate"):
+            with LastTokenCapture(tiny_model) as cap:
+                with torch.no_grad():
+                    tiny_model(input_ids=ids, use_cache=False)
+                return (cap.stack()[target].squeeze() @ unit).item()
+
+    with LastTokenCapture(tiny_model) as cap:
+        with torch.no_grad():
+            tiny_model(input_ids=ids, use_cache=False)
+        before = (cap.stack()[target].squeeze() @ unit).item()
+
+    assert abs(component(1.0)) < 1e-4                      # fully removed
+    assert component(-1.0) == pytest.approx(2 * before, rel=1e-3)   # restored, not removed

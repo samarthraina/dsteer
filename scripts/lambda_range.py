@@ -234,7 +234,10 @@ def main():
     model_cfg = ModelConfig.from_yaml(args.model_config)
     cfg = SteerSweepConfig.from_yaml(args.eval_config)
 
-    sign = float(args.sign) if args.sign is not None else (1.0 if args.side == "it" else -1.0)
+    # Ablation removes a component; a negative coefficient would add it back, so the
+    # side's sign applies only to addition.
+    default_sign = 1.0 if (args.side == "it" or args.mode == "ablate") else -1.0
+    sign = float(args.sign) if args.sign is not None else default_sign
     crossed = "_crossed" if (args.sign is not None and sign != (1.0 if args.side == "it" else -1.0)) else ""
     tag = run_tag(args.side, args, crossed)
     out = Path(args.output_dir) / model_cfg.name / tag

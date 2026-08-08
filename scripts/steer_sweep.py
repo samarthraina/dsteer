@@ -264,7 +264,10 @@ def main():
     batch_size = cfg.batch_size or suggest_batch_size(model)
     log.info(f"batch size {batch_size}")
 
-    sign = 1.0 if args.side == "it" else -1.0
+    # Ablation has no direction to reverse: removing a component is the same operation
+    # whichever checkpoint it is done on, and a negative coefficient would *add* the
+    # component back rather than take more of it out. Only addition takes the sign.
+    sign = 1.0 if (args.side == "it" or args.mode == "ablate") else -1.0
     grid = [0.0] + [sign * abs(l) for l in cfg.lambdas]
 
     written = 0
