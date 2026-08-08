@@ -37,6 +37,33 @@ rerun on a laptop — no GPU and no model weights required.
 
     python scripts/fetch_results.py --restore-sweeps
 
+    activations/   paired residual streams, per pair and readout position
+    vectors/       steering directions already derived from those
+    runs/          generations, judged scores, ceiling searches, figures
+
+## Two interventions, and why the distinction matters
+
+A direction can be **added** to the residual stream or **ablated** from it, and the two are
+not versions of the same thing. Addition moves the state by a fixed multiple of the vector.
+Ablation projects the component along it out, so how much is removed depends on what each
+activation carries, and the model cannot represent that direction anywhere it is applied.
+
+`--mode add` and `--mode ablate` select between them. One consequence is easy to get wrong:
+the sweep negates lambda on the DPO side so that addition steers back toward the earlier
+checkpoint, but ablation has no direction to reverse — a negative coefficient *restores*
+the component instead of removing more of it. The sign is therefore applied only to
+addition, and `tests/test_steering.py` pins both halves.
+
+## Before renting a GPU
+
+    bash scripts/smoke_test.sh /tmp/smoke
+
+Runs every entry point once on a tiny random model, in a couple of minutes, with no GPU.
+Every failure this has caught was invisible to the unit tests and to reading the code: a
+missing tokenizer dependency, a run directory that did not record which vector produced it
+and so resumed on an earlier run's generations, and an intervention applied with the wrong
+sign. Run it first.
+
 ## Pipeline
 
 Steps 1–3 need a GPU and no judge; step 4 needs the judge and no GPU work, and the two
@@ -77,6 +104,13 @@ grid applies unequal intervention across models and runs past the cliff on some 
 `--recheck METRIC` re-judges a single metric when its rubric changes, rather than paying
 for all five. `scripts/screen_model.py` generates from one checkpoint, for deciding
 whether a pair is worth building before training one.
+
+**Other entry points.** `refusal_direction.py` builds a direction from harmful-against-
+harmless prompt contrasts on a single checkpoint, no pair required, and reports its angle
+to the checkpoint-difference vector. `select_refusal_direction.py` picks among per-layer
+candidates on a validation split. `train_steering_vector.py` optimises a vector directly
+under the DPO loss with the model frozen. `screen_model.py` generates from one checkpoint,
+for deciding whether a pair is worth building before training one.
 
 **Figures.**
 
