@@ -133,6 +133,28 @@ def run_one(
     return len(todo)
 
 
+
+def run_tag(side: str, args, extra: str = "") -> str:
+    """Directory name for a run, distinguishing the vector it used.
+
+    Generations resume by record id within their directory, so two runs that share a
+    directory silently reuse each other's outputs. A learned vector and a mean-difference
+    vector on the same checkpoint would otherwise collide, and the second would report the
+    first's generations as its own -- which is exactly the comparison the frozen-vector
+    experiment exists to make.
+    """
+    parts = [side, extra]
+    if getattr(args, "vectors", None):
+        parts.append("_learned")
+    if getattr(args, "layers", None):
+        parts.append("_L" + args.layers.replace(",", "-"))
+    if getattr(args, "hold_out", 0):
+        parts.append(f"_ho{args.hold_out}")
+    if getattr(args, "random_control", False):
+        parts.append("_random")
+    return "".join(parts)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate under activation steering across lambdas.")
     parser.add_argument("--model-config", required=True)
@@ -173,7 +195,7 @@ def main():
     model_cfg = ModelConfig.from_yaml(args.model_config)
     cfg = SteerSweepConfig.from_yaml(args.eval_config)
 
-    tag = f"{args.side}{'_random' if args.random_control else ''}"
+    tag = run_tag(args.side, args)
     out_root = Path(cfg.output_dir) / model_cfg.name / cfg.prompt_source / tag
     out_root.mkdir(parents=True, exist_ok=True)
     log = setup_logging(out_root / "steer_sweep.log")

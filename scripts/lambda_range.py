@@ -142,6 +142,28 @@ def suggest_grid(ceiling: float, existing: Optional[List[float]] = None,
     return sorted(set(grid))
 
 
+
+def run_tag(side: str, args, extra: str = "") -> str:
+    """Directory name for a run, distinguishing the vector it used.
+
+    Generations resume by record id within their directory, so two runs that share a
+    directory silently reuse each other's outputs. A learned vector and a mean-difference
+    vector on the same checkpoint would otherwise collide, and the second would report the
+    first's generations as its own -- which is exactly the comparison the frozen-vector
+    experiment exists to make.
+    """
+    parts = [side, extra]
+    if getattr(args, "vectors", None):
+        parts.append("_learned")
+    if getattr(args, "layers", None):
+        parts.append("_L" + args.layers.replace(",", "-"))
+    if getattr(args, "hold_out", 0):
+        parts.append(f"_ho{args.hold_out}")
+    if getattr(args, "random_control", False):
+        parts.append("_random")
+    return "".join(parts)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Locate a model's steering ceiling.")
     parser.add_argument("--model-config", required=True)
@@ -194,7 +216,7 @@ def main():
 
     sign = float(args.sign) if args.sign is not None else (1.0 if args.side == "it" else -1.0)
     crossed = "_crossed" if (args.sign is not None and sign != (1.0 if args.side == "it" else -1.0)) else ""
-    tag = f"{args.side}{crossed}{'_random' if args.random_control else ''}"
+    tag = run_tag(args.side, args, crossed)
     out = Path(args.output_dir) / model_cfg.name / tag
     out.mkdir(parents=True, exist_ok=True)
     log = setup_logging(out / "lambda_range.log")
