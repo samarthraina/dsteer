@@ -116,6 +116,27 @@ for deciding whether a pair is worth building before training one.
 
     python scripts/make_figures.py --runs-root outputs --output-dir outputs/figures
 
+**5. Analysis.** A mean over a whole harmful-prompt benchmark averages the informative
+prompts into the ones both checkpoints handle identically, and reports a diluted effect as
+a null. Conditioning on the prompts that carry a difference is what makes a transfer number
+mean anything, and the subset is fixed by the two unsteered checkpoints alone, so adding an
+arm cannot move the set it is judged on.
+
+    python scripts/conditioned_analysis.py         --it-scored  outputs/.../it/scored/baseline_scored.jsonl         --dpo-scored outputs/.../dpo/scored/baseline_scored.jsonl         --arm "checkpoint=outputs/.../dpo_ho300::outputs/.../dpo_ho300_random"         --arm "refusal=outputs/.../dpo_refusal::outputs/.../dpo_refusal_random"         --compare "checkpoint,refusal"
+
+Report `--compare`, not the overlap between two arms' own intervals. Two arms scored on the
+same prompts share their baseline, their floor and most of their noise, so the interval on
+the difference is far tighter; and overlap between single-arm intervals implies nothing
+either way, while non-overlap implies a difference.
+
+**6. Geometry of a direction.** How much of a direction the activations already carry,
+which is what ablation can act on and addition is indifferent to. No GPU, no judge.
+
+    python scripts/direction_dispersion.py         --checkpoint-acts outputs/layer_profile_harmfulqa/<model>/activations.pt         --refusal-acts    outputs/refusal_direction/<model>/activations.pt
+
+Projections are reported as a share of activation norm, because the raw inner product says
+nothing without knowing how large the activation is.
+
 ## Things that are easy to get wrong
 
 Each of these changes a reported number without producing an error, and each is handled
@@ -132,6 +153,18 @@ explicitly in the code rather than left to the caller.
   outputs a judge declines to score are the unsafe ones.
 - Harmfulness is judged with the request in view. Without it the judge reads an answer
   with no idea what was asked, which under-scores terse harmful replies by about a fifth.
+
+**A steering strength belongs to a vector, not to a checkpoint.** Ceilings measured for one
+construction do not transfer to another built from a different corpus, readout position or
+hold-out. Reading an arm at a borrowed magnitude degenerated a third of its generations in
+one case here and nine tenths in another. Worse, the reported number *improves* as the model
+degrades, because collapsed generations carry no score and leave the numerator while the gap
+they are divided by comes from every prompt. Measure the ceiling first; it needs no judge.
+
+**A row index means a different prompt in different activation files.** The loaders shuffle
+on a fixed seed and take the first n, so files built with different hold-outs are offset
+relative to each other. Comparing them row for row gives roughly the similarity of two
+unrelated prompts, which reads like a difference in extraction rather than in alignment.
 
 ## Setup
 
