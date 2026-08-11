@@ -88,11 +88,22 @@ MERGED_MODEL_DIR = os.environ.get(
 )
 
 # HuggingFace repo for pushing the DPO adapter (optional)
-HF_PUSH_REPO = os.environ.get("HF_PUSH_REPO", "sirius5005/SFT-and-DPO")
+# Empty by default: nothing is published unless a caller asks for it by name.
+# sirius5005/SFT-and-DPO is a *reference* repo -- the first pair's SFT and DPO
+# checkpoints are read from it, and its root holds that run's original adapter and
+# trainer_state.json, which is where this project's DPO recipe was recovered from.
+# Pushing here would overwrite that record. Project artefacts belong in
+# samarthraina/dsteer-results.
+HF_PUSH_REPO = os.environ.get("HF_PUSH_REPO", "")
 
 # Dataset
 DATASET_NAME = "Anthropic/hh-rlhf"
-DATASET_DATA_DIR = "harmless-base"
+DATASET_DATA_DIR = os.environ.get("DPO_DATA_DIR", "harmless-base")
+# Swapping the preference labels trains the model to prefer what the annotators rejected.
+# On harmless-base that is a de-alignment run, and its purpose is to ask whether the
+# direction it produces is the negation of the forward one or a different direction
+# entirely. The resulting weights are harmful and are not released.
+DPO_FLIP = os.environ.get("DPO_FLIP", "0") == "1"
 EVAL_SPLIT_RATIO = 0.05
 
 # Training hyperparameters
@@ -114,8 +125,12 @@ LORA_TARGET_MODULES = [
 
 # Output and checkpointing
 OUTPUT_DIR = os.environ.get("DPO_OUTPUT_DIR", "./dpo_output")
-SAVE_STEPS = 500
-EVAL_STEPS = 500
+WARMUP_STEPS = int(os.environ.get("DPO_WARMUP_STEPS", "130"))
+# Overridable so the pipeline can be exercised end to end in minutes instead of hours.
+# A dry run that trains 60 steps and checkpoints at 25 reaches every stage the real run
+# does -- gate, merge, profile, geometry -- which is where the failures have actually been.
+SAVE_STEPS = int(os.environ.get("DPO_SAVE_STEPS", "500"))
+EVAL_STEPS = int(os.environ.get("DPO_EVAL_STEPS", "500"))
 LOGGING_STEPS = 25
 SEED = 42
 
@@ -182,9 +197,20 @@ logger.info("Ready for DPO.")
 #   2. Convert to Llama 3 chat template
 #   3. Split into DPO triplets: (prompt, chosen, rejected)
 
-logger.info("Loading Anthropic HH-RLHF dataset (harmless-base)...")
+logger.info(f"Loading {DATASET_NAME} ({DATASET_DATA_DIR})...")
 raw_dataset = load_dataset(DATASET_NAME, data_dir=DATASET_DATA_DIR, split="train")
 logger.info(f"Raw dataset size: {len(raw_dataset)}")
+
+if DPO_FLIP:
+    # Swap before formatting, not after: format_for_dpo parses both columns and applies the
+    # chat template to each, so swapping here keeps every downstream step identical to a
+    # forward run and leaves the labels as the only difference.
+    raw_dataset = raw_dataset.map(
+        lambda ex: {"chosen": ex["rejected"], "rejected": ex["chosen"]},
+        desc="swapping preference labels",
+    )
+    logger.warning("DPO_FLIP is on: preference labels are swapped. On harmless-base this "
+                   "trains toward the harmful response. Do not release these weights.")
 
 
 def parse_hh_conversation(text):
@@ -317,7 +343,11 @@ training_args = DPOConfig(
     beta=DPO_BETA,
     max_length=MAX_LENGTH,
     learning_rate=LEARNING_RATE,
-    warmup_ratio=0.05,
+    # warmup_ratio was dropped from DPOConfig after TRL 0.29, which is the version the
+    # first pair was trained on; 1.9.2 takes warmup_steps instead. 130 is 5% of the ~2600
+    # steps one epoch of HH-RLHF gives at effective batch 16, so it reproduces the 126-step
+    # warmup visible in that run's own trainer_state.json rather than approximating it.
+    warmup_steps=WARMUP_STEPS,
     lr_scheduler_type="cosine",
     bf16=True,
     fp16=False,
@@ -328,7 +358,7 @@ training_args = DPOConfig(
     eval_steps=EVAL_STEPS,
     logging_steps=LOGGING_STEPS,
     report_to="tensorboard",
-    logging_dir=f"{OUTPUT_DIR}/tb_logs",
+    # logging_dir was dropped from DPOConfig in TRL 1.x; the reporter picks its own path.
     gradient_checkpointing=os.environ.get("DPO_GRAD_CKPT", "1") == "1",
     gradient_checkpointing_kwargs={"use_reentrant": False},
     dataloader_num_workers=4,
@@ -496,10 +526,14 @@ logger.info(f"Estimated: ~{est_steps} steps, ~{est_hours:.1f} hours")
 # Detect existing checkpoints for resume
 resume_ckpt = None
 if os.path.exists(OUTPUT_DIR):
-    ckpts = sorted([
-        d for d in os.listdir(OUTPUT_DIR)
-        if d.startswith("checkpoint-") and os.path.isdir(os.path.join(OUTPUT_DIR, d))
-    ])
+    # Sort by step number, not by name. "checkpoint-500" sorts after "checkpoint-1000"
+    # lexicographically, so the plain sort resumed from 500 whenever a 500 and a four-digit
+    # checkpoint were both present -- turning a 400-step loss into a 900-step one.
+    ckpts = sorted(
+        [d for d in os.listdir(OUTPUT_DIR)
+         if d.startswith("checkpoint-") and os.path.isdir(os.path.join(OUTPUT_DIR, d))],
+        key=lambda d: int(d.split("-")[1]),
+    )
     if ckpts:
         resume_ckpt = os.path.join(OUTPUT_DIR, ckpts[-1])
 

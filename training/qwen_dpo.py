@@ -71,7 +71,8 @@ if torch.cuda.is_available():
 
 MERGED_MODEL_DIR = "/root/ndna/SFT/Qwen_SFT_merged"
 TOKENIZER_NAME = "Qwen/Qwen2.5-7B-Instruct"   # fallback if merged dir tokenizer is missing/bad
-HF_PUSH_REPO = "sirius5005/Qwen25-SFT-and-DPO"
+# Reference repo; see the note in dpo.py. Empty unless a caller sets it.
+HF_PUSH_REPO = os.environ.get("HF_PUSH_REPO", "")
 
 DATASET_NAME = "Anthropic/hh-rlhf"
 DATASET_DATA_DIR = "harmless-base"
