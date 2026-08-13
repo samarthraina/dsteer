@@ -102,7 +102,8 @@ DATASET_DATA_DIR = os.environ.get("DPO_DATA_DIR", "harmless-base")
 # Swapping the preference labels trains the model to prefer what the annotators rejected.
 # On harmless-base that is a de-alignment run, and its purpose is to ask whether the
 # direction it produces is the negation of the forward one or a different direction
-# entirely. The resulting weights are harmful and are not released.
+# entirely. The resulting adapter is published alongside the others so the geometry can be
+# checked independently; what it does behaviourally is reported from a screen, not assumed.
 DPO_FLIP = os.environ.get("DPO_FLIP", "0") == "1"
 EVAL_SPLIT_RATIO = 0.05
 
@@ -210,7 +211,8 @@ if DPO_FLIP:
         desc="swapping preference labels",
     )
     logger.warning("DPO_FLIP is on: preference labels are swapped. On harmless-base this "
-                   "trains toward the harmful response. Do not release these weights.")
+                   "trains toward the response annotators rejected. Screen the result "
+                   "before describing its behaviour anywhere.")
 
 
 def parse_hh_conversation(text):

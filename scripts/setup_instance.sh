@@ -72,7 +72,10 @@ log "=== judge env ==="
 # generation and training are unaffected, because /venv/main is cu126, so the failure looks
 # like a broken judge rather than a wrong wheel. Pin to a build that runs on 12.x drivers;
 # CUDA's minor-version compatibility covers the rest.
-DRIVER_CUDA=$(nvidia-smi | sed -n 's/.*CUDA Version: \([0-9]*\)\..*//p' | head -1)
+# grep, not sed. The backreference here was written as a literal 0x01 byte by an earlier
+# edit, so this returned a control character on every host: non-empty, so the `:-13`
+# fallback never fired, and the comparison below died with "integer expression expected".
+DRIVER_CUDA=$(nvidia-smi | grep -o 'CUDA Version: [0-9]*' | grep -o '[0-9]*$' | head -1)
 if [ ! -x /workspace/venv_judge/bin/python ]; then
   python3 -m venv /workspace/venv_judge
   /workspace/venv_judge/bin/pip install -q --upgrade pip

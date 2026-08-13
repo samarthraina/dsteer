@@ -1,0 +1,4 @@
+# Shell scripts run on Linux boxes. Checked out with CRLF they fail at the first
+# multi-line construct, which reads as a syntax error in the script rather than a
+# line-ending problem and costs an hour to find.
+*.sh text eol=lf

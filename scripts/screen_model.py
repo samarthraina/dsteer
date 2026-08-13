@@ -28,7 +28,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import torch
 
 from steering.artifacts import write_run_metadata
-from steering.data import load_harmfulqa
+from steering.data import load_harmfulqa, load_alpacaeval, load_ifeval
 from steering.generate import build_chat_prompts, generate_batched, suggest_batch_size
 from steering.models import load_model, load_tokenizer
 from steering.utils import append_jsonl, read_jsonl, set_all_seeds, setup_logging
@@ -43,17 +43,25 @@ def main():
     parser.add_argument("--max-input-length", type=int, default=2048)
     parser.add_argument("--batch-size", type=int, default=None)
     parser.add_argument("--seed", type=int, default=42)
+    # A safety benchmark cannot say whether a helpfulness-trained pair learned anything.
+    # Screening a checkpoint on the wrong distribution measures the wrong gap, which is the
+    # same error as steering along an axis a pair does not have.
+    parser.add_argument("--prompt-source", choices=["harmfulqa", "alpacaeval", "ifeval"],
+                        default="harmfulqa")
     args = parser.parse_args()
 
     set_all_seeds(args.seed)
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     log = setup_logging(out / "screen_model.log")
-    write_run_metadata(out, config={"model": args.model, "n": args.n, "seed": args.seed})
+    write_run_metadata(out, config={"model": args.model, "n": args.n, "seed": args.seed,
+                                    "prompt_source": args.prompt_source})
 
     # The same seed and loader as the sweeps, so a screened checkpoint is being asked the
     # same questions as everything else here.
-    records = load_harmfulqa(n=args.n, seed=args.seed)
+    loader = {"harmfulqa": load_harmfulqa, "alpacaeval": load_alpacaeval,
+              "ifeval": load_ifeval}[args.prompt_source]
+    records = loader(n=args.n, seed=args.seed)
     path = out / "baseline.jsonl"
     done = {r["id"] for r in read_jsonl(path)} if path.exists() else set()
     todo = [r for r in records if r["id"] not in done]
