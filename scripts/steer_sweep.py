@@ -34,6 +34,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from steering.artifacts import GpuMonitor, sync_to_hub, write_run_metadata
 from steering.config import ModelConfig
 from steering.data import VALID_HARMFULQA_PARTITIONS, load_advbench, load_harmfulqa_partition, load_hh_rlhf_test
+from steering.endpoint_binding import resolve_model_source
 from steering.generate import build_chat_prompts, generate_batched, suggest_batch_size
 from steering.models import load_model, load_tokenizer
 from steering.splits import load_manifest, validate_manifest_identity
@@ -312,7 +313,29 @@ def run_tag(side: str, args, extra: str = "") -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="Generate under activation steering across lambdas.")
-    parser.add_argument("--model-config", required=True)
+    parser.add_argument(
+        "--model-config", default=None,
+        help="Legacy YAML model-pair config. Historical/non-confirmatory use only; "
+             "mutually exclusive with endpoint-backed mode below.",
+    )
+    parser.add_argument(
+        "--endpoint-manifest", default=None,
+        help="Endpoint-backed mode: candidate endpoint manifest path (protocol Section 4).",
+    )
+    parser.add_argument(
+        "--endpoint-bundle-root", default=None,
+        help="Endpoint-backed mode: root directory holding merged endpoint bundles.",
+    )
+    parser.add_argument(
+        "--pair", choices=["A", "B"], default=None,
+        help="Endpoint-backed mode: which model pair to resolve from the candidate manifest.",
+    )
+    parser.add_argument(
+        "--endpoint-source", action="append", default=[], metavar="ARTIFACT_ID=LOCAL_ROOT",
+        help="Endpoint-backed mode: repeatable, local root for one direct source artifact "
+             "(e.g. pair_a_sft=/data/pair_a/SFT_merged). Not needed for a merged endpoint, "
+             "which resolves entirely under --endpoint-bundle-root.",
+    )
     parser.add_argument("--eval-config", required=True)
     parser.add_argument(
         "--side", choices=["it", "dpo"], required=True,
@@ -365,8 +388,19 @@ def main():
     parser.add_argument("--hourly-rate", type=float, default=None)
     args = parser.parse_args()
 
+    # Endpoint verification (frozen-source binding, candidate-manifest hash/structural
+    # validation, and per-file SHA-256/size streaming, for endpoint-backed mode)
+    # happens here, before anything below -- including `set_all_seeds`, which touches
+    # CUDA (`torch.cuda.is_available()`/`manual_seed_all`) on a GPU machine -- creates
+    # output, initializes logging, or loads a prompt, vector, model, or GPU resource. A
+    # mismatch has no side effects.
+    model_cfg, endpoint_meta = resolve_model_source(
+        model_config=args.model_config, endpoint_manifest=args.endpoint_manifest,
+        endpoint_bundle_root=args.endpoint_bundle_root, pair=args.pair, endpoint_source=args.endpoint_source,
+    )
+
     set_all_seeds(args.seed)
-    model_cfg = ModelConfig.from_yaml(args.model_config)
+
     cfg = SteerSweepConfig.from_yaml(args.eval_config)
 
     partition = resolve_harmfulqa_partition(cfg, args.partition)
@@ -388,6 +422,9 @@ def main():
             "harmfulqa_manifest_hash": next(iter(manifest_hashes)) if len(manifest_hashes) == 1 else None,
             "harmfulqa_record_count": len(records),
         }
+    if endpoint_meta is not None:
+        run_meta_extra = dict(run_meta_extra or {})
+        run_meta_extra["endpoint"] = endpoint_meta
     write_run_metadata(
         out_root,
         config=build_run_config(model_cfg, cfg, args),

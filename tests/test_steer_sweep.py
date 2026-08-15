@@ -26,6 +26,7 @@ torch = pytest.importorskip("torch")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import steer_sweep  # noqa: E402
 
+from steering.endpoint_binding import EndpointBindingError
 from steering.generate import GenerationResult
 from steering.utils import read_jsonl
 
@@ -479,7 +480,9 @@ def test_metadata_config_includes_the_full_parsed_cli_namespace_with_defaults(tm
 
     cli = calls[0]["kwargs"]["config"]["cli"]
     assert cli == {
-        "model_config": str(model_yaml), "eval_config": str(eval_yaml), "side": "it",
+        "model_config": str(model_yaml),
+        "endpoint_manifest": None, "endpoint_bundle_root": None, "pair": None, "endpoint_source": [],
+        "eval_config": str(eval_yaml), "side": "it",
         "random_control": False, "mode": "add", "tag": None, "vectors": None, "layers": None,
         "hold_out": 0, "partition": None, "seed": 42, "sync": False, "hourly_rate": None,
     }
@@ -604,3 +607,155 @@ def test_a_metadata_mismatch_prevents_all_later_side_effects(tmp_path, monkeypat
         steer_sweep.main()
 
     assert len(calls) == 1  # metadata was attempted exactly once, then main() stopped
+
+
+# main(): endpoint-backed mode (Task 012)
+
+
+def test_mutually_exclusive_modes_are_rejected_before_any_side_effect(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+        "--endpoint-manifest", "whatever.json",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises(EndpointBindingError, match="mutually exclusive"):
+        steer_sweep.main()
+
+    assert calls == []
+
+
+def test_incomplete_endpoint_mode_is_rejected_before_any_side_effect(tmp_path, monkeypatch):
+    _, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--eval-config", str(eval_yaml), "--side", "it",
+        "--endpoint-manifest", str(tmp_path / "m.json"), "--pair", "A",
+        # --endpoint-bundle-root and --endpoint-source are both missing.
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises(EndpointBindingError, match="missing required flag"):
+        steer_sweep.main()
+
+    assert calls == []
+
+
+def test_no_model_source_is_rejected_before_any_side_effect(tmp_path, monkeypatch):
+    _, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["steer_sweep.py", "--eval-config", str(eval_yaml), "--side", "it"])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "setup_logging")
+
+    with pytest.raises(EndpointBindingError, match="no model source given"):
+        steer_sweep.main()
+
+    assert calls == []
+
+
+def test_endpoint_verification_failure_prevents_all_side_effects(tmp_path, monkeypatch):
+    """A candidate manifest that fails hash/structural verification (here: simply does
+    not exist) must fail before any output, logging, seeding, or model-loading side
+    effect -- exercising the real `resolve_model_source`, not a mock. `set_all_seeds`
+    is explicitly forbidden here because it touches CUDA
+    (`torch.cuda.is_available()`/`manual_seed_all`), which must never happen before
+    endpoint verification completes on a GPU machine."""
+    _, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--eval-config", str(eval_yaml), "--side", "it",
+        "--endpoint-manifest", str(tmp_path / "does-not-exist.json"),
+        "--endpoint-bundle-root", str(tmp_path / "bundle"), "--pair", "A",
+        "--endpoint-source", "pair_a_sft=/x", "--endpoint-source", "pair_a_dpo=/y",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+    _forbid(monkeypatch, "load_harmfulqa_partition")
+
+    with pytest.raises(Exception):
+        steer_sweep.main()
+
+    assert calls == []
+
+
+def test_endpoint_resolution_runs_before_set_all_seeds_and_config_prompt_loading(tmp_path, monkeypatch):
+    """Correction round 1: endpoint-mode validation and file verification must run
+    before `set_all_seeds` -- not merely before `write_run_metadata`. Proven by
+    asserting the raised error names the (nonexistent) candidate manifest path, not the
+    (also nonexistent, but never-reached) eval-config path -- if eval-config loading
+    had run first, the failure would instead be a FileNotFoundError for that path."""
+    bad_manifest = tmp_path / "does-not-exist.json"
+    never_read_eval_config = tmp_path / "should-never-be-read.yaml"  # deliberately never created
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--eval-config", str(never_read_eval_config), "--side", "it",
+        "--endpoint-manifest", str(bad_manifest),
+        "--endpoint-bundle-root", str(tmp_path / "bundle"), "--pair", "A",
+        "--endpoint-source", "pair_a_sft=/x", "--endpoint-source", "pair_a_dpo=/y",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+    _forbid(monkeypatch, "load_harmfulqa_partition")
+
+    with pytest.raises(FileNotFoundError) as exc_info:
+        steer_sweep.main()
+
+    # Compare by filename, not the full path, to sidestep platform-specific backslash
+    # escaping in the exception's string form.
+    assert bad_manifest.name in str(exc_info.value)
+    assert never_read_eval_config.name not in str(exc_info.value)
+    assert calls == []
+
+
+def test_endpoint_metadata_is_merged_into_run_meta_extra(tmp_path, monkeypatch):
+    """Wiring check: whatever `resolve_model_source` returns as endpoint metadata must
+    reach `write_run_metadata`'s `extra["endpoint"]` unchanged. The resolution logic
+    itself is exercised exhaustively in tests/test_endpoint_binding.py; this only
+    checks that steer_sweep.py threads the result through correctly."""
+    model_cfg_dict = _model_cfg_dict(name="endpoint-A-abc123")
+    fake_model_cfg = steer_sweep.ModelConfig(**model_cfg_dict)
+    fake_endpoint_meta = {
+        "mode": "endpoint", "pair": "A", "candidate_manifest_hash": "c" * 64,
+        "source_manifest_hash": "s" * 64, "roles": {"it": "M0-A", "dpo": "M+-A"},
+        "endpoints": {"it": {"role": "M0-A"}, "dpo": {"role": "M+-A"}},
+    }
+    monkeypatch.setattr(steer_sweep, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "advbench", "n_prompts": 2, "output_dir": str(tmp_path / "out"),
+    })
+    fake_records = [{"id": "advbench-0", "prompt": "p0"}]
+    monkeypatch.setitem(steer_sweep.LOADERS, "advbench", lambda n, seed: fake_records[:n])
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
+        "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    assert calls[0]["kwargs"]["extra"]["endpoint"] == fake_endpoint_meta
+    assert calls[0]["kwargs"]["config"]["model"]["name"] == "endpoint-A-abc123"
