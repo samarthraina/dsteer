@@ -40,9 +40,10 @@ import gc
 import json
 import logging
 import os
+import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend for saving plots
@@ -127,21 +128,10 @@ def main():
     validate_harmfulqa_construction_config(eval_cfg)
 
     output_root = output_root_for(eval_cfg.output_dir, model_cfg.name, eval_cfg.prompt_source, eval_cfg.prompt_partition)
-    output_root.mkdir(parents=True, exist_ok=True)
 
-    log = setup_logging(output_root / "layer_profile.log")
-    log.info(f"Model pair: {model_cfg.name}")
-    log.info(f"Output: {output_root}")
-    log.info(f"Architecture: {model_cfg.architecture}, layers: {model_cfg.num_layers}")
-
-    if args.no_resume:
-        for stale in output_root.glob("*.partial.pt"):
-            stale.unlink()
-            log.info(f"Removed checkpoint {stale}")
-
-    # Load prompts
-    log.info(f"Loading prompts from {eval_cfg.prompt_source}")
-    log.info(f"Readout position: {eval_cfg.token_position}")
+    # Read-only preparation for the metadata identity check below -- loading prompts
+    # (and, for HarmfulQA, the frozen manifest partition they came from) mutates
+    # nothing on disk, so it is safe to do before the check that guards every write.
     prompts = load_prompts(eval_cfg.prompt_source, eval_cfg.n_prompts, args.seed, eval_cfg.prompt_partition)
     if eval_cfg.token_position == "response_last":
         prompts = [p for p in prompts if p.get("chosen")]
@@ -149,7 +139,6 @@ def main():
             raise ValueError(
                 "response_last needs reference responses; prompt_source must be hh_rlhf"
             )
-    log.info(f"Loaded {len(prompts)} prompts")
 
     run_meta_extra = None
     if eval_cfg.prompt_source == "harmfulqa":
@@ -161,9 +150,24 @@ def main():
         }
     write_run_metadata(
         output_root,
-        config={"model": asdict(model_cfg), "eval": asdict(eval_cfg), "seed": args.seed},
+        config=build_run_config(model_cfg, eval_cfg, args),
         extra=run_meta_extra,
+        argv=list(sys.argv),
     )
+
+    # Nothing below may run until the identity check above has succeeded: the log is
+    # not initialised, no stale checkpoint is removed, and no model is loaded before
+    # this point -- a mismatched resume fails here, before it can touch anything.
+    log = setup_logging(output_root / "layer_profile.log")
+    log.info(f"Model pair: {model_cfg.name}")
+    log.info(f"Output: {output_root}")
+    log.info(f"Architecture: {model_cfg.architecture}, layers: {model_cfg.num_layers}")
+    log.info(f"Loaded {len(prompts)} prompts from {eval_cfg.prompt_source} (readout: {eval_cfg.token_position})")
+
+    if args.no_resume:
+        for stale in output_root.glob("*.partial.pt"):
+            stale.unlink()
+            log.info(f"Removed checkpoint {stale}")
 
     # Load tokenizer
     tokenizer_path = model_cfg.tokenizer_id or model_cfg.it_model
@@ -232,6 +236,12 @@ def main():
 
 
 # Prompt loading
+
+
+def build_run_config(model_cfg: ModelConfig, eval_cfg: LayerProfileConfig, args: argparse.Namespace) -> Dict[str, Any]:
+    """The resolved run identity for `write_run_metadata`: the model/eval dataclasses
+    plus the complete parsed CLI namespace, including defaulted values, under `cli`."""
+    return {"model": asdict(model_cfg), "eval": asdict(eval_cfg), "cli": vars(args)}
 
 
 def output_root_for(base_output_dir: str, model_name: str, prompt_source: str, prompt_partition: Optional[str]) -> Path:

@@ -14,10 +14,12 @@ CPU-only, network-free: the frozen partition loader and HH-RLHF loader are mocke
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 torch = pytest.importorskip("torch")
 
@@ -190,3 +192,230 @@ def test_layer_profile_yaml_parses_to_protocol_values():
     assert cfg.prompt_partition == "construction"
     assert cfg.token_position == "prompt_last"
     layer_profile.validate_harmfulqa_construction_config(cfg)  # must not raise
+
+
+# build_run_config
+
+
+def _model_cfg_dict(**overrides):
+    base = {
+        "name": "tinytest", "base_model": "org/base", "it_model": "org/it",
+        "dpo_model": "org/dpo", "architecture": "llama", "num_layers": 4,
+    }
+    base.update(overrides)
+    return base
+
+
+def _write_yaml(path: Path, data: dict) -> Path:
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+    return path
+
+
+def test_build_run_config_binds_model_eval_and_full_cli_including_defaults(tmp_path):
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {"prompt_source": "hh_rlhf", "n_prompts": 5})
+
+    model_cfg = layer_profile.ModelConfig.from_yaml(model_yaml)
+    eval_cfg = layer_profile.LayerProfileConfig.from_yaml(eval_yaml)
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-config")
+    parser.add_argument("--eval-config")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--sync", action="store_true")
+    parser.add_argument("--no-resume", action="store_true")
+    parser.add_argument("--device", default="auto")
+    parser.add_argument("--hourly-rate", type=float, default=None)
+    args = parser.parse_args(["--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    config = layer_profile.build_run_config(model_cfg, eval_cfg, args)
+
+    assert config["model"]["name"] == "tinytest"
+    assert config["eval"]["prompt_source"] == "hh_rlhf"
+    # every parsed CLI value, including ones never explicitly passed (defaulted).
+    assert config["cli"] == {
+        "model_config": str(model_yaml), "eval_config": str(eval_yaml),
+        "seed": 42, "sync": False, "no_resume": False, "device": "auto", "hourly_rate": None,
+    }
+
+
+# main(): metadata wiring (Task 009)
+
+
+class _MetadataSentinel(Exception):
+    """Raised by a mocked write_run_metadata to simulate an identity mismatch, so a
+    test can prove nothing after the metadata call ran -- without mocking the rest of
+    the pipeline."""
+
+
+def _spy_write_run_metadata(monkeypatch, calls, raise_sentinel=True):
+    def fake(*args, **kwargs):
+        calls.append({"args": args, "kwargs": kwargs})
+        if raise_sentinel:
+            raise _MetadataSentinel()
+        return Path("run_meta.json")
+
+    monkeypatch.setattr(layer_profile, "write_run_metadata", fake)
+
+
+def _forbid(monkeypatch, name):
+    """Fail loudly if `name` is ever called -- used to prove no side effect happens
+    after a simulated metadata mismatch."""
+    def boom(*a, **k):
+        raise AssertionError(f"{name} must not be called after a metadata identity mismatch")
+
+    monkeypatch.setattr(layer_profile, name, boom)
+
+
+def _setup_hh_rlhf_run(tmp_path, monkeypatch, extra_eval=None):
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_cfg_dict = {"prompt_source": "hh_rlhf", "n_prompts": 3, "output_dir": str(tmp_path / "out")}
+    eval_cfg_dict.update(extra_eval or {})
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", eval_cfg_dict)
+
+    fake_hh_records = [
+        {"id": f"hh-{i}", "prompt": [{"role": "user", "content": f"q{i}"}], "chosen": f"a{i}"}
+        for i in range(3)
+    ]
+    monkeypatch.setattr(layer_profile, "load_hh_rlhf_test", lambda n, seed: fake_hh_records[:n])
+    return model_yaml, eval_yaml
+
+
+def test_argv_is_passed_as_an_exact_json_list_preserving_spaces_and_unicode(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    argv = [
+        "layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml),
+        "--device", "unicode üñíçødé and spaces here",
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    assert calls[0]["kwargs"]["argv"] == argv
+    assert isinstance(calls[0]["kwargs"]["argv"], list)
+
+
+def test_metadata_config_includes_the_full_parsed_cli_namespace_with_defaults(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    argv = ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    cli = calls[0]["kwargs"]["config"]["cli"]
+    assert cli == {
+        "model_config": str(model_yaml), "eval_config": str(eval_yaml),
+        "seed": 42, "sync": False, "no_resume": False, "device": "auto", "hourly_rate": None,
+    }
+
+
+def test_metadata_retains_resolved_model_and_eval_configs(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    config = calls[0]["kwargs"]["config"]
+    assert config["model"]["name"] == "tinytest"
+    assert config["model"]["architecture"] == "llama"
+    assert config["eval"]["prompt_source"] == "hh_rlhf"
+
+
+def test_metadata_carries_exact_harmfulqa_provenance(tmp_path, monkeypatch):
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "harmfulqa", "prompt_partition": "construction",
+        "token_position": "prompt_last", "output_dir": str(tmp_path / "out"),
+    })
+    fake_records = [
+        {
+            "prompt": f"p{i}", "chosen": None, "source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}",
+            "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc",
+        }
+        for i in range(4)
+    ]
+    monkeypatch.setattr(layer_profile, "load_harmfulqa_partition", lambda partition: fake_records)
+    monkeypatch.setattr(sys, "argv", ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    extra = calls[0]["kwargs"]["extra"]
+    assert extra == {
+        "harmfulqa_partition": "construction",
+        "harmfulqa_manifest_hash": "manifest-abc",
+        "harmfulqa_record_count": 4,
+    }
+
+
+def test_write_run_metadata_is_called_before_setup_logging(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    order = []
+
+    def fake_write_run_metadata(*a, **k):
+        order.append("write_run_metadata")
+        raise _MetadataSentinel()
+
+    monkeypatch.setattr(layer_profile, "write_run_metadata", fake_write_run_metadata)
+    monkeypatch.setattr(layer_profile, "setup_logging", lambda *a, **k: order.append("setup_logging"))
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    assert order == ["write_run_metadata"]  # setup_logging never ran
+
+
+def test_a_metadata_mismatch_prevents_all_later_side_effects(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+    _forbid(monkeypatch, "sync_to_hub")
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    assert len(calls) == 1  # metadata was attempted exactly once, then main() stopped
+
+
+def test_a_metadata_mismatch_under_no_resume_leaves_a_partial_checkpoint_byte_identical(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    out_dir = tmp_path / "out" / "tinytest"
+    out_dir.mkdir(parents=True)
+    partial = out_dir / "it.partial.pt"
+    original_bytes = b"not a real checkpoint, just needs to survive untouched"
+    partial.write_bytes(original_bytes)
+
+    monkeypatch.setattr(sys, "argv", [
+        "layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--no-resume",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    assert partial.read_bytes() == original_bytes
+    assert partial.exists()

@@ -14,10 +14,12 @@ CPU-only, network-free: the frozen partition loader and generation are mocked.
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
 import pytest
+import yaml
 
 torch = pytest.importorskip("torch")
 
@@ -345,3 +347,260 @@ def test_steer_sweep_yaml_parses_to_protocol_values():
     assert cfg.prompt_partition == "calibration"
     assert cfg.activations_dir == "outputs/layer_profile"
     assert steer_sweep.resolve_harmfulqa_partition(cfg, None) == "calibration"
+
+
+# build_run_config
+
+
+def _model_cfg_dict(**overrides):
+    base = {
+        "name": "tinytest", "base_model": "org/base", "it_model": "org/it",
+        "dpo_model": "org/dpo", "architecture": "llama", "num_layers": 4,
+    }
+    base.update(overrides)
+    return base
+
+
+def _write_yaml(path: Path, data: dict) -> Path:
+    path.write_text(yaml.safe_dump(data), encoding="utf-8")
+    return path
+
+
+def _steer_sweep_parser() -> argparse.ArgumentParser:
+    """Mirrors steer_sweep.main()'s real CLI surface, for testing build_run_config and
+    metadata wiring without running main() end to end."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-config")
+    parser.add_argument("--eval-config")
+    parser.add_argument("--side", choices=["it", "dpo"])
+    parser.add_argument("--random-control", action="store_true")
+    parser.add_argument("--mode", choices=["add", "ablate"], default="add")
+    parser.add_argument("--tag", default=None)
+    parser.add_argument("--vectors", default=None)
+    parser.add_argument("--layers", default=None)
+    parser.add_argument("--hold-out", type=int, default=0)
+    parser.add_argument("--partition", default=None)
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--sync", action="store_true")
+    parser.add_argument("--hourly-rate", type=float, default=None)
+    return parser
+
+
+def test_build_run_config_binds_model_eval_and_full_cli_including_defaults(tmp_path):
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {"prompt_source": "advbench", "n_prompts": 5})
+
+    model_cfg = steer_sweep.ModelConfig.from_yaml(model_yaml)
+    eval_cfg = steer_sweep.SteerSweepConfig.from_yaml(eval_yaml)
+
+    args = _steer_sweep_parser().parse_args([
+        "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    config = steer_sweep.build_run_config(model_cfg, eval_cfg, args)
+
+    assert config["model"]["name"] == "tinytest"
+    assert config["eval"]["prompt_source"] == "advbench"
+    # every parsed CLI value, including ones never explicitly passed (defaulted).
+    assert config["cli"] == {
+        "model_config": str(model_yaml), "eval_config": str(eval_yaml), "side": "it",
+        "random_control": False, "mode": "add", "tag": None, "vectors": None, "layers": None,
+        "hold_out": 0, "partition": None, "seed": 42, "sync": False, "hourly_rate": None,
+    }
+
+
+# main(): metadata wiring (Task 009)
+
+
+class _MetadataSentinel(Exception):
+    """Raised by a mocked write_run_metadata to simulate an identity mismatch, so a
+    test can prove nothing after the metadata call ran -- without mocking the rest of
+    the pipeline."""
+
+
+def _spy_write_run_metadata(monkeypatch, calls, raise_sentinel=True):
+    def fake(*args, **kwargs):
+        calls.append({"args": args, "kwargs": kwargs})
+        if raise_sentinel:
+            raise _MetadataSentinel()
+        return Path("run_meta.json")
+
+    monkeypatch.setattr(steer_sweep, "write_run_metadata", fake)
+
+
+def _forbid(monkeypatch, name):
+    """Fail loudly if `name` is ever called -- used to prove no side effect happens
+    after a simulated metadata mismatch."""
+    def boom(*a, **k):
+        raise AssertionError(f"{name} must not be called after a metadata identity mismatch")
+
+    monkeypatch.setattr(steer_sweep, name, boom)
+
+
+def _setup_advbench_run(tmp_path, monkeypatch, extra_eval=None):
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_cfg_dict = {"prompt_source": "advbench", "n_prompts": 3, "output_dir": str(tmp_path / "out")}
+    eval_cfg_dict.update(extra_eval or {})
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", eval_cfg_dict)
+
+    fake_records = [{"id": f"advbench-{i}", "prompt": f"p{i}"} for i in range(3)]
+    monkeypatch.setitem(steer_sweep.LOADERS, "advbench", lambda n, seed: fake_records[:n])
+    return model_yaml, eval_yaml
+
+
+def test_argv_is_passed_as_an_exact_json_list_preserving_spaces_and_unicode(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    argv = [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+        "--tag", "unicode üñíçødé and spaces here",
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    assert calls[0]["kwargs"]["argv"] == argv
+    assert isinstance(calls[0]["kwargs"]["argv"], list)
+
+
+def test_metadata_config_includes_the_full_parsed_cli_namespace_with_defaults(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    argv = ["steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it"]
+    monkeypatch.setattr(sys, "argv", argv)
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    cli = calls[0]["kwargs"]["config"]["cli"]
+    assert cli == {
+        "model_config": str(model_yaml), "eval_config": str(eval_yaml), "side": "it",
+        "random_control": False, "mode": "add", "tag": None, "vectors": None, "layers": None,
+        "hold_out": 0, "partition": None, "seed": 42, "sync": False, "hourly_rate": None,
+    }
+
+
+def test_metadata_retains_resolved_model_and_eval_configs(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "dpo",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    config = calls[0]["kwargs"]["config"]
+    assert config["model"]["name"] == "tinytest"
+    assert config["model"]["architecture"] == "llama"
+    assert config["eval"]["prompt_source"] == "advbench"
+
+
+def test_metadata_carries_exact_harmfulqa_provenance(tmp_path, monkeypatch):
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "harmfulqa", "prompt_partition": "calibration", "output_dir": str(tmp_path / "out"),
+    })
+    fake_records = [
+        {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "manifest-abc"}
+        for i in range(4)
+    ]
+    monkeypatch.setattr(steer_sweep, "load_harmfulqa_partition", lambda partition: fake_records)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    extra = calls[0]["kwargs"]["extra"]
+    assert extra == {
+        "harmfulqa_partition": "calibration",
+        "harmfulqa_manifest_hash": "manifest-abc",
+        "harmfulqa_record_count": 4,
+    }
+
+
+def test_metadata_carries_the_resolved_partition_when_supplied_through_the_cli_override(tmp_path, monkeypatch):
+    """The eval config says calibration; --partition overrides it to development, and the
+    metadata must reflect the CLI-resolved value, not the YAML default."""
+    model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "harmfulqa", "prompt_partition": "calibration", "output_dir": str(tmp_path / "out"),
+    })
+    fake_records = [
+        {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "manifest-xyz"}
+        for i in range(2)
+    ]
+    calls_to_loader = []
+
+    def fake_loader(partition):
+        calls_to_loader.append(partition)
+        return fake_records
+
+    monkeypatch.setattr(steer_sweep, "load_harmfulqa_partition", fake_loader)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml),
+        "--side", "it", "--partition", "development",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    assert calls_to_loader == ["development"]  # the CLI override, not the YAML's "calibration"
+    extra = calls[0]["kwargs"]["extra"]
+    assert extra["harmfulqa_partition"] == "development"
+    assert calls[0]["kwargs"]["config"]["cli"]["partition"] == "development"
+
+
+def test_write_run_metadata_is_called_before_setup_logging(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    order = []
+
+    def fake_write_run_metadata(*a, **k):
+        order.append("write_run_metadata")
+        raise _MetadataSentinel()
+
+    monkeypatch.setattr(steer_sweep, "write_run_metadata", fake_write_run_metadata)
+    monkeypatch.setattr(steer_sweep, "setup_logging", lambda *a, **k: order.append("setup_logging"))
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    assert order == ["write_run_metadata"]  # setup_logging never ran
+
+
+def test_a_metadata_mismatch_prevents_all_later_side_effects(tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_advbench_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+    _forbid(monkeypatch, "sync_to_hub")
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    assert len(calls) == 1  # metadata was attempted exactly once, then main() stopped

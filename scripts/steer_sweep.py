@@ -25,7 +25,7 @@ import json
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import torch
 
@@ -108,6 +108,12 @@ def resolve_harmfulqa_partition(cfg: "SteerSweepConfig", cli_partition: Optional
             f"one of {HARMFULQA_SWEEP_PARTITIONS}; got {partition!r}"
         )
     return partition
+
+
+def build_run_config(model_cfg: ModelConfig, cfg: "SteerSweepConfig", args: argparse.Namespace) -> Dict[str, Any]:
+    """The resolved run identity for `write_run_metadata`: the model/eval dataclasses
+    plus the complete parsed CLI namespace, including defaulted values, under `cli`."""
+    return {"model": asdict(model_cfg), "eval": asdict(cfg), "cli": vars(args)}
 
 
 def output_source_segment(prompt_source: str, partition: Optional[str]) -> Path:
@@ -368,11 +374,11 @@ def main():
 
     tag = run_tag(args.side, args)
     out_root = Path(cfg.output_dir) / model_cfg.name / output_source_segment(cfg.prompt_source, partition) / tag
-    out_root.mkdir(parents=True, exist_ok=True)
-    log = setup_logging(out_root / "steer_sweep.log")
 
+    # Read-only preparation for the metadata identity check below -- loading prompts
+    # (and, for HarmfulQA, the frozen manifest partition they came from) mutates
+    # nothing on disk, so it is safe to do before the check that guards every write.
     records = load_prompts(cfg.prompt_source, cfg.n_prompts, args.seed, partition)
-    log.info(f"{len(records)} prompts from {cfg.prompt_source}" + (f" partition={partition}" if cfg.prompt_source == "harmfulqa" else ""))
 
     run_meta_extra = None
     if cfg.prompt_source == "harmfulqa":
@@ -382,10 +388,18 @@ def main():
             "harmfulqa_manifest_hash": next(iter(manifest_hashes)) if len(manifest_hashes) == 1 else None,
             "harmfulqa_record_count": len(records),
         }
-    write_run_metadata(out_root, config={
-        "model": asdict(model_cfg), "eval": asdict(cfg),
-        "side": args.side, "random_control": args.random_control, "seed": args.seed,
-    }, extra=run_meta_extra)
+    write_run_metadata(
+        out_root,
+        config=build_run_config(model_cfg, cfg, args),
+        extra=run_meta_extra,
+        argv=list(sys.argv),
+    )
+
+    # Nothing below may run until the identity check above has succeeded: the log is
+    # not initialised and no model/tokenizer/vectors are loaded before this point -- a
+    # mismatched resume fails here, before it can touch anything.
+    log = setup_logging(out_root / "steer_sweep.log")
+    log.info(f"{len(records)} prompts from {cfg.prompt_source}" + (f" partition={partition}" if cfg.prompt_source == "harmfulqa" else ""))
 
     # Vectors come from the activations for this pair, at the response readout.
     if args.vectors:

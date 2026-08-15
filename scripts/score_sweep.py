@@ -63,6 +63,17 @@ def load_references(path: Optional[str]) -> Dict[str, str]:
     return {r["id"]: r.get("response", "") for r in read_jsonl(Path(path))}
 
 
+def build_run_config(args: argparse.Namespace, input_files: List[Path]) -> Dict[str, object]:
+    """The resolved run identity for `write_run_metadata`: the complete parsed CLI
+    namespace (including defaulted values), the resolved ordered input JSONL paths this
+    run discovered, and the active direct metric names."""
+    return {
+        "cli": vars(args),
+        "input_files": [str(p) for p in input_files],
+        "metrics": list(METRICS),
+    }
+
+
 def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str, str],
               min_length: int, repetition_threshold: float) -> Dict:
     """Screen and judge a single record. Pure with respect to shared state."""
@@ -249,26 +260,31 @@ def main():
 
     sweep = Path(args.sweep_dir)
     out_dir = Path(args.output_dir) if args.output_dir else sweep / "scored"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    log = setup_logging(out_dir / "score_sweep.log")
 
+    # Read-only preparation for the metadata identity check below -- discovering input
+    # file names and reading small reference files mutates nothing in out_dir.
     files = sorted(p for p in sweep.glob("*.jsonl"))
     if not files:
         parser.error(f"no .jsonl in {sweep}")
-    log.info(f"{len(files)} files to score in {sweep}")
 
     it_ref = load_references(args.it_baseline)
     dpo_ref = load_references(args.dpo_baseline)
+
+    write_run_metadata(
+        out_dir,
+        config=build_run_config(args, files),
+        argv=list(sys.argv),
+    )
+
+    # Nothing below may run until the identity check above has succeeded: the log is
+    # not initialised and no judge client is constructed before this point -- a
+    # mismatched resume fails here, before it can touch anything.
+    log = setup_logging(out_dir / "score_sweep.log")
+    log.info(f"{len(files)} files to score in {sweep}")
     if it_ref and dpo_ref:
         log.info(f"Steering Shift references: {len(it_ref)} IT, {len(dpo_ref)} DPO")
     else:
         log.warning("No reference pair given -- Steering Shift will be skipped")
-
-    write_run_metadata(out_dir, config={
-        "sweep_dir": str(sweep), "judge_model": args.judge_model,
-        "min_length": args.min_length, "repetition_threshold": args.repetition_threshold,
-        "it_baseline": args.it_baseline, "dpo_baseline": args.dpo_baseline,
-    })
 
     judge = Judge(JudgeConfig(model_name=args.judge_model, server_url=args.judge_url))
 
