@@ -55,7 +55,7 @@ from tqdm import tqdm
 from steering.activations import LastTokenCapture, build_input_text
 from steering.artifacts import GpuMonitor, TensorCheckpoint, sync_to_hub, write_run_metadata
 from steering.config import ModelConfig
-from steering.data import load_hh_rlhf_test, load_harmfulqa
+from steering.data import load_hh_rlhf_test, load_harmfulqa_partition
 from steering.models import load_model, load_tokenizer
 from steering.utils import load_yaml, resolve_device, set_all_seeds, setup_logging
 
@@ -71,7 +71,13 @@ class LayerProfileConfig:
     # Options: "hh_rlhf", "harmfulqa", "mixed"
     prompt_source: str = "hh_rlhf"
 
-    # Number of prompts to use.
+    # Which frozen manifest partition to use when prompt_source == "harmfulqa". Protocol
+    # construction (Section 6) is the only partition permitted here; membership and
+    # order come entirely from the manifest, not from n_prompts/seed.
+    prompt_partition: Optional[str] = None
+
+    # Number of prompts to use. Not consulted when prompt_source == "harmfulqa": the
+    # named partition is loaded in full.
     n_prompts: int = 100
 
     # Readout position: "prompt_last" or "response_last".
@@ -118,8 +124,9 @@ def main():
 
     model_cfg = ModelConfig.from_yaml(args.model_config)
     eval_cfg = LayerProfileConfig.from_yaml(args.eval_config)
+    validate_harmfulqa_construction_config(eval_cfg)
 
-    output_root = Path(eval_cfg.output_dir) / model_cfg.name
+    output_root = output_root_for(eval_cfg.output_dir, model_cfg.name, eval_cfg.prompt_source, eval_cfg.prompt_partition)
     output_root.mkdir(parents=True, exist_ok=True)
 
     log = setup_logging(output_root / "layer_profile.log")
@@ -127,20 +134,15 @@ def main():
     log.info(f"Output: {output_root}")
     log.info(f"Architecture: {model_cfg.architecture}, layers: {model_cfg.num_layers}")
 
-    write_run_metadata(
-        output_root,
-        config={"model": asdict(model_cfg), "eval": asdict(eval_cfg), "seed": args.seed},
-    )
-
     if args.no_resume:
         for stale in output_root.glob("*.partial.pt"):
             stale.unlink()
             log.info(f"Removed checkpoint {stale}")
 
     # Load prompts
-    log.info(f"Loading {eval_cfg.n_prompts} prompts from {eval_cfg.prompt_source}")
+    log.info(f"Loading prompts from {eval_cfg.prompt_source}")
     log.info(f"Readout position: {eval_cfg.token_position}")
-    prompts = load_prompts(eval_cfg.prompt_source, eval_cfg.n_prompts, args.seed)
+    prompts = load_prompts(eval_cfg.prompt_source, eval_cfg.n_prompts, args.seed, eval_cfg.prompt_partition)
     if eval_cfg.token_position == "response_last":
         prompts = [p for p in prompts if p.get("chosen")]
         if not prompts:
@@ -148,6 +150,20 @@ def main():
                 "response_last needs reference responses; prompt_source must be hh_rlhf"
             )
     log.info(f"Loaded {len(prompts)} prompts")
+
+    run_meta_extra = None
+    if eval_cfg.prompt_source == "harmfulqa":
+        prov = harmfulqa_provenance(prompts)
+        run_meta_extra = {
+            "harmfulqa_partition": prov["partition"],
+            "harmfulqa_manifest_hash": prov["manifest_hash"],
+            "harmfulqa_record_count": len(prompts),
+        }
+    write_run_metadata(
+        output_root,
+        config={"model": asdict(model_cfg), "eval": asdict(eval_cfg), "seed": args.seed},
+        extra=run_meta_extra,
+    )
 
     # Load tokenizer
     tokenizer_path = model_cfg.tokenizer_id or model_cfg.it_model
@@ -178,9 +194,14 @@ def main():
 
     log.info(f"GPU usage: {json.dumps(gpu.summary())}")
 
-    # Save raw activations for later reuse (steering vector building).
-    torch.save({"it": activations_it, "dpo": activations_dpo},
-               output_root / "activations.pt")
+    # Save raw activations for later reuse (steering vector building). For the
+    # manifest-backed HarmfulQA path, provenance travels with the tensors so a later
+    # consumer (steer_sweep's vector construction) can verify what produced them rather
+    # than trust a directory name.
+    activation_payload = {"it": activations_it, "dpo": activations_dpo}
+    if eval_cfg.prompt_source == "harmfulqa":
+        activation_payload.update(harmfulqa_provenance(prompts))
+    torch.save(activation_payload, output_root / "activations.pt")
     log.info(f"Saved raw activations to {output_root}/activations.pt")
 
     # Both tensors are on disk in their final form; the partials are now redundant.
@@ -213,11 +234,72 @@ def main():
 # Prompt loading
 
 
-def load_prompts(source: str, n: int, seed: int) -> List[Dict[str, str]]:
+def output_root_for(base_output_dir: str, model_name: str, prompt_source: str, prompt_partition: Optional[str]) -> Path:
+    """<output_dir>/<model_name>/, with a partition-specific suffix for manifest-backed
+    HarmfulQA construction so it cannot resume on a historical or other-partition
+    checkpoint."""
+    root = Path(base_output_dir) / model_name
+    if prompt_source == "harmfulqa":
+        root = root / prompt_partition
+    return root
+
+
+def validate_harmfulqa_construction_config(cfg: LayerProfileConfig) -> None:
+    """Protocol construction (Section 6) uses the frozen manifest, not ad hoc sampling.
+
+    `mixed` always includes a 50/50 ad hoc HarmfulQA component (see `load_prompts`), so
+    it is not a protocol construction path and is rejected outright rather than silently
+    drawing HarmfulQA prompts outside the manifest.
+    """
+    if cfg.prompt_source == "harmfulqa":
+        if cfg.prompt_partition != "construction":
+            raise ValueError(
+                "prompt_source='harmfulqa' requires prompt_partition='construction' "
+                f"(the only protocol construction partition); got {cfg.prompt_partition!r}"
+            )
+        if cfg.token_position != "prompt_last":
+            raise ValueError(
+                "prompt_source='harmfulqa' requires token_position='prompt_last'; "
+                f"got {cfg.token_position!r}"
+            )
+    elif cfg.prompt_source == "mixed":
+        raise ValueError(
+            "prompt_source='mixed' is not a protocol construction path -- it always "
+            "includes an ad hoc HarmfulQA component outside the frozen manifest. Use "
+            "'hh_rlhf', or 'harmfulqa' with prompt_partition='construction', instead."
+        )
+
+
+def harmfulqa_provenance(prompts: List[Dict]) -> Dict[str, object]:
+    """Ordered source_ids/prompt_hashes plus the shared partition/manifest_hash, from
+    HarmfulQA-partition records that must all belong to one partition and manifest.
+
+    These arrays are saved alongside the activation tensors and align exactly with
+    tensor prompt dimension 1, since `prompts` is never sliced or reordered after
+    `load_harmfulqa_partition` returns it.
+    """
+    manifest_hashes = {p["manifest_hash"] for p in prompts}
+    partitions = {p["partition"] for p in prompts}
+    if len(manifest_hashes) > 1 or len(partitions) > 1:
+        raise ValueError("prompts do not share a single partition/manifest_hash")
+    return {
+        "source_ids": [p["source_id"] for p in prompts],
+        "prompt_hashes": [p["prompt_hash"] for p in prompts],
+        "partition": next(iter(partitions)) if partitions else None,
+        "manifest_hash": next(iter(manifest_hashes)) if manifest_hashes else None,
+    }
+
+
+def load_prompts(source: str, n: int, seed: int, partition: Optional[str] = None) -> List[Dict[str, str]]:
     """Load records with a "prompt" string and, where available, a "chosen" response.
 
     For HH-RLHF, we extract just the first user turn (single-turn for clean activations)
     and carry its reference response through for response_last readout.
+
+    For HarmfulQA, `partition` must be "construction" (enforced by
+    `validate_harmfulqa_construction_config` before this is called); the entire
+    partition is returned in manifest order -- `n` and `seed` play no part in
+    membership or order.
     """
     if source == "hh_rlhf":
         records = load_hh_rlhf_test(n=n, seed=seed)
@@ -237,12 +319,27 @@ def load_prompts(source: str, n: int, seed: int) -> List[Dict[str, str]]:
             out.append({"prompt": text, "chosen": rec.get("chosen")})
         return out[:n]
     elif source == "harmfulqa":
-        return [{"prompt": r["prompt"], "chosen": None} for r in load_harmfulqa(n=n, seed=seed)]
+        if partition != "construction":
+            raise ValueError(
+                "prompt_source='harmfulqa' requires prompt_partition='construction'; "
+                f"got {partition!r}"
+            )
+        records = load_harmfulqa_partition("construction")
+        return [
+            {
+                "prompt": r["prompt"], "chosen": None,
+                "source_id": r["source_id"], "prompt_hash": r["prompt_hash"],
+                "partition": r["partition"], "permuted_position": r["permuted_position"],
+                "manifest_hash": r["manifest_hash"],
+            }
+            for r in records
+        ]
     elif source == "mixed":
-        n_each = n // 2
-        a = load_prompts("hh_rlhf", n_each, seed)
-        b = load_prompts("harmfulqa", n - n_each, seed)
-        return a + b
+        raise ValueError(
+            "prompt_source='mixed' is not a protocol construction path -- it always "
+            "includes an ad hoc HarmfulQA component outside the frozen manifest. Use "
+            "'hh_rlhf', or 'harmfulqa' with prompt_partition='construction', instead."
+        )
     else:
         raise ValueError(f"Unknown prompt source: {source!r}")
 

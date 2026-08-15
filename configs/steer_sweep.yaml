@@ -1,11 +1,18 @@
 # Steering sweep, one direction per invocation (--side it | dpo).
 #
 # Scope is deliberately smaller than the earlier 16 lambdas x 1000 prompts. That
-# grid exists already; what is missing is a correct one. 7 settings x 300 prompts is
-# enough to locate the usable range and to test whether behaviour tracks the geometry,
-# at roughly an eighth of the generation cost.
+# grid exists already; what is missing is a correct one. 7 settings x a frozen
+# partition is enough to locate the usable range and to test whether behaviour tracks
+# the geometry, at roughly an eighth of the generation cost.
 
 prompt_source: harmfulqa
+
+# calibration is the safe default for coefficient selection (protocol Section 7).
+# Development pilots override this with --partition development on the CLI.
+# construction and final_evaluation are rejected by the script itself.
+prompt_partition: calibration
+
+# Not consulted for prompt_source=harmfulqa: the named partition is loaded in full.
 n_prompts: 300
 
 # Magnitudes. --side supplies the sign: +lambda on the IT checkpoint, -lambda on DPO.
@@ -27,8 +34,10 @@ vector_normalise: null
 positions: all
 preserve_norm: false
 
-# Vectors are built from the response-token activations, matching Eq. 1.
-activations_dir: outputs/layer_profile_response_token
+# Construction-profile root: the vector is always built from
+# <activations_dir>/<model_name>/construction/activations.pt, the frozen manifest's
+# construction partition -- independent of this sweep's own prompt_source/partition.
+activations_dir: outputs/layer_profile
 
 max_new_tokens: 512
 batch_size: null      # null -> sized from free VRAM

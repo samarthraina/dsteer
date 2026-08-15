@@ -1,17 +1,18 @@
 # Layer profile analysis config.
 # Computes per-layer cosine similarity, norm differences, and SVD/PC0 explained variance.
 
-# Where to draw prompts from. Options: "hh_rlhf", "harmfulqa", "mixed"
-# We use hh_rlhf because it matches DPO's training distribution
-# (the activation difference should be cleanest on prompts similar to training).
-prompt_source: hh_rlhf
+# Protocol construction (Section 5/6): the frozen manifest's construction partition,
+# loaded in full through load_harmfulqa_partition -- not sampled, truncated, or
+# reshuffled. n_prompts is not consulted for this source.
+prompt_source: harmfulqa
+prompt_partition: construction
 
-# Number of prompts to extract activations from.
-# 100 is enough for a stable SVD with a hidden dim of 4096.
-n_prompts: 2000
+# prompt_last is the protocol's direction-construction readout (Section 6); required
+# whenever prompt_source is harmfulqa.
+token_position: prompt_last
 
 # Maximum input token length.
 max_input_length: 512
 
-# Output location.
+# Output location. The construction run lands under <output_dir>/<model_name>/construction/.
 output_dir: outputs/layer_profile

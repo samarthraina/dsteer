@@ -33,11 +33,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from steering.artifacts import GpuMonitor, sync_to_hub, write_run_metadata
 from steering.config import ModelConfig
-from steering.data import load_advbench, load_harmfulqa, load_hh_rlhf_test
+from steering.data import VALID_HARMFULQA_PARTITIONS, load_advbench, load_harmfulqa_partition, load_hh_rlhf_test
 from steering.generate import build_chat_prompts, generate_batched, suggest_batch_size
 from steering.models import load_model, load_tokenizer
+from steering.splits import load_manifest, validate_manifest_identity
 from steering.steer import ActivationSteering, build_vectors, random_vectors_like, steered_layers
 from steering.utils import append_jsonl, load_yaml, read_jsonl, set_all_seeds, setup_logging
+
+HARMFULQA_SWEEP_PARTITIONS = ("development", "calibration")
 
 
 @dataclass
@@ -46,6 +49,15 @@ class SteerSweepConfig:
 
     # Prompts
     prompt_source: str = "harmfulqa"       # harmfulqa | advbench | hh_rlhf
+
+    # Frozen manifest partition, when prompt_source == "harmfulqa". Only "development"
+    # or "calibration" are allowed here -- construction is direction-estimation data,
+    # and final_evaluation is reserved for the later confirmatory runner. A CLI
+    # --partition, if given, overrides this.
+    prompt_partition: Optional[str] = None
+
+    # Not consulted when prompt_source == "harmfulqa": the named partition is loaded in
+    # full, with no sampling.
     n_prompts: int = 300
 
     # Steering strengths, given as magnitudes; the sign comes from --side.
@@ -76,16 +88,132 @@ class SteerSweepConfig:
 
 
 LOADERS = {
-    "harmfulqa": load_harmfulqa,
     "advbench": load_advbench,
     "hh_rlhf": load_hh_rlhf_test,
 }
 
 
-def load_prompts(source: str, n: int, seed: int) -> List[Dict]:
+def resolve_harmfulqa_partition(cfg: "SteerSweepConfig", cli_partition: Optional[str]) -> Optional[str]:
+    """CLI overrides YAML. For prompt_source == "harmfulqa" the result must be exactly
+    "development" or "calibration" -- construction is direction-estimation data, and
+    final_evaluation is reserved for the later confirmatory runner, not this grid
+    search. Never falls back silently: an invalid or missing partition raises.
+    """
+    partition = cli_partition if cli_partition is not None else cfg.prompt_partition
+    if cfg.prompt_source != "harmfulqa":
+        return partition
+    if partition not in HARMFULQA_SWEEP_PARTITIONS:
+        raise ValueError(
+            "prompt_source='harmfulqa' requires --partition/prompt_partition to be "
+            f"one of {HARMFULQA_SWEEP_PARTITIONS}; got {partition!r}"
+        )
+    return partition
+
+
+def output_source_segment(prompt_source: str, partition: Optional[str]) -> Path:
+    """The <prompt_source>[/<partition>] segment of the output path -- partitioned for
+    HarmfulQA so development, calibration, and any historical outputs cannot resume on
+    each other."""
+    if prompt_source == "harmfulqa":
+        return Path("harmfulqa") / partition
+    return Path(prompt_source)
+
+
+def reject_hold_out_for_harmfulqa(prompt_source: str, hold_out: int) -> None:
+    """Construction and evaluation partitions are already disjoint by manifest for
+    HarmfulQA; a nonzero --hold-out is obsolete there and could misalign the frozen
+    vector provenance."""
+    if prompt_source == "harmfulqa" and hold_out:
+        raise ValueError(
+            "--hold-out must be 0 for prompt_source='harmfulqa': construction and "
+            "evaluation partitions are already disjoint by manifest, and dropping "
+            "leading construction tensors could misalign the frozen vector provenance."
+        )
+
+
+def load_prompts(source: str, n: int, seed: int, partition: Optional[str] = None) -> List[Dict]:
+    if source == "harmfulqa":
+        return load_harmfulqa_partition(partition)
     if source not in LOADERS:
-        raise ValueError(f"unknown prompt_source {source!r}; use one of {sorted(LOADERS)}")
+        raise ValueError(f"unknown prompt_source {source!r}; use one of {sorted(LOADERS) + ['harmfulqa']}")
     return LOADERS[source](n=n, seed=seed)[:n]
+
+
+def _default_harmfulqa_manifest_path() -> Path:
+    """manifests/harmfulqa_v1.json relative to the repository root, independent of the
+    caller's current working directory."""
+    return Path(__file__).resolve().parents[1] / "manifests" / "harmfulqa_v1.json"
+
+
+def _construction_records(manifest: Dict) -> List[Dict]:
+    """This manifest's construction-partition records, in ascending permuted_position --
+    the exact order `layer_profile` extracted activations in."""
+    return sorted(
+        (e for e in manifest["records"] if e["partition"] == "construction"),
+        key=lambda e: e["permuted_position"],
+    )
+
+
+def validate_construction_activations(blob: Dict, manifest_path: Optional[Union[str, Path]] = None) -> None:
+    """Guard the vector-construction input against a legacy, mismatched, or drifted
+    artifact -- checked against the frozen manifest itself, not just internal
+    self-consistency.
+
+    `layer_profile`'s manifest-backed construction path always writes `source_ids`,
+    `prompt_hashes`, `partition`, and `manifest_hash` alongside `it`/`dpo`. A tensor
+    missing them is a pre-manifest (Task 002/003) artifact or came from a different
+    partition. Beyond that, this loads and hash-verifies the committed manifest,
+    validates its frozen identity, and requires the tensor's ordered source_ids and
+    prompt_hashes to exactly match the construction partition's records -- matching
+    lengths and a correct top-level manifest_hash alone would still let a corrupted,
+    reordered, or drifted artifact through.
+    """
+    required = ("source_ids", "prompt_hashes", "partition", "manifest_hash")
+    missing = [k for k in required if k not in blob]
+    if missing:
+        raise ValueError(
+            f"activations.pt is missing {missing} -- looks like a legacy (pre-manifest) "
+            "tensor with only 'it'/'dpo'; rerun layer_profile with the manifest-backed "
+            "construction config"
+        )
+    if blob["partition"] != "construction":
+        raise ValueError(f"activations.pt partition is {blob['partition']!r}, expected 'construction'")
+
+    path = Path(manifest_path) if manifest_path is not None else _default_harmfulqa_manifest_path()
+    manifest = load_manifest(path)
+    validate_manifest_identity(manifest)
+
+    if blob["manifest_hash"] != manifest["manifest_hash"]:
+        raise ValueError(
+            f"activations.pt manifest_hash {blob['manifest_hash']!r} does not match the "
+            f"frozen manifest {manifest['manifest_hash']!r}"
+        )
+
+    construction = _construction_records(manifest)
+    expected_source_ids = [e["source_id"] for e in construction]
+    expected_prompt_hashes = [e["prompt_hash"] for e in construction]
+
+    if blob["source_ids"] != expected_source_ids:
+        raise ValueError(
+            "activations.pt source_ids do not exactly match the construction partition's "
+            "ordered source IDs -- altered, reordered, or drifted provenance"
+        )
+    if blob["prompt_hashes"] != expected_prompt_hashes:
+        raise ValueError(
+            "activations.pt prompt_hashes do not exactly match the construction partition's "
+            "ordered prompt hashes -- altered, reordered, or drifted provenance"
+        )
+
+    it_shape, dpo_shape = tuple(blob["it"].shape), tuple(blob["dpo"].shape)
+    if it_shape != dpo_shape:
+        raise ValueError(f"activations.pt it/dpo tensor shapes differ: {it_shape} vs {dpo_shape}")
+
+    n_prompts = it_shape[1]
+    if n_prompts != len(construction):
+        raise ValueError(
+            f"activations.pt prompt dimension is {n_prompts}, expected {len(construction)} "
+            "(the construction partition's record count)"
+        )
 
 
 def pending(path: Path, records: List[Dict]) -> List[Dict]:
@@ -204,7 +332,15 @@ def main():
         "--hold-out", type=int, default=0,
         help="Drop this many leading samples when building the vector. Use the "
              "sweep's prompt count when the vector and the evaluation come from "
-             "the same corpus, so the two sets are disjoint.",
+             "the same corpus, so the two sets are disjoint. Must be 0 for "
+             "prompt_source='harmfulqa': construction and evaluation partitions are "
+             "already disjoint by manifest.",
+    )
+    parser.add_argument(
+        "--partition", choices=sorted(VALID_HARMFULQA_PARTITIONS), default=None,
+        help="HarmfulQA partition, overriding prompt_partition in the eval config. "
+             "Only 'development' or 'calibration' are accepted for this grid-search "
+             "script when prompt_source='harmfulqa'.",
     )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--sync", action="store_true")
@@ -215,17 +351,29 @@ def main():
     model_cfg = ModelConfig.from_yaml(args.model_config)
     cfg = SteerSweepConfig.from_yaml(args.eval_config)
 
+    partition = resolve_harmfulqa_partition(cfg, args.partition)
+    reject_hold_out_for_harmfulqa(cfg.prompt_source, args.hold_out)
+
     tag = run_tag(args.side, args)
-    out_root = Path(cfg.output_dir) / model_cfg.name / cfg.prompt_source / tag
+    out_root = Path(cfg.output_dir) / model_cfg.name / output_source_segment(cfg.prompt_source, partition) / tag
     out_root.mkdir(parents=True, exist_ok=True)
     log = setup_logging(out_root / "steer_sweep.log")
+
+    records = load_prompts(cfg.prompt_source, cfg.n_prompts, args.seed, partition)
+    log.info(f"{len(records)} prompts from {cfg.prompt_source}" + (f" partition={partition}" if cfg.prompt_source == "harmfulqa" else ""))
+
+    run_meta_extra = None
+    if cfg.prompt_source == "harmfulqa":
+        manifest_hashes = {r["manifest_hash"] for r in records}
+        run_meta_extra = {
+            "harmfulqa_partition": partition,
+            "harmfulqa_manifest_hash": next(iter(manifest_hashes)) if len(manifest_hashes) == 1 else None,
+            "harmfulqa_record_count": len(records),
+        }
     write_run_metadata(out_root, config={
         "model": asdict(model_cfg), "eval": asdict(cfg),
         "side": args.side, "random_control": args.random_control, "seed": args.seed,
-    })
-
-    records = load_prompts(cfg.prompt_source, cfg.n_prompts, args.seed)
-    log.info(f"{len(records)} prompts from {cfg.prompt_source}")
+    }, extra=run_meta_extra)
 
     # Vectors come from the activations for this pair, at the response readout.
     if args.vectors:
@@ -243,9 +391,10 @@ def main():
                 parser.error(f"layers {bad} outside 0..{model_cfg.num_layers - 1}")
         else:
             layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
-        acts = Path(cfg.activations_dir) / model_cfg.name / "activations.pt"
+        acts = Path(cfg.activations_dir) / model_cfg.name / "construction" / "activations.pt"
         if not acts.exists():
             raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")
+        validate_construction_activations(torch.load(acts, map_location="cpu"))
         vectors = build_vectors(acts, method=cfg.vector_method, layers=layers,
                                 normalise=cfg.vector_normalise,
                                 skip_first=args.hold_out)
