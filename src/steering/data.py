@@ -15,6 +15,8 @@ from typing import Dict, List, Optional
 
 from datasets import load_dataset
 
+from steering.splits import prompt_hash
+
 log = logging.getLogger(__name__)
 
 
@@ -100,16 +102,42 @@ def load_hh_rlhf_test(n: Optional[int] = None, seed: int = 42) -> List[Dict[str,
     return records
 
 
-def load_harmfulqa(n: Optional[int] = None, seed: int = 42) -> List[Dict[str, str]]:
-    """Load HarmfulQA prompts (non-optimized adversarial questions)."""
-    ds = load_dataset("declare-lab/HarmfulQA", split="train")
+HARMFULQA_CONFIG = "default"
+# Pinned per protocol Section 5. Source validation at this revision found 1,960 raw
+# rows / 22 verbatim duplicate pairs -- an unpinned "latest" default would silently
+# invalidate that count and the manifest built from it.
+HARMFULQA_REVISION = "6f1a78aed47d16c0695e4595d0159abc38197bfd"
+
+
+def load_harmfulqa(
+    n: Optional[int] = None, seed: int = 42, revision: Optional[str] = HARMFULQA_REVISION,
+) -> List[Dict[str, str]]:
+    """Load HarmfulQA prompts (non-optimized adversarial questions).
+
+    `id`/`source_id`/`source_index` are the row's position in the unshuffled dataset at
+    `revision`, assigned before any sampling -- the same source row keeps the same
+    identity no matter what `n` or `seed` a caller requests. Kept out of the
+    shuffle/select call below so existing sampling behavior for `n` is unchanged.
+
+    Does not exclude the 22 verbatim duplicate rows documented in the split manifest --
+    that exclusion applies to the frozen partition manifest (`steering.splits`), not to
+    this general-purpose loader used for ad hoc sampling elsewhere.
+    """
+    ds = load_dataset("declare-lab/HarmfulQA", name=HARMFULQA_CONFIG, split="train", revision=revision)
+    ds = ds.map(lambda _row, idx: {"_source_index": idx}, with_indices=True)
     if n is not None and n < len(ds):
         ds = ds.shuffle(seed=seed).select(range(n))
     records = []
-    for i, row in enumerate(ds):
+    for row in ds:
+        idx = row["_source_index"]
+        source_id = f"harmfulqa-{idx}"
+        prompt = row["question"]
         records.append({
-            "id": f"harmfulqa-{i}",
-            "prompt": row["question"],
+            "id": source_id,
+            "source_id": source_id,
+            "source_index": idx,
+            "prompt_hash": prompt_hash(prompt),
+            "prompt": prompt,
         })
     log.info(f"Loaded HarmfulQA: {len(records)} prompts")
     return records
