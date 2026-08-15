@@ -267,3 +267,137 @@ def load_manifest(path: Union[str, Path]) -> Dict[str, Any]:
     if stored != recomputed:
         raise SplitError(f"manifest hash mismatch at {path}: stored {stored!r}, recomputed {recomputed!r}")
     return payload
+
+
+# The one manifest this task is reviewed against (protocol Section 5 / Task 002,
+# commit ad96b54654e823f9ce58910b8df2274cffcc4f1b). `load_manifest` already verifies
+# the stored hash against a fresh recomputation of the file's own content; this pins
+# that hash -- and everything upstream of it -- to the single value a partition loader
+# is allowed to trust, so a manifest swapped in from elsewhere is rejected even if it is
+# internally self-consistent.
+FROZEN_HARMFULQA_IDENTITY: Dict[str, Any] = {
+    "schema_version": SCHEMA_VERSION,
+    "repository": "declare-lab/HarmfulQA",
+    "config": "default",
+    "split": "train",
+    "revision": "6f1a78aed47d16c0695e4595d0159abc38197bfd",
+    "seed": 20260815,
+    "algorithm": PERMUTATION_ALGORITHM,
+    "manifest_hash": "0e1d0a8177d59eba601141a74da19a189527821dab573e203a3261cff54eec70",
+    "raw_record_count": RAW_RECORD_COUNT,
+    "retained_record_count": RETAINED_RECORD_COUNT,
+    "excluded_record_count": EXPECTED_DUPLICATE_PAIRS,
+    "partition_counts": {name: hi - lo for name, lo, hi in PARTITION_BOUNDS},
+}
+
+
+def validate_manifest_identity(
+    manifest: Mapping[str, Any], expected: Mapping[str, Any] = FROZEN_HARMFULQA_IDENTITY,
+) -> None:
+    """Check a loaded manifest against a frozen identity before it selects any
+    partition. Raises `SplitError` listing every field that disagrees.
+    """
+    mismatches: List[str] = []
+
+    def check(label: str, actual: Any, want: Any) -> None:
+        if actual != want:
+            mismatches.append(f"{label}: expected {want!r}, got {actual!r}")
+
+    check("schema_version", manifest.get("schema_version"), expected["schema_version"])
+    dataset = manifest.get("dataset", {})
+    for key in ("repository", "config", "split", "revision"):
+        check(f"dataset.{key}", dataset.get(key), expected[key])
+    permutation = manifest.get("permutation", {})
+    check("permutation.seed", permutation.get("seed"), expected["seed"])
+    check("permutation.algorithm", permutation.get("algorithm"), expected["algorithm"])
+    check("manifest_hash", manifest.get("manifest_hash"), expected["manifest_hash"])
+    for key in ("raw_record_count", "retained_record_count", "excluded_record_count"):
+        check(key, manifest.get(key), expected[key])
+    check("partition_counts", manifest.get("partition_counts"), expected["partition_counts"])
+
+    if mismatches:
+        raise SplitError("manifest does not match the frozen identity: " + "; ".join(mismatches))
+
+
+def validate_source_binding(manifest: Mapping[str, Any], raw_records: Sequence[Mapping[str, Any]]) -> None:
+    """Cross-check freshly reconstructed raw source rows against a validated manifest
+    before any partition is returned. Each `raw_records` entry must carry `source_id`,
+    `source_index`, and `prompt_hash`. Raises `SplitError` on any mismatch -- a row is
+    never silently skipped or repaired.
+    """
+    if len(raw_records) != manifest["raw_record_count"]:
+        raise SplitError(f"expected {manifest['raw_record_count']} raw rows, got {len(raw_records)}")
+
+    raw_by_id: Dict[str, Mapping[str, Any]] = {}
+    for rec in raw_records:
+        sid = rec["source_id"]
+        if sid in raw_by_id:
+            raise SplitError(f"duplicate source_id reconstructed from raw source: {sid!r}")
+        raw_by_id[sid] = rec
+    if len({r["source_index"] for r in raw_records}) != len(raw_records):
+        raise SplitError("duplicate source_index reconstructed from raw source")
+
+    retained_entries = manifest["records"]
+    if len(retained_entries) != manifest["retained_record_count"]:
+        raise SplitError("manifest retained_record_count does not match its own records list")
+
+    retained_ids = set()
+    for entry in retained_entries:
+        sid = entry["source_id"]
+        if sid in retained_ids:
+            raise SplitError(f"manifest lists retained source_id {sid!r} more than once")
+        retained_ids.add(sid)
+        raw = raw_by_id.get(sid)
+        if raw is None:
+            raise SplitError(f"manifest retained source_id {sid!r} is missing from the raw source")
+        if raw["prompt_hash"] != entry["prompt_hash"]:
+            raise SplitError(f"prompt hash mismatch for retained {sid!r}: source has drifted from the manifest")
+
+    excluded_entries = manifest["duplicate_exclusions"]
+    if len(excluded_entries) != manifest["excluded_record_count"]:
+        raise SplitError("manifest excluded_record_count does not match its own duplicate_exclusions list")
+
+    for excl in excluded_entries:
+        excluded_id = excl["excluded_source_id"]
+        retained_id = excl["retained_source_id"]
+        if excluded_id in retained_ids:
+            raise SplitError(f"excluded source_id {excluded_id!r} also appears retained")
+        raw_excluded = raw_by_id.get(excluded_id)
+        if raw_excluded is None:
+            raise SplitError(f"excluded source_id {excluded_id!r} is missing from the raw source")
+        if retained_id not in retained_ids:
+            raise SplitError(f"exclusion for {excluded_id!r} points to a retained_source_id that is not retained")
+        raw_retained = raw_by_id[retained_id]
+        if raw_excluded["prompt_hash"] != excl["prompt_hash"] or raw_retained["prompt_hash"] != excl["prompt_hash"]:
+            raise SplitError(f"exclusion lineage for {excluded_id!r} does not match recomputed prompt hashes")
+        if raw_retained["source_index"] >= raw_excluded["source_index"]:
+            raise SplitError(f"exclusion for {excluded_id!r} does not retain the lower source index")
+
+    retained_hashes = [e["prompt_hash"] for e in retained_entries]
+    if len(set(retained_hashes)) != len(retained_hashes):
+        raise SplitError("retained prompt hashes are not unique")
+
+    positions = sorted(e["permuted_position"] for e in retained_entries)
+    if positions != list(range(len(retained_entries))):
+        raise SplitError("permuted positions are not exactly contiguous from 0")
+
+    by_partition: Dict[str, List[int]] = {}
+    for entry in retained_entries:
+        by_partition.setdefault(entry["partition"], []).append(entry["permuted_position"])
+    for name, lo, hi in PARTITION_BOUNDS:
+        actual = sorted(by_partition.get(name, []))
+        if actual != list(range(lo, hi)):
+            raise SplitError(f"partition {name!r} does not occupy positions [{lo}, {hi})")
+
+    # No source ID or prompt hash can appear in more than one partition -- guaranteed by
+    # the checks above (each retained source_id/hash appears exactly once in `records`,
+    # each record has exactly one partition), verified explicitly for defense.
+    seen_ids: set = set()
+    seen_hashes: set = set()
+    for entry in retained_entries:
+        if entry["source_id"] in seen_ids:
+            raise SplitError(f"source_id {entry['source_id']!r} appears more than once across partitions")
+        if entry["prompt_hash"] in seen_hashes:
+            raise SplitError(f"prompt_hash {entry['prompt_hash']!r} appears more than once across partitions")
+        seen_ids.add(entry["source_id"])
+        seen_hashes.add(entry["prompt_hash"])

@@ -11,11 +11,17 @@ Sources:
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
 from datasets import load_dataset
 
-from steering.splits import prompt_hash
+from steering.splits import (
+    load_manifest,
+    prompt_hash,
+    validate_manifest_identity,
+    validate_source_binding,
+)
 
 log = logging.getLogger(__name__)
 
@@ -108,6 +114,22 @@ HARMFULQA_CONFIG = "default"
 # invalidate that count and the manifest built from it.
 HARMFULQA_REVISION = "6f1a78aed47d16c0695e4595d0159abc38197bfd"
 
+VALID_HARMFULQA_PARTITIONS = ("construction", "calibration", "final_evaluation", "development")
+
+
+def _harmfulqa_record(source_index: int, prompt: str) -> Dict[str, Any]:
+    """The one place a HarmfulQA row becomes an identity: `source_id`/`id` from its raw
+    position, plus its normalized `prompt_hash` -- shared by `load_harmfulqa` and
+    `load_harmfulqa_partition` so the two never compute identity differently."""
+    source_id = f"harmfulqa-{source_index}"
+    return {
+        "id": source_id,
+        "source_id": source_id,
+        "source_index": source_index,
+        "prompt_hash": prompt_hash(prompt),
+        "prompt": prompt,
+    }
+
 
 def load_harmfulqa(
     n: Optional[int] = None, seed: int = 42, revision: Optional[str] = HARMFULQA_REVISION,
@@ -121,26 +143,65 @@ def load_harmfulqa(
 
     Does not exclude the 22 verbatim duplicate rows documented in the split manifest --
     that exclusion applies to the frozen partition manifest (`steering.splits`), not to
-    this general-purpose loader used for ad hoc sampling elsewhere.
+    this general-purpose loader used for ad hoc sampling elsewhere. For the frozen,
+    manifest-backed partitions, use `load_harmfulqa_partition`.
     """
     ds = load_dataset("declare-lab/HarmfulQA", name=HARMFULQA_CONFIG, split="train", revision=revision)
     ds = ds.map(lambda _row, idx: {"_source_index": idx}, with_indices=True)
     if n is not None and n < len(ds):
         ds = ds.shuffle(seed=seed).select(range(n))
-    records = []
-    for row in ds:
-        idx = row["_source_index"]
-        source_id = f"harmfulqa-{idx}"
-        prompt = row["question"]
-        records.append({
-            "id": source_id,
-            "source_id": source_id,
-            "source_index": idx,
-            "prompt_hash": prompt_hash(prompt),
-            "prompt": prompt,
-        })
+    records = [_harmfulqa_record(row["_source_index"], row["question"]) for row in ds]
     log.info(f"Loaded HarmfulQA: {len(records)} prompts")
     return records
+
+
+def _default_harmfulqa_manifest_path() -> Path:
+    """`manifests/harmfulqa_v1.json` relative to the repository root, independent of the
+    caller's current working directory."""
+    return Path(__file__).resolve().parents[2] / "manifests" / "harmfulqa_v1.json"
+
+
+def load_harmfulqa_partition(
+    partition: str, manifest_path: Optional[Union[str, Path]] = None,
+) -> List[Dict[str, Any]]:
+    """Load one frozen HarmfulQA partition exactly as fixed by the manifest.
+
+    No `n`/`seed`: membership and order are entirely determined by the manifest. Every
+    returned prompt is proven, at load time, against the pinned dataset revision and the
+    manifest's own hash and lineage -- not merely trusted to still match.
+    """
+    if partition not in VALID_HARMFULQA_PARTITIONS:
+        raise ValueError(f"partition must be one of {VALID_HARMFULQA_PARTITIONS}, got {partition!r}")
+
+    path = Path(manifest_path) if manifest_path is not None else _default_harmfulqa_manifest_path()
+    manifest = load_manifest(path)
+    validate_manifest_identity(manifest)
+
+    dataset = manifest["dataset"]
+    ds = load_dataset(
+        dataset["repository"], name=dataset["config"], split=dataset["split"], revision=dataset["revision"],
+    )
+    raw_records = [_harmfulqa_record(i, row["question"]) for i, row in enumerate(ds)]
+    validate_source_binding(manifest, raw_records)
+
+    raw_by_id = {r["source_id"]: r for r in raw_records}
+    selected = [
+        {
+            "id": entry["source_id"],
+            "source_id": entry["source_id"],
+            "source_index": raw_by_id[entry["source_id"]]["source_index"],
+            "prompt": raw_by_id[entry["source_id"]]["prompt"],
+            "prompt_hash": entry["prompt_hash"],
+            "partition": entry["partition"],
+            "permuted_position": entry["permuted_position"],
+            "manifest_hash": manifest["manifest_hash"],
+        }
+        for entry in manifest["records"]
+        if entry["partition"] == partition
+    ]
+    selected.sort(key=lambda r: r["permuted_position"])
+    log.info(f"Loaded HarmfulQA partition {partition!r}: {len(selected)} prompts")
+    return selected
 
 
 def load_advbench(n: Optional[int] = None, seed: int = 42) -> List[Dict[str, str]]:

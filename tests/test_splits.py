@@ -11,12 +11,14 @@ Run with:
 
 from __future__ import annotations
 
+import copy
 import random
 
 import pytest
 
 from steering.splits import (
     PARTITION_BOUNDS,
+    PERMUTATION_ALGORITHM,
     SplitError,
     build_manifest,
     load_manifest,
@@ -24,6 +26,8 @@ from steering.splits import (
     prompt_hash,
     resolve_duplicates,
     save_manifest,
+    validate_manifest_identity,
+    validate_source_binding,
 )
 
 RETAINED_TOTAL = sum(hi - lo for _, lo, hi in PARTITION_BOUNDS)  # 1938
@@ -293,3 +297,193 @@ def test_tampering_causes_verification_to_fail(tmp_path):
 
     with pytest.raises(SplitError):
         load_manifest(path)
+
+
+# Manifest identity validation (Task 003)
+
+
+def _synthetic_expected_identity():
+    """Matches `_build`'s defaults (repo=test/repo, config=None, split=train,
+    revision=deadbeef, seed=20260815) so tests aren't tied to the real frozen hash."""
+    return {
+        "schema_version": 2,
+        "repository": "test/repo",
+        "config": None,
+        "split": "train",
+        "revision": "deadbeef",
+        "seed": 20260815,
+        "algorithm": PERMUTATION_ALGORITHM,
+        "manifest_hash": None,  # filled in per test
+        "raw_record_count": RAW_TOTAL,
+        "retained_record_count": RETAINED_TOTAL,
+        "excluded_record_count": N_PAIRS,
+        "partition_counts": {name: hi - lo for name, lo, hi in PARTITION_BOUNDS},
+    }
+
+
+def test_validate_manifest_identity_accepts_a_matching_manifest():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    validate_manifest_identity(payload, expected=expected)  # must not raise
+
+
+def test_validate_manifest_identity_rejects_wrong_repository():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["repository"] = "some/other-repo"
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_config():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["config"] = "some-other-config"
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_split():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["split"] = "test"
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_revision():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["revision"] = "some-other-revision"
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_seed():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["seed"] = 1
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_algorithm_label():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["algorithm"] = "some-other-algorithm-v2"
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_manifest_hash():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = "0" * 64
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_counts():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["retained_record_count"] = RETAINED_TOTAL - 1
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+def test_validate_manifest_identity_rejects_wrong_partition_counts():
+    payload = _build(_raw_records_with_pairs())
+    expected = _synthetic_expected_identity()
+    expected["manifest_hash"] = payload["manifest_hash"]
+    expected["partition_counts"] = dict(expected["partition_counts"], construction=1)
+    with pytest.raises(SplitError):
+        validate_manifest_identity(payload, expected=expected)
+
+
+# Source-binding validation (Task 003)
+
+
+def _reconstructed_raw_records(records):
+    """What `load_harmfulqa_partition` builds from a freshly re-fetched dataset: just
+    source_id/source_index/prompt_hash, recomputed independently of the manifest."""
+    return [
+        {"source_id": r["source_id"], "source_index": r["source_index"], "prompt_hash": prompt_hash(r["prompt"])}
+        for r in records
+    ]
+
+
+def test_validate_source_binding_accepts_matching_raw_records():
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+    validate_source_binding(payload, raw)  # must not raise
+
+
+def test_validate_source_binding_rejects_a_missing_raw_row():
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+    raw.pop(0)
+    with pytest.raises(SplitError):
+        validate_source_binding(payload, raw)
+
+
+def test_validate_source_binding_rejects_a_changed_prompt_hash():
+    """A retained row whose source text drifted since the manifest was built."""
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+    raw[0] = dict(raw[0], prompt_hash="f" * 64)
+    with pytest.raises(SplitError):
+        validate_source_binding(payload, raw)
+
+
+def test_validate_source_binding_rejects_duplicate_source_index_in_raw():
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+    raw[1] = dict(raw[1], source_index=raw[0]["source_index"])
+    with pytest.raises(SplitError):
+        validate_source_binding(payload, raw)
+
+
+def test_validate_source_binding_rejects_incorrect_exclusion_lineage():
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+
+    tampered = copy.deepcopy(payload)
+    tampered["duplicate_exclusions"][0]["prompt_hash"] = "0" * 64
+    with pytest.raises(SplitError):
+        validate_source_binding(tampered, raw)
+
+
+def test_validate_source_binding_rejects_noncontiguous_positions():
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+
+    tampered = copy.deepcopy(payload)
+    tampered["records"][0]["permuted_position"] = tampered["records"][1]["permuted_position"]
+    with pytest.raises(SplitError):
+        validate_source_binding(tampered, raw)
+
+
+def test_validate_source_binding_rejects_a_partition_outside_its_declared_bounds():
+    records = _raw_records_with_pairs()
+    payload = _build(records)
+    raw = _reconstructed_raw_records(records)
+
+    tampered = copy.deepcopy(payload)
+    original = tampered["records"][0]["partition"]
+    tampered["records"][0]["partition"] = "development" if original != "development" else "construction"
+    with pytest.raises(SplitError):
+        validate_source_binding(tampered, raw)

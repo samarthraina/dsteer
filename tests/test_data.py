@@ -13,7 +13,14 @@ from __future__ import annotations
 
 import random
 
+import pytest
+
 import steering.data as data_module
+import steering.splits as splits_module
+
+RETAINED_TOTAL = sum(hi - lo for _, lo, hi in splits_module.PARTITION_BOUNDS)  # 1938
+N_PAIRS = 22
+RAW_TOTAL = RETAINED_TOTAL + N_PAIRS  # 1960
 
 
 class _FakeDataset:
@@ -127,3 +134,154 @@ def test_harmfulqa_default_revision_is_pinned_not_latest(monkeypatch):
     assert calls[0].get("name") == data_module.HARMFULQA_CONFIG
     assert data_module.HARMFULQA_REVISION == "6f1a78aed47d16c0695e4595d0159abc38197bfd"
     assert data_module.HARMFULQA_CONFIG == "default"
+
+
+# load_harmfulqa_partition (Task 003)
+
+
+def _synthetic_prompts(n_unique=RETAINED_TOTAL, n_pairs=N_PAIRS):
+    """1,960 raw prompts (1,938 unique, 22 verbatim duplicates appended at higher
+    indices) -- the same shape as the real HarmfulQA source, index = list position."""
+    prompts = [f"synthetic prompt number {i}" for i in range(n_unique)]
+    prompts += [prompts[i] for i in range(n_pairs)]
+    return prompts
+
+
+def _raw_records_from_prompts(prompts):
+    return [{"source_id": f"harmfulqa-{i}", "source_index": i, "prompt": p} for i, p in enumerate(prompts)]
+
+
+def _build_synthetic_manifest(tmp_path, prompts=None, **build_overrides):
+    prompts = prompts if prompts is not None else _synthetic_prompts()
+    raw_records = _raw_records_from_prompts(prompts)
+    kwargs = dict(
+        seed=20260815, dataset_repo="declare-lab/HarmfulQA", dataset_split="train",
+        dataset_revision="6f1a78aed47d16c0695e4595d0159abc38197bfd", dataset_config="default",
+    )
+    kwargs.update(build_overrides)
+    payload = splits_module.build_manifest(raw_records, **kwargs)
+    path = tmp_path / "harmfulqa_v1.json"
+    splits_module.save_manifest(payload, path)
+    return path, payload, prompts
+
+
+def _patch_harmfulqa_source(monkeypatch, prompts):
+    monkeypatch.setattr(data_module, "load_dataset", lambda *a, **k: [{"question": p} for p in prompts])
+
+
+def _skip_identity_check(monkeypatch):
+    """The happy-path / source-binding tests below use a synthetic manifest whose
+    repository/revision/hash legitimately differ from the real frozen identity --
+    `validate_manifest_identity` against the real constant is exercised separately with
+    the real manifest_path unset, and unit-tested directly in test_splits.py."""
+    monkeypatch.setattr(data_module, "validate_manifest_identity", lambda manifest, expected=None: None)
+
+
+def test_load_harmfulqa_partition_returns_exact_counts_order_and_provenance(tmp_path, monkeypatch):
+    manifest_path, payload, prompts = _build_synthetic_manifest(tmp_path)
+    _patch_harmfulqa_source(monkeypatch, prompts)
+    _skip_identity_check(monkeypatch)
+
+    expected_counts = {
+        "construction": 1378, "calibration": 200, "final_evaluation": 300, "development": 60,
+    }
+    by_partition = {}
+    for partition, expected_n in expected_counts.items():
+        records = data_module.load_harmfulqa_partition(partition, manifest_path=manifest_path)
+        assert len(records) == expected_n
+
+        positions = [r["permuted_position"] for r in records]
+        assert positions == sorted(positions), "must be returned in ascending permuted_position"
+
+        for r in records:
+            assert r["partition"] == partition
+            assert r["id"] == r["source_id"]
+            assert r["manifest_hash"] == payload["manifest_hash"]
+            for field in ("id", "source_id", "source_index", "prompt", "prompt_hash", "partition", "permuted_position", "manifest_hash"):
+                assert field in r
+        by_partition[partition] = records
+
+    assert [r["permuted_position"] for r in by_partition["construction"]] == list(range(0, 1378))
+    assert [r["permuted_position"] for r in by_partition["calibration"]] == list(range(1378, 1578))
+    assert [r["permuted_position"] for r in by_partition["final_evaluation"]] == list(range(1578, 1878))
+    assert [r["permuted_position"] for r in by_partition["development"]] == list(range(1878, 1938))
+
+    id_sets = {p: {r["source_id"] for r in recs} for p, recs in by_partition.items()}
+    hash_sets = {p: {r["prompt_hash"] for r in recs} for p, recs in by_partition.items()}
+    names = list(expected_counts)
+    for i in range(len(names)):
+        for j in range(i + 1, len(names)):
+            assert id_sets[names[i]].isdisjoint(id_sets[names[j]])
+            assert hash_sets[names[i]].isdisjoint(hash_sets[names[j]])
+
+    union_ids = set().union(*id_sets.values())
+    assert len(union_ids) == RETAINED_TOTAL
+
+    excluded_ids = {e["excluded_source_id"] for e in payload["duplicate_exclusions"]}
+    assert excluded_ids.isdisjoint(union_ids)
+    assert len(excluded_ids) == N_PAIRS
+
+
+def test_load_harmfulqa_partition_rejects_an_invalid_partition_before_any_dataset_load(monkeypatch):
+    calls = []
+    monkeypatch.setattr(data_module, "load_dataset", lambda *a, **k: calls.append(1) or [])
+
+    with pytest.raises(ValueError):
+        data_module.load_harmfulqa_partition("nonexistent_partition")
+
+    assert not calls, "load_dataset must not be called for an invalid partition name"
+
+
+def test_load_harmfulqa_partition_rejects_a_tampered_manifest_hash(tmp_path, monkeypatch):
+    manifest_path, payload, prompts = _build_synthetic_manifest(tmp_path)
+    tampered = manifest_path.read_text(encoding="utf-8").replace(payload["records"][0]["prompt_hash"], "0" * 64)
+    manifest_path.write_text(tampered, encoding="utf-8")
+
+    _patch_harmfulqa_source(monkeypatch, prompts)
+
+    with pytest.raises(splits_module.SplitError):
+        data_module.load_harmfulqa_partition("development", manifest_path=manifest_path)
+
+
+def test_load_harmfulqa_partition_rejects_incorrect_metadata_via_identity_check(tmp_path, monkeypatch):
+    """No identity-check bypass here: a manifest built against the wrong revision must
+    be rejected by the real `validate_manifest_identity` against the frozen identity."""
+    manifest_path, payload, prompts = _build_synthetic_manifest(
+        tmp_path, dataset_revision="deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+    )
+    _patch_harmfulqa_source(monkeypatch, prompts)
+
+    with pytest.raises(splits_module.SplitError):
+        data_module.load_harmfulqa_partition("development", manifest_path=manifest_path)
+
+
+def test_load_harmfulqa_partition_rejects_a_changed_source_prompt(tmp_path, monkeypatch):
+    manifest_path, payload, prompts = _build_synthetic_manifest(tmp_path)
+    drifted = list(prompts)
+    drifted[0] = "this prompt text changed after the manifest was built"
+
+    _patch_harmfulqa_source(monkeypatch, drifted)
+    _skip_identity_check(monkeypatch)
+
+    with pytest.raises(splits_module.SplitError):
+        data_module.load_harmfulqa_partition("construction", manifest_path=manifest_path)
+
+
+def test_load_harmfulqa_partition_rejects_a_missing_source_row(tmp_path, monkeypatch):
+    manifest_path, payload, prompts = _build_synthetic_manifest(tmp_path)
+    truncated = prompts[:-1]
+
+    _patch_harmfulqa_source(monkeypatch, truncated)
+    _skip_identity_check(monkeypatch)
+
+    with pytest.raises(splits_module.SplitError):
+        data_module.load_harmfulqa_partition("development", manifest_path=manifest_path)
+
+
+def test_default_harmfulqa_manifest_path_is_independent_of_cwd(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    path = data_module._default_harmfulqa_manifest_path()
+    assert path.name == "harmfulqa_v1.json"
+    assert path.parent.name == "manifests"
+    assert str(tmp_path) not in str(path)
+    assert path.is_absolute()
