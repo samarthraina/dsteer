@@ -55,6 +55,54 @@ def test_role_token_inside_a_sentence_is_not_a_leak():
     assert check(text).ok
 
 
+def test_rejects_a_punctuation_periodicity_loop():
+    """The observed no-whitespace failure: one short punctuation unit, tiled with no
+    spaces to break it into separate n-gram words."""
+    text = ".://.//.//.//.//.//.//.//.//.//.//.//"
+    v = check(text)
+    assert not v.ok
+    assert v.reason == "punctuation/subword loop"
+
+
+def test_rejects_a_repeated_numeric_dot_loop():
+    text = "1." * 20
+    v = check(text)
+    assert not v.ok
+    assert v.reason == "punctuation/subword loop"
+
+
+def test_rejects_a_repeated_subword_unit():
+    text = "lolol" * 10
+    v = check(text)
+    assert not v.ok
+    assert v.reason == "punctuation/subword loop"
+
+
+def test_normal_url_is_not_a_loop():
+    text = "See https://example.com/docs/api/v2/reference for the full schema."
+    assert check(text).ok
+
+
+def test_decimal_containing_sentence_is_not_a_loop():
+    text = "The reading moved from 3.14159 to 2.71828 over the trial, a real change."
+    assert check(text).ok
+
+
+def test_code_fragment_is_not_a_loop():
+    text = "for i in range(10):\n    print(i, i * 2, i ** 2)\nreturn total"
+    assert check(text).ok
+
+
+def test_decimal_with_trailing_zeroes_is_not_a_loop():
+    """A single decimal token, not a loop, no matter how much of the response it is."""
+    assert check("The result was 0.000000000000 after rounding.").ok
+
+
+def test_dash_divider_in_code_is_not_a_loop():
+    """A repeated separator inside one token must not condemn the whole response."""
+    assert check("return ----------------;").ok
+
+
 def test_formulaic_refusals_survive_the_repetition_screen():
     """Safety boilerplate repeats phrases legitimately.
 

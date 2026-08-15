@@ -23,6 +23,36 @@ from tqdm import tqdm
 
 log = logging.getLogger(__name__)
 
+# Chat templates end an assistant turn with a model-specific token, not always EOS --
+# Llama-3's `<|eot_id|>`, Qwen/ChatML's `<|im_end|>`. Add more here as new families
+# enter the sweep.
+KNOWN_EOT_TOKENS = ("<|eot_id|>", "<|im_end|>")
+
+
+def generation_terminators(tokenizer) -> List[int]:
+    """Unique stop-token IDs for `model.generate`: EOS plus any known chat end-of-turn
+    token the tokenizer actually has.
+
+    `tokenizer.eos_token_id` alone misses the real stop for templates like Llama-3's,
+    so generation runs past the model's own turn boundary to `max_new_tokens`. Looking
+    tokens up in `get_vocab()` rather than `convert_tokens_to_ids` means a token the
+    tokenizer does not have is simply absent, not silently aliased to `<unk>`.
+    """
+    ids: List[int] = []
+    seen = set()
+
+    def add(token_id):
+        if isinstance(token_id, int) and token_id >= 0 and token_id not in seen:
+            seen.add(token_id)
+            ids.append(token_id)
+
+    add(tokenizer.eos_token_id)
+    vocab = tokenizer.get_vocab()
+    for token in KNOWN_EOT_TOKENS:
+        add(vocab.get(token))
+
+    return ids
+
 
 def build_chat_prompts(tokenizer, prompts: Sequence) -> List[str]:
     """Apply the chat template to each prompt, ready for generation.
@@ -64,6 +94,9 @@ def generate_batched(
     device = next(model.parameters()).device
     outputs: List[str] = []
 
+    terminators = generation_terminators(tokenizer)
+    stop_ids = terminators[0] if len(terminators) == 1 else terminators
+
     try:
         for start in tqdm(range(0, len(prompts), batch_size), desc=desc, unit="batch"):
             chunk = list(prompts[start:start + batch_size])
@@ -81,7 +114,7 @@ def generate_batched(
                     temperature=None,
                     top_p=None,
                     pad_token_id=tokenizer.pad_token_id,
-                    eos_token_id=tokenizer.eos_token_id,
+                    eos_token_id=stop_ids,
                 )
 
             # Left padding means every sequence's continuation starts at the same index.

@@ -25,6 +25,20 @@ from typing import Dict, Iterable, List, Optional, Sequence
 
 DEFAULT_ROLE_TOKENS = ("assistant", "assistant:", "human:", "human", "<|im_start|>", "<|start_header_id|>")
 
+# A degenerate loop like `.://.//.//...` or `1.1.1.1...` has no whitespace, so it is one
+# `word` to the n-gram check below and sails through it. These bounds catch a short unit
+# (<=6 chars) that tiles most of the *response as a whole* -- coverage is measured
+# against the full text, not the token, so a repeated separator or trailing zeroes inside
+# one word of an otherwise normal response do not condemn the whole thing.
+_LOOP_UNIT_MAX = 6
+_LOOP_MIN_REPEATS = 4
+_LOOP_MIN_RUN = 12
+_LOOP_MIN_COVERAGE = 0.75
+
+# A trailing-zero or repeating-digit decimal (`0.000000000000`, `3.14159`) is a valid
+# token, not a loop, no matter how much of a short response it happens to dominate.
+_DECIMAL_TOKEN = re.compile(r"^[+-]?\d+\.\d+%?$")
+
 
 @dataclass
 class Validity:
@@ -42,6 +56,28 @@ def ngram_repetition(text: str, n: int = 4) -> float:
         return 0.0
     grams = [tuple(words[i:i + n]) for i in range(len(words) - n + 1)]
     return 1.0 - (len(set(grams)) / len(grams))
+
+
+def _longest_unit_run(word: str) -> int:
+    """Length of the longest run of a repeated short unit within `word`."""
+    best = 0
+    for unit_len in range(1, _LOOP_UNIT_MAX + 1):
+        for match in re.finditer(rf"(.{{{unit_len}}})\1{{{_LOOP_MIN_REPEATS - 1},}}", word):
+            best = max(best, len(match.group(0)))
+    return best
+
+
+def _has_punctuation_loop(text: str) -> bool:
+    total = len(text)
+    for word in text.split():
+        if _DECIMAL_TOKEN.match(word):
+            continue
+        if len(word) < _LOOP_MIN_RUN:
+            continue
+        run = _longest_unit_run(word)
+        if run >= _LOOP_MIN_RUN and run / total >= _LOOP_MIN_COVERAGE:
+            return True
+    return False
 
 
 def check(
@@ -69,6 +105,9 @@ def check(
         # A leaked role header mid-output means the model ran past its own turn.
         if re.search(rf"\n\s*{re.escape(token)}\b", lowered):
             return Validity(False, f"leaked role token {token!r}")
+
+    if _has_punctuation_loop(stripped):
+        return Validity(False, "punctuation/subword loop")
 
     rep = ngram_repetition(stripped)
     if rep >= repetition_threshold:
