@@ -1,0 +1,123 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "pair_a_dpo",
+      "base_artifact_id": null,
+      "files": [
+        {
+          "path": "model.safetensors",
+          "sha256": "5eedaac41dcbc1fcab7446ba40b53b21d7c392e0ffe896da1b801c3be873b004",
+          "size_bytes": null
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda",
+          "size_bytes": null
+        }
+      ],
+      "inference_ready": true,
+      "kind": "checkpoint",
+      "lineage": {},
+      "repository": "sirius5005/SFT-and-DPO",
+      "repository_type": "model",
+      "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+      "subpath": "DPO_merged"
+    },
+    {
+      "artifact_id": "pair_a_flip_adapter",
+      "base_artifact_id": "pair_a_sft",
+      "files": [
+        {
+          "path": "adapter_model.safetensors",
+          "sha256": "bf241922adfddd09559c32f157570344e12558a6300726d862cfda5ae32d3682",
+          "size_bytes": null
+        },
+        {
+          "path": "training_args.bin",
+          "sha256": "4ec20c965ef181d607d756ff690047fbb89a110624d79301ade070b9ebe62f3d",
+          "size_bytes": null
+        }
+      ],
+      "inference_ready": false,
+      "kind": "adapter",
+      "lineage": {
+        "archived_trainer_state_path": "runs/dpo_training/llama3-oh-flip/20260812T060638Z/checkpoint-2510/trainer_state.json"
+      },
+      "repository": "samarthraina/dsteer-results",
+      "repository_type": "dataset",
+      "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+      "subpath": "runs/dpo_training/llama3-oh-flip/20260812T060638Z/final_dpo_adapter"
+    },
+    {
+      "artifact_id": "pair_a_sft",
+      "base_artifact_id": null,
+      "files": [
+        {
+          "path": "model.safetensors",
+          "sha256": "1a2a404db755b04ac9385d8477f1853d86a586c8ec691abef9931701c0da50d5",
+          "size_bytes": null
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda",
+          "size_bytes": null
+        }
+      ],
+      "inference_ready": true,
+      "kind": "checkpoint",
+      "lineage": {},
+      "repository": "sirius5005/SFT-and-DPO",
+      "repository_type": "model",
+      "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+      "subpath": "SFT_merged"
+    },
+    {
+      "artifact_id": "pair_b_dpo_adapter",
+      "base_artifact_id": "pair_b_sft",
+      "files": [
+        {
+          "path": "adapter_model.safetensors",
+          "sha256": "79c81ebc54c040c305fd35524fafe0edb3facc6be91284ad3e5ddc97bb758517",
+          "size_bytes": null
+        },
+        {
+          "path": "training_args.bin",
+          "sha256": "67afea1a9303f2ff05cbb845452e4396bb10ca2b82bf7ba9dbe4fdca81225642",
+          "size_bytes": null
+        }
+      ],
+      "inference_ready": false,
+      "kind": "adapter",
+      "lineage": {},
+      "repository": "samarthraina/dsteer-results",
+      "repository_type": "dataset",
+      "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+      "subpath": "runs/dpo_training/openhermes-mistral-adapter/20260809T155221Z"
+    },
+    {
+      "artifact_id": "pair_b_sft",
+      "base_artifact_id": null,
+      "files": [
+        {
+          "path": "model-00001-of-00002.safetensors",
+          "sha256": "0b712f11ea29f3b34fa132403f7cafc0568c722ba3a33f42b55ed77b47fa299d",
+          "size_bytes": null
+        },
+        {
+          "path": "model-00002-of-00002.safetensors",
+          "sha256": "5e6249c1a1ceb365e219a0fe667a77f71ec005b3aecb145ff2d8adf46cdb574f",
+          "size_bytes": null
+        }
+      ],
+      "inference_ready": true,
+      "kind": "checkpoint",
+      "lineage": {},
+      "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+      "repository_type": "model",
+      "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+      "subpath": ""
+    }
+  ],
+  "manifest_hash": "a16d842cb1fc0212a0a081b4c49183b2053e5902b00b90dfda255992a1a6a609",
+  "schema_version": 1
+}
