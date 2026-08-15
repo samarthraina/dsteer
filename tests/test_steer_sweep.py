@@ -24,6 +24,7 @@ torch = pytest.importorskip("torch")
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import steer_sweep  # noqa: E402
 
+from steering.generate import GenerationResult
 from steering.utils import read_jsonl
 
 
@@ -252,7 +253,12 @@ def test_run_one_preserves_provenance_fields_in_jsonl(tmp_path, monkeypatch):
     chats = ["chat-p10", "chat-p11"]
 
     def fake_generate_batched(model, tokenizer, todo_chats, **kwargs):
-        return [f"response for {c}" for c in todo_chats]
+        assert kwargs.get("return_metadata") is True
+        return [
+            GenerationResult(text=f"response for {c}", generated_token_count=5,
+                              stop_reason="eos_token", stop_token_id=2)
+            for c in todo_chats
+        ]
 
     monkeypatch.setattr(steer_sweep, "generate_batched", fake_generate_batched)
 
@@ -271,6 +277,62 @@ def test_run_one_preserves_provenance_fields_in_jsonl(tmp_path, monkeypatch):
             assert out[key] == rec[key]
         assert out["response"] == f"response for {chat}"
         assert out["lambda"] == 0.0
+
+
+# run_one: generation metadata (Task 006)
+
+
+def test_run_one_persists_all_four_generation_metadata_fields(tmp_path, monkeypatch):
+    records = [{"id": "r1", "prompt": "p1"}, {"id": "r2", "prompt": "p2"}]
+    chats = ["chat-1", "chat-2"]
+    scripted = [
+        GenerationResult(text="first response", generated_token_count=12,
+                          stop_reason="eos_token", stop_token_id=2),
+        GenerationResult(text="second response", generated_token_count=512,
+                          stop_reason="max_new_tokens", stop_token_id=None),
+    ]
+
+    def fake_generate_batched(model, tokenizer, todo_chats, **kwargs):
+        return list(scripted)
+
+    monkeypatch.setattr(steer_sweep, "generate_batched", fake_generate_batched)
+
+    cfg = _cfg()
+    path = tmp_path / "baseline.jsonl"
+    n = steer_sweep.run_one(
+        model=None, tokenizer=None, records=records, chats=chats,
+        coefficient=0.0, vectors={}, cfg=cfg, path=path, label="test", batch_size=2,
+    )
+    assert n == 2
+
+    written = read_jsonl(path)
+    for result, out in zip(scripted, written):
+        assert out["response"] == result.text
+        assert out["generated_token_count"] == result.generated_token_count
+        assert out["stop_reason"] == result.stop_reason
+        assert out["stop_token_id"] == result.stop_token_id
+
+
+def test_run_one_raises_clearly_on_a_result_count_mismatch(tmp_path, monkeypatch):
+    """generate_batched returning fewer results than pending records must fail loudly,
+    not silently truncate via zip(...) and write a partial batch."""
+    records = [{"id": "r1", "prompt": "p1"}, {"id": "r2", "prompt": "p2"}]
+    chats = ["chat-1", "chat-2"]
+
+    def fake_generate_batched(model, tokenizer, todo_chats, **kwargs):
+        return [GenerationResult(text="only one", generated_token_count=3,
+                                  stop_reason="eos_token", stop_token_id=2)]
+
+    monkeypatch.setattr(steer_sweep, "generate_batched", fake_generate_batched)
+
+    cfg = _cfg()
+    path = tmp_path / "baseline.jsonl"
+    with pytest.raises(RuntimeError):
+        steer_sweep.run_one(
+            model=None, tokenizer=None, records=records, chats=chats,
+            coefficient=0.0, vectors={}, cfg=cfg, path=path, label="test", batch_size=2,
+        )
+    assert not path.exists()  # nothing written before the mismatch was caught
 
 
 # Config file

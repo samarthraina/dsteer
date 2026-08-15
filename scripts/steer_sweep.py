@@ -244,20 +244,32 @@ def run_one(
                 mode=mode,
             )
 
-    texts = generate_batched(
+    results = generate_batched(
         model, tokenizer, todo_chats,
         max_new_tokens=cfg.max_new_tokens,
         batch_size=batch_size,
         max_input_length=cfg.max_input_length,
         context=ctx,
         desc=label,
+        return_metadata=True,
     )
+    if len(results) != len(todo):
+        # zip(...) would otherwise silently stop at the shorter sequence and drop the
+        # remainder -- a count mismatch here means something upstream is already wrong,
+        # and writing partial output would hide it.
+        raise RuntimeError(
+            f"generate_batched returned {len(results)} results for {len(todo)} pending "
+            f"records ({label}); refusing to write a silently truncated batch"
+        )
 
-    for rec, text in zip(todo, texts):
+    for rec, result in zip(todo, results):
         out = dict(rec)
         if isinstance(out.get("prompt"), list):
             out["prompt_str"] = "\n".join(f"{m['role']}: {m['content']}" for m in out["prompt"])
-        out["response"] = text
+        out["response"] = result.text
+        out["generated_token_count"] = result.generated_token_count
+        out["stop_reason"] = result.stop_reason
+        out["stop_token_id"] = result.stop_token_id
         out["lambda"] = coefficient
         append_jsonl(out, path)
     return len(todo)

@@ -16,7 +16,8 @@ from __future__ import annotations
 
 import logging
 from contextlib import nullcontext
-from typing import Callable, Dict, Iterable, List, Optional, Sequence
+from dataclasses import dataclass
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import torch
 from tqdm import tqdm
@@ -54,6 +55,55 @@ def generation_terminators(tokenizer) -> List[int]:
     return ids
 
 
+@dataclass
+class GenerationResult:
+    """One generated continuation, with exact stop provenance.
+
+    Computed from the generated token IDs, not the decoded text -- special tokens are
+    removed during decoding (`skip_special_tokens=True`) and cannot be recovered
+    reliably from the string afterward.
+
+    stop_reason:
+        "eos_token"         -- the first terminator hit was the tokenizer's EOS ID.
+        "end_of_turn_token" -- the first terminator hit was a known chat end-of-turn ID
+                                distinct from EOS (e.g. Llama-3's `<|eot_id|>`).
+        "max_new_tokens"    -- no terminator occurred and generation used the full budget.
+        "unknown"           -- generation stopped short of the budget with no known
+                                terminator in this row's own continuation. Not assumed to
+                                be a normal stop -- recorded distinctly so it can be audited.
+    stop_token_id: the terminator's ID, or None when no terminator caused the stop
+                   ("max_new_tokens" or "unknown").
+    """
+    text: str
+    generated_token_count: int
+    stop_reason: str
+    stop_token_id: Optional[int]
+
+
+def _first_terminator_metadata(
+    ids: Sequence[int],
+    eos_token_id: Optional[int],
+    terminators: Sequence[int],
+    max_new_tokens: int,
+) -> Tuple[int, str, Optional[int]]:
+    """One row's (generated_token_count, stop_reason, stop_token_id).
+
+    `ids` must already be just this row's own continuation (the slice after the common
+    left-padded input width) -- scanning stops at the first terminator found, so tokens
+    or batch-padding positions after it, and any other row's tokens, never count.
+    """
+    terminator_set = set(terminators)
+    for i, tok in enumerate(ids):
+        if tok in terminator_set:
+            reason = "eos_token" if tok == eos_token_id else "end_of_turn_token"
+            return i + 1, reason, tok
+
+    length = len(ids)
+    if length >= max_new_tokens:
+        return max_new_tokens, "max_new_tokens", None
+    return length, "unknown", None
+
+
 def build_chat_prompts(tokenizer, prompts: Sequence) -> List[str]:
     """Apply the chat template to each prompt, ready for generation.
 
@@ -78,13 +128,19 @@ def generate_batched(
     max_input_length: int = 2048,
     context: Optional[Callable] = None,
     desc: str = "Generating",
-) -> List[str]:
+    return_metadata: bool = False,
+) -> Union[List[str], List[GenerationResult]]:
     """Greedy-decode `prompts`, returning the continuations only.
 
     context: a zero-argument callable returning a context manager wrapped around each
     batch -- this is where ActivationSteering goes. Kept as a factory rather than an
     instance so hooks are registered and removed per batch instead of living across the
     whole sweep.
+
+    return_metadata: False (default) returns `List[str]`, unchanged from before this
+    existed. True returns `List[GenerationResult]` -- the same decoded text plus exact
+    per-row stop provenance, computed independently for every row so one sequence's
+    early termination cannot affect another's count or reason.
     """
     original_side = tokenizer.padding_side
     tokenizer.padding_side = "left"
@@ -92,7 +148,8 @@ def generate_batched(
         tokenizer.pad_token = tokenizer.eos_token
 
     device = next(model.parameters()).device
-    outputs: List[str] = []
+    text_outputs: List[str] = []
+    meta_outputs: List[GenerationResult] = []
 
     terminators = generation_terminators(tokenizer)
     stop_ids = terminators[0] if len(terminators) == 1 else terminators
@@ -119,11 +176,25 @@ def generate_batched(
 
             # Left padding means every sequence's continuation starts at the same index.
             gen = out[:, enc["input_ids"].shape[1]:]
-            outputs.extend(tokenizer.batch_decode(gen, skip_special_tokens=True))
+            decoded = tokenizer.batch_decode(gen, skip_special_tokens=True)
+
+            if return_metadata:
+                for row_ids, text in zip(gen.tolist(), decoded):
+                    count, reason, stop_id = _first_terminator_metadata(
+                        row_ids, tokenizer.eos_token_id, terminators, max_new_tokens,
+                    )
+                    meta_outputs.append(GenerationResult(
+                        text=text.strip(), generated_token_count=count,
+                        stop_reason=reason, stop_token_id=stop_id,
+                    ))
+            else:
+                text_outputs.extend(decoded)
     finally:
         tokenizer.padding_side = original_side
 
-    return [o.strip() for o in outputs]
+    if return_metadata:
+        return meta_outputs
+    return [o.strip() for o in text_outputs]
 
 
 def suggest_batch_size(model, hidden_context_tokens: int = 2560, safety: float = 0.75) -> int:
