@@ -32,7 +32,7 @@ class ModelConfig:
 
 @dataclass
 class JudgeConfig:
-    """Settings for the LLM-as-judge (Qwen 32B served via vLLM)."""
+    """Settings for the LLM-as-judge (served via vLLM)."""
 
     model_name: str = "Qwen/Qwen2.5-32B-Instruct"
     server_url: str = "http://localhost:8000/v1"
@@ -50,6 +50,56 @@ class JudgeConfig:
     use_logprobs: bool = False
     top_logprobs: int = 20  # unused; the judge request never asks for logprobs anymore
     max_score: int = 10  # frozen at 10 for this protocol path; any other value fails clearly
+
+    # Task 010: frozen Qwen3.5 confirmatory-protocol sampling/seed fields (protocol
+    # Section 10). `None` means "not set -- do not send this field", which is what
+    # every pre-existing (legacy Qwen2.5) config still does, so a plain `JudgeConfig()`
+    # sends exactly the request shape it always has. Use `frozen_qwen35()` to build a
+    # config with all of these pinned to the frozen identity.
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    min_p: Optional[float] = None
+    presence_penalty: Optional[float] = None
+    repetition_penalty: Optional[float] = None
+    enable_thinking: Optional[bool] = None
+    seed: Optional[int] = None
+    seed_derivation_version: Optional[int] = None
+
+    # Task 010 correction: the frozen three-total-attempt limit, bound through the
+    # config so a confirmatory caller cannot silently exceed it by passing a larger
+    # `Judge.score(max_retries=...)`. `None` (the default) means no limit is enforced --
+    # every pre-existing call site is unaffected.
+    max_attempts: Optional[int] = None
+
+    # Task 010 correction: on the confirmatory path, `Judge.score` parses only a direct
+    # `json.loads` of the raw completion -- no markdown-fence stripping, no
+    # brace-scanning through surrounding prose. `None` (the default) keeps the existing
+    # lenient multi-strategy extraction for every pre-existing (legacy) call site.
+    strict_response_parsing: Optional[bool] = None
+
+    @classmethod
+    def frozen_qwen35(cls, server_url: str, api_key: str = "EMPTY") -> "JudgeConfig":
+        """A `JudgeConfig` fully pinned to the frozen Qwen3.5 confirmatory protocol
+        (`Brain/EXPERIMENT_PROTOCOL_V1.md` Section 10). Every sampling/seed/limit value
+        comes from `judge_identity.FROZEN_JUDGE_IDENTITY` -- the single source of
+        truth, so this can never drift from what `manifests/judge_protocol_v1.json` was
+        built against. `model_name` is the revision-bearing served alias, never the
+        bare mutable repository name.
+        """
+        from .judge_identity import FROZEN_JUDGE_IDENTITY
+
+        f = FROZEN_JUDGE_IDENTITY
+        return cls(
+            model_name=f["judge"]["served_model_alias"],
+            server_url=server_url, api_key=api_key,
+            max_tokens=f["max_response_tokens"], temperature=f["sampling"]["temperature"],
+            top_p=f["sampling"]["top_p"], top_k=f["sampling"]["top_k"],
+            min_p=f["sampling"]["min_p"], presence_penalty=f["sampling"]["presence_penalty"],
+            repetition_penalty=f["sampling"]["repetition_penalty"],
+            enable_thinking=f["judge"]["thinking_enabled"], seed=f["global_seed"],
+            seed_derivation_version=f["seed_derivation_version"],
+            max_attempts=f["max_attempts"], strict_response_parsing=True,
+        )
 
 
 @dataclass

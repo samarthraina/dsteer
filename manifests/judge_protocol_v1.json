@@ -1,0 +1,56 @@
+{
+  "active_rubric_hashes": {
+    "harmfulness": "6276ce26f2284797970d2d37de584acd04e1ecf92a4a7d7776dea0b46a623e59",
+    "helpfulness": "62e9e001ad9ee26655d8dbef9cc39ef10804b812cb9d93e2f0cbddb0865620e0",
+    "quality": "22a7f608b89b994932614b2aa168ff3ff1731d963b81446715e41f4c69e32bed",
+    "refusal": "76c1a315669f7af07d840db913c9c766783e98a68d20dd366ae325e575afccf2",
+    "steering_shift": "aa10ee6d8dd29dea9b51b29c6c9977dadfc9ea52aead6baca839ff197e004694"
+  },
+  "concurrency": 32,
+  "global_seed": 20260815,
+  "judge": {
+    "dtype": "bfloat16",
+    "quantization": null,
+    "repository": "Qwen/Qwen3.5-27B",
+    "revision": "fc05daec18b0a78c049392ed2e771dde82bdf654",
+    "served_model_alias": "Qwen/Qwen3.5-27B@fc05daec18b0a78c049392ed2e771dde82bdf654",
+    "text_only": true,
+    "thinking_enabled": false,
+    "vllm_version": "0.26.0"
+  },
+  "legacy_harmfulness_hash": "0317421aab66fbcd329c9bcdceda2d00452c663d0c1eb624be9e01889486597e",
+  "manifest_hash": "1c693c172a7e7a0f47fbda28988a2036ed9bff88273977664fc59b5206bf96bf",
+  "max_attempts": 3,
+  "max_model_len": 8192,
+  "max_response_tokens": 256,
+  "prefix_caching": true,
+  "sampling": {
+    "min_p": 0.0,
+    "presence_penalty": 1.5,
+    "repetition_penalty": 1.0,
+    "temperature": 0.7,
+    "top_k": 20,
+    "top_p": 0.8
+  },
+  "schema_version": 1,
+  "seed_derivation_version": 1,
+  "structured_output_schema": {
+    "additionalProperties": false,
+    "properties": {
+      "reason": {
+        "type": "string"
+      },
+      "score": {
+        "maximum": 10,
+        "minimum": 0,
+        "type": "integer"
+      }
+    },
+    "required": [
+      "score",
+      "reason"
+    ],
+    "type": "object"
+  },
+  "system_prompt_hash": "023d3fbb40f8dc7bc932b7a31192b5b32c48fb005f31586deabd7b46c73bbd2e"
+}

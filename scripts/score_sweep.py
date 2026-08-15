@@ -40,13 +40,29 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from steering.artifacts import sync_to_hub, write_run_metadata
 from steering.config import JudgeConfig
 from steering.judge import Judge
+from steering.judge_identity import (
+    JudgeIdentityError,
+    STRUCTURED_OUTPUT_SCHEMA,
+    load_manifest as load_judge_manifest,
+    validate_frozen_identity as validate_frozen_judge_identity,
+    validate_judge_config,
+    validate_live_evaluator_identity,
+)
 from steering.metrics import (
+    ACTIVE_RUBRICS, LEGACY_HARMFULNESS_RUBRIC_PRE_REPAIR,
     score_harmfulness, score_helpfulness, score_quality, score_refusal, score_steering_shift,
 )
 from steering.utils import append_jsonl, read_jsonl, setup_logging
 from steering.validity import check, summarise
 
 METRICS = ("refusal", "helpfulness", "harmfulness", "quality")
+
+#: Legacy default (protocol Section 10 permits a historical-judge sensitivity pass on
+#: this model): unaffected by --confirmatory validation unless explicitly overridden to
+#: something else.
+LEGACY_JUDGE_MODEL_DEFAULT = "Qwen/Qwen2.5-32B-Instruct"
+
+DEFAULT_JUDGE_PROTOCOL_MANIFEST_PATH = Path(__file__).resolve().parents[1] / "manifests" / "judge_protocol_v1.json"
 
 
 def prompt_text(record: Dict) -> str:
@@ -63,15 +79,22 @@ def load_references(path: Optional[str]) -> Dict[str, str]:
     return {r["id"]: r.get("response", "") for r in read_jsonl(Path(path))}
 
 
-def build_run_config(args: argparse.Namespace, input_files: List[Path]) -> Dict[str, object]:
+def build_run_config(
+    args: argparse.Namespace, input_files: List[Path], judge_protocol: Optional[Dict[str, object]] = None,
+) -> Dict[str, object]:
     """The resolved run identity for `write_run_metadata`: the complete parsed CLI
     namespace (including defaulted values), the resolved ordered input JSONL paths this
-    run discovered, and the active direct metric names."""
-    return {
+    run discovered, and the active direct metric names. On the confirmatory path,
+    `judge_protocol` additionally binds the verified judge identity, its manifest hash,
+    the request-seed policy, and the resolved concurrency (Task 010)."""
+    config: Dict[str, object] = {
         "cli": vars(args),
         "input_files": [str(p) for p in input_files],
         "metrics": list(METRICS),
     }
+    if judge_protocol is not None:
+        config["judge_protocol"] = judge_protocol
+    return config
 
 
 def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str, str],
@@ -86,20 +109,33 @@ def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str
 
     if not verdict.ok:
         # Recorded, not judged: a broken generation has no meaningful rubric score, and
-        # guessing one would put it into the mean.
+        # guessing one would put it into the mean. `_abstained=None` (not True/False)
+        # marks that no judge call happened at all -- distinct from a genuine judge
+        # abstention, where a call was made and the judge failed to return a valid score.
         for m in METRICS:
             out[f"{m}_score"] = None
             out[f"{m}_discrete_score"] = None
+            out[f"{m}_attempts"] = []
+            out[f"{m}_attempt_count"] = 0
+            out[f"{m}_resolved_seed"] = None
+            out[f"{m}_abstained"] = None
         out["steering_shift_score"] = None
         out["steering_shift_discrete_score"] = None
+        out["steering_shift_presented_order"] = None
+        out["steering_shift_inverted"] = None
+        out["steering_shift_attempts"] = []
+        out["steering_shift_attempt_count"] = 0
+        out["steering_shift_resolved_seed"] = None
+        out["steering_shift_abstained"] = None
         return out
 
+    record_id = rec["id"]
     text = prompt_text(rec)
     for name, res in [
-        ("refusal", score_refusal(judge, input_text=text, output_text=response)),
-        ("helpfulness", score_helpfulness(judge, input_text=text, output_text=response)),
-        ("harmfulness", score_harmfulness(judge, input_text=text, output_text=response)),
-        ("quality", score_quality(judge, output_text=response)),
+        ("refusal", score_refusal(judge, input_text=text, output_text=response, record_id=record_id)),
+        ("helpfulness", score_helpfulness(judge, input_text=text, output_text=response, record_id=record_id)),
+        ("harmfulness", score_harmfulness(judge, input_text=text, output_text=response, record_id=record_id)),
+        ("quality", score_quality(judge, output_text=response, record_id=record_id)),
     ]:
         # discrete_score (0-10, or None) and score (the same value / 10, or None) are
         # the judge's emitted integer -- the sole authoritative value (protocol
@@ -109,27 +145,49 @@ def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str
         out[f"{name}_reason"] = res.reason
         if res.error:
             out[f"{name}_error"] = res.error
+        # Full attempt-level provenance (protocol Section 10 / Task 010): every
+        # attempt, the resolved seed, and whether this call genuinely abstained (a
+        # call happened but no valid score came back) -- distinct from the
+        # not-judged case above, which is never a judge abstention.
+        out[f"{name}_attempts"] = res.attempts
+        out[f"{name}_attempt_count"] = res.attempt_count
+        out[f"{name}_resolved_seed"] = res.resolved_seed
+        out[f"{name}_abstained"] = res.discrete_score is None
 
-    a, b = it_ref.get(rec["id"]), dpo_ref.get(rec["id"])
+    a, b = it_ref.get(record_id), dpo_ref.get(record_id)
     if a and b:
-        shift = score_steering_shift(judge, input_text=text, output_text=response,
-                                     reference_a=a, reference_b=b)
+        shift = score_steering_shift(judge, record_id=record_id, input_text=text, output_text=response,
+                                     it_reference=a, dpo_reference=b)
         out["steering_shift_discrete_score"] = shift.discrete_score
         out["steering_shift_score"] = shift.score
         out["steering_shift_reason"] = shift.reason
+        out["steering_shift_presented_order"] = shift.presented_order
+        out["steering_shift_inverted"] = shift.inverted
+        out["steering_shift_attempts"] = shift.attempts
+        out["steering_shift_attempt_count"] = shift.attempt_count
+        out["steering_shift_resolved_seed"] = shift.resolved_seed
+        out["steering_shift_abstained"] = shift.abstained
         if shift.error:
             out["steering_shift_error"] = shift.error
     else:
+        # No reference pair -- Steering Shift is not evaluated for this record at all,
+        # not merely abstained: `_abstained=None` matches the not-judged convention above.
         out["steering_shift_score"] = None
         out["steering_shift_discrete_score"] = None
+        out["steering_shift_presented_order"] = None
+        out["steering_shift_inverted"] = None
+        out["steering_shift_attempts"] = []
+        out["steering_shift_attempt_count"] = 0
+        out["steering_shift_resolved_seed"] = None
+        out["steering_shift_abstained"] = None
     return out
 
 
 SCORERS = {
-    "refusal": lambda j, t, r: score_refusal(j, input_text=t, output_text=r),
-    "helpfulness": lambda j, t, r: score_helpfulness(j, input_text=t, output_text=r),
-    "harmfulness": lambda j, t, r: score_harmfulness(j, input_text=t, output_text=r),
-    "quality": lambda j, t, r: score_quality(j, output_text=r),
+    "refusal": lambda j, t, r, rid: score_refusal(j, input_text=t, output_text=r, record_id=rid),
+    "helpfulness": lambda j, t, r, rid: score_helpfulness(j, input_text=t, output_text=r, record_id=rid),
+    "harmfulness": lambda j, t, r, rid: score_harmfulness(j, input_text=t, output_text=r, record_id=rid),
+    "quality": lambda j, t, r, rid: score_quality(j, output_text=r, record_id=rid),
 }
 
 
@@ -155,12 +213,19 @@ def recheck_file(judge: Judge, scored: Path, dst: Path, metrics: List[str],
         out = {"id": rec["id"], "lambda": rec.get("lambda")}
         text = prompt_text(rec)
         for m in metrics:
-            res = SCORERS[m](judge, text, rec["response"])
+            res = SCORERS[m](judge, text, rec["response"], rec["id"])
             out[f"{m}_discrete_score_v2"] = res.discrete_score
             out[f"{m}_score_v2"] = res.score
             out[f"{m}_reason_v2"] = res.reason
             if res.error:
                 out[f"{m}_error_v2"] = res.error
+            # A recheck always calls the judge (`todo` above is already filtered to
+            # valid, response-bearing records), so `_abstained_v2` is always a real
+            # bool here, never None.
+            out[f"{m}_attempts_v2"] = res.attempts
+            out[f"{m}_attempt_count_v2"] = res.attempt_count
+            out[f"{m}_resolved_seed_v2"] = res.resolved_seed
+            out[f"{m}_abstained_v2"] = res.discrete_score is None
             out[f"{m}_discrete_score_v1"] = rec.get(f"{m}_discrete_score")
             out[f"{m}_score_v1"] = rec.get(f"{m}_score")
         return out
@@ -256,13 +321,26 @@ def main():
     parser.add_argument("--limit", type=int, default=None,
                         help="Stop after this many records per file. For a pilot before "
                              "committing to the full set.")
+    parser.add_argument(
+        "--confirmatory", action="store_true",
+        help="Use exactly the frozen Qwen3.5 judge protocol (protocol Section 10): "
+             "loads and verifies manifests/judge_protocol_v1.json (self-hash, frozen "
+             "identity), builds a JudgeConfig pinned to it, and rejects any "
+             "non-frozen --judge-model/--concurrency override before any mutation.",
+    )
+    parser.add_argument(
+        "--judge-protocol-manifest", default=None,
+        help=f"Path to the judge-protocol manifest (default: {DEFAULT_JUDGE_PROTOCOL_MANIFEST_PATH}). "
+             "Only consulted with --confirmatory.",
+    )
     args = parser.parse_args()
 
     sweep = Path(args.sweep_dir)
     out_dir = Path(args.output_dir) if args.output_dir else sweep / "scored"
 
     # Read-only preparation for the metadata identity check below -- discovering input
-    # file names and reading small reference files mutates nothing in out_dir.
+    # file names, reading small reference files, and loading/verifying the static
+    # judge-protocol manifest all mutate nothing in out_dir.
     files = sorted(p for p in sweep.glob("*.jsonl"))
     if not files:
         parser.error(f"no .jsonl in {sweep}")
@@ -270,9 +348,66 @@ def main():
     it_ref = load_references(args.it_baseline)
     dpo_ref = load_references(args.dpo_baseline)
 
+    judge_protocol_extra = None
+    if args.confirmatory:
+        manifest_path = Path(args.judge_protocol_manifest) if args.judge_protocol_manifest else DEFAULT_JUDGE_PROTOCOL_MANIFEST_PATH
+        try:
+            judge_manifest = load_judge_manifest(manifest_path)
+            validate_frozen_judge_identity(judge_manifest)
+            # The manifest can self-verify and match the hardcoded FROZEN_JUDGE_IDENTITY
+            # pin and still be stale, if the system prompt or a rubric was edited after
+            # the manifest was last built. This re-hashes the text actually imported
+            # right now (Judge.SYSTEM_PROMPT, ACTIVE_RUBRICS, the legacy rubric, and the
+            # structured-output schema) and requires it to match what the manifest
+            # claims -- catching drift that manifest-vs-itself checks cannot see.
+            validate_live_evaluator_identity(
+                judge_manifest,
+                system_prompt=Judge.SYSTEM_PROMPT,
+                active_rubrics=ACTIVE_RUBRICS,
+                legacy_harmfulness_rubric=LEGACY_HARMFULNESS_RUBRIC_PRE_REPAIR,
+                structured_output_schema=STRUCTURED_OUTPUT_SCHEMA,
+            )
+        except JudgeIdentityError as e:
+            parser.error(f"--confirmatory judge-protocol manifest failed verification: {e}")
+
+        frozen_alias = judge_manifest["judge"]["served_model_alias"]
+        if args.judge_model not in (LEGACY_JUDGE_MODEL_DEFAULT, frozen_alias):
+            parser.error(f"--confirmatory requires --judge-model={frozen_alias!r} (or omit it); got {args.judge_model!r}")
+        if args.concurrency != judge_manifest["concurrency"]:
+            parser.error(
+                f"--confirmatory requires --concurrency={judge_manifest['concurrency']} "
+                f"(or omit it); got {args.concurrency}"
+            )
+
+        judge_cfg = JudgeConfig.frozen_qwen35(server_url=args.judge_url)
+        try:
+            validate_judge_config(judge_cfg, expected=judge_manifest)
+        except JudgeIdentityError as e:
+            parser.error(f"--confirmatory resolved JudgeConfig failed verification: {e}")
+
+        judge_protocol_extra = {
+            "manifest_hash": judge_manifest["manifest_hash"],
+            # The complete verified manifest (judge identity, sampling, schema,
+            # every hash), not only the `judge` subsection -- the reader should never
+            # need to reconstruct sampling/schema/hash fields from elsewhere.
+            "manifest": judge_manifest,
+            "seed_policy": {
+                "global_seed": judge_manifest["global_seed"],
+                "seed_derivation_version": judge_manifest["seed_derivation_version"],
+            },
+            "resolved_concurrency": args.concurrency,
+            # The model name actually used, unambiguous even though --judge-model's CLI
+            # default (recorded verbatim in `cli.judge_model`) is still the historical
+            # Qwen2.5 name when omitted: `judge_cfg.model_name` is always the resolved
+            # revision-bearing Qwen3.5 alias on this path, never the CLI default string.
+            "resolved_model_alias": judge_cfg.model_name,
+        }
+    else:
+        judge_cfg = JudgeConfig(model_name=args.judge_model, server_url=args.judge_url)
+
     write_run_metadata(
         out_dir,
-        config=build_run_config(args, files),
+        config=build_run_config(args, files, judge_protocol=judge_protocol_extra),
         argv=list(sys.argv),
     )
 
@@ -286,7 +421,7 @@ def main():
     else:
         log.warning("No reference pair given -- Steering Shift will be skipped")
 
-    judge = Judge(JudgeConfig(model_name=args.judge_model, server_url=args.judge_url))
+    judge = Judge(judge_cfg)
 
     if args.recheck:
         metrics = [m.strip() for m in args.recheck.split(",")]
