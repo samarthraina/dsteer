@@ -73,11 +73,19 @@ class GenerationResult:
                                 be a normal stop -- recorded distinctly so it can be audited.
     stop_token_id: the terminator's ID, or None when no terminator caused the stop
                    ("max_new_tokens" or "unknown").
+    has_post_terminator_continuation: True only when a terminator was hit AND some later
+        position in this row's continuation holds a token that is neither the pad token
+        nor any terminator -- genuine generated content past the model's own stop point,
+        as opposed to the batch simply padding a finished row out to the batch's common
+        length (Task 013, Gate 2). Always False when no terminator was hit, since the
+        question does not apply. Defaults to False so existing construction sites and
+        the pre-Task-013 API are unaffected.
     """
     text: str
     generated_token_count: int
     stop_reason: str
     stop_token_id: Optional[int]
+    has_post_terminator_continuation: bool = False
 
 
 def _first_terminator_metadata(
@@ -85,23 +93,30 @@ def _first_terminator_metadata(
     eos_token_id: Optional[int],
     terminators: Sequence[int],
     max_new_tokens: int,
-) -> Tuple[int, str, Optional[int]]:
-    """One row's (generated_token_count, stop_reason, stop_token_id).
+    pad_token_id: Optional[int] = None,
+) -> Tuple[int, str, Optional[int], bool]:
+    """One row's (generated_token_count, stop_reason, stop_token_id,
+    has_post_terminator_continuation).
 
     `ids` must already be just this row's own continuation (the slice after the common
     left-padded input width) -- scanning stops at the first terminator found, so tokens
-    or batch-padding positions after it, and any other row's tokens, never count.
+    or batch-padding positions after it, and any other row's tokens, never count toward
+    `generated_token_count`/`stop_reason`/`stop_token_id`. The post-terminator flag is
+    the one exception: it is computed from exactly what remains after that point, to
+    distinguish ordinary batch padding from a genuine unexplained continuation.
     """
     terminator_set = set(terminators)
     for i, tok in enumerate(ids):
         if tok in terminator_set:
             reason = "eos_token" if tok == eos_token_id else "end_of_turn_token"
-            return i + 1, reason, tok
+            rest = ids[i + 1:]
+            has_post = any(t != pad_token_id and t not in terminator_set for t in rest)
+            return i + 1, reason, tok, has_post
 
     length = len(ids)
     if length >= max_new_tokens:
-        return max_new_tokens, "max_new_tokens", None
-    return length, "unknown", None
+        return max_new_tokens, "max_new_tokens", None, False
+    return length, "unknown", None, False
 
 
 def build_chat_prompts(tokenizer, prompts: Sequence) -> List[str]:
@@ -180,12 +195,13 @@ def generate_batched(
 
             if return_metadata:
                 for row_ids, text in zip(gen.tolist(), decoded):
-                    count, reason, stop_id = _first_terminator_metadata(
-                        row_ids, tokenizer.eos_token_id, terminators, max_new_tokens,
+                    count, reason, stop_id, has_post = _first_terminator_metadata(
+                        row_ids, tokenizer.eos_token_id, terminators, max_new_tokens, tokenizer.pad_token_id,
                     )
                     meta_outputs.append(GenerationResult(
                         text=text.strip(), generated_token_count=count,
                         stop_reason=reason, stop_token_id=stop_id,
+                        has_post_terminator_continuation=has_post,
                     ))
             else:
                 text_outputs.extend(decoded)

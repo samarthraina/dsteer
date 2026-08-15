@@ -316,6 +316,32 @@ def test_run_one_persists_all_four_generation_metadata_fields(tmp_path, monkeypa
         assert out["stop_token_id"] == result.stop_token_id
 
 
+def test_run_one_persists_the_post_terminator_continuation_field(tmp_path, monkeypatch):
+    """Task 013: `GenerationResult.has_post_terminator_continuation` must reach the
+    JSONL output, not only the four original generation metadata fields."""
+    records = [{"id": "r1", "prompt": "p1"}, {"id": "r2", "prompt": "p2"}]
+    chats = ["chat-1", "chat-2"]
+    scripted = [
+        GenerationResult(text="clean", generated_token_count=3, stop_reason="eos_token",
+                          stop_token_id=2, has_post_terminator_continuation=False),
+        GenerationResult(text="anomalous", generated_token_count=3, stop_reason="eos_token",
+                          stop_token_id=2, has_post_terminator_continuation=True),
+    ]
+
+    monkeypatch.setattr(steer_sweep, "generate_batched", lambda model, tokenizer, todo_chats, **kwargs: list(scripted))
+
+    cfg = _cfg()
+    path = tmp_path / "baseline.jsonl"
+    steer_sweep.run_one(
+        model=None, tokenizer=None, records=records, chats=chats,
+        coefficient=0.0, vectors={}, cfg=cfg, path=path, label="test", batch_size=2,
+    )
+
+    written = read_jsonl(path)
+    assert written[0]["has_post_terminator_continuation"] is False
+    assert written[1]["has_post_terminator_continuation"] is True
+
+
 def test_run_one_raises_clearly_on_a_result_count_mismatch(tmp_path, monkeypatch):
     """generate_batched returning fewer results than pending records must fail loudly,
     not silently truncate via zip(...) and write a partial batch."""

@@ -277,6 +277,7 @@ def run_one(
         out["generated_token_count"] = result.generated_token_count
         out["stop_reason"] = result.stop_reason
         out["stop_token_id"] = result.stop_token_id
+        out["has_post_terminator_continuation"] = result.has_post_terminator_continuation
         out["lambda"] = coefficient
         append_jsonl(out, path)
     return len(todo)

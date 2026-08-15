@@ -221,3 +221,73 @@ def test_tokens_after_the_first_terminator_are_never_counted():
     assert r.generated_token_count == 2
     assert r.stop_reason == "eos_token"
     assert r.stop_token_id == 2
+
+
+# Post-terminator continuation flag (Task 013, Gate 2)
+
+
+def test_default_result_has_post_terminator_continuation_false():
+    """Default-compatible: constructing a GenerationResult without the new field must
+    still work, and default to False, preserving the pre-Task-013 API."""
+    r = GenerationResult(text="x", generated_token_count=1, stop_reason="eos_token", stop_token_id=2)
+    assert r.has_post_terminator_continuation is False
+
+
+def test_clean_batch_padding_after_a_terminator_is_not_continuation():
+    """pad_token_id defaults to 0 in _FakeTokenizer -- trailing 0s after EOS are
+    ordinary batch padding for a row that finished before the longest row in the
+    batch, not a genuine continuation."""
+    tok = _FakeTokenizer({"<|eot_id|>": 7}, eos_token_id=2)
+    model = _ScriptedModel([[5, 6, 9, 2, 0, 0]])  # EOS at index 3, then clean padding
+
+    [r] = generate_batched(model, tok, ["hello"], max_new_tokens=6, batch_size=1, return_metadata=True)
+
+    assert r.stop_reason == "eos_token"
+    assert r.has_post_terminator_continuation is False
+
+
+def test_a_real_content_token_after_a_terminator_is_detected():
+    tok = _FakeTokenizer({"<|eot_id|>": 7}, eos_token_id=2)
+    # EOS at index 1, followed by non-pad, non-terminator content tokens.
+    model = _ScriptedModel([[5, 2, 6, 9, 0]])
+
+    [r] = generate_batched(model, tok, ["hello"], max_new_tokens=5, batch_size=1, return_metadata=True)
+
+    assert r.stop_reason == "eos_token"
+    assert r.has_post_terminator_continuation is True
+
+
+def test_a_repeated_terminator_after_the_first_is_not_continuation():
+    """A second terminator token repeated after the first is not "content" -- only a
+    non-pad, non-terminator token counts."""
+    tok = _FakeTokenizer({"<|eot_id|>": 7}, eos_token_id=2)
+    model = _ScriptedModel([[5, 2, 2, 7, 0]])  # EOS at index 1, then more terminators and padding
+
+    [r] = generate_batched(model, tok, ["hello"], max_new_tokens=5, batch_size=1, return_metadata=True)
+
+    assert r.has_post_terminator_continuation is False
+
+
+def test_no_terminator_hit_means_no_post_terminator_continuation():
+    """max_new_tokens/unknown stops never hit a terminator, so the question of
+    "content after the terminator" does not apply -- always False."""
+    tok = _FakeTokenizer({"<|eot_id|>": 7}, eos_token_id=2)
+    model = _ScriptedModel([[5, 6, 9, 9]])  # no terminator anywhere; reaches max_new_tokens
+
+    [r] = generate_batched(model, tok, ["hello"], max_new_tokens=4, batch_size=1, return_metadata=True)
+
+    assert r.stop_reason == "max_new_tokens"
+    assert r.has_post_terminator_continuation is False
+
+
+def test_post_terminator_continuation_is_computed_independently_per_row():
+    tok = _FakeTokenizer({"<|eot_id|>": 7}, eos_token_id=2)
+    model = _ScriptedModel([
+        [5, 2, 0, 0],   # row 0: EOS then clean padding -- False
+        [5, 2, 6, 0],   # row 1: EOS then real content -- True
+    ])
+
+    results = generate_batched(model, tok, ["a", "b"], max_new_tokens=4, batch_size=2, return_metadata=True)
+
+    assert results[0].has_post_terminator_continuation is False
+    assert results[1].has_post_terminator_continuation is True

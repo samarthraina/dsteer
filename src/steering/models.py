@@ -13,12 +13,20 @@ from .config import ModelConfig
 log = logging.getLogger(__name__)
 
 
-def load_tokenizer(model_path: str, subfolder: str = "", fallback_pad_token: str = "<|endoftext|>") -> PreTrainedTokenizer:
+def load_tokenizer(
+    model_path: str, subfolder: str = "", fallback_pad_token: str = "<|endoftext|>",
+    trust_remote_code: bool = True, local_files_only: bool = False,
+) -> PreTrainedTokenizer:
     """Load a tokenizer. Ensures pad_token is set.
 
     If pad_token is missing, use eos_token (standard for causal LMs).
+
+    `trust_remote_code`/`local_files_only` default to the historical behavior (trusted,
+    network-allowed) so every existing caller is unaffected; a caller loading from an
+    already-verified local endpoint (Task 013's Gate 2 smoke test) passes
+    `trust_remote_code=False, local_files_only=True` explicitly instead.
     """
-    kwargs = {"trust_remote_code": True}
+    kwargs = {"trust_remote_code": trust_remote_code, "local_files_only": local_files_only}
     if subfolder:
         kwargs["subfolder"] = subfolder
     try:
@@ -29,7 +37,7 @@ def load_tokenizer(model_path: str, subfolder: str = "", fallback_pad_token: str
         # Fall back to a fast tokenizer backed by tokenizer.json.
         log.warning(f"AutoTokenizer failed ({e}); falling back to PreTrainedTokenizerFast for {model_path}")
         from transformers import PreTrainedTokenizerFast
-        fast_kwargs = {"trust_remote_code": True}
+        fast_kwargs = {"trust_remote_code": trust_remote_code, "local_files_only": local_files_only}
         if subfolder:
             fast_kwargs["subfolder"] = subfolder
         tok = PreTrainedTokenizerFast.from_pretrained(model_path, **fast_kwargs)
@@ -48,13 +56,22 @@ def load_model(
     subfolder: str = "",
     dtype: torch.dtype = torch.bfloat16,
     device_map: str = "auto",
+    trust_remote_code: bool = True,
+    local_files_only: bool = False,
 ) -> PreTrainedModel:
-    """Load a model in bf16. Sets to eval mode."""
+    """Load a model in bf16. Sets to eval mode.
+
+    `trust_remote_code`/`local_files_only` default to the historical behavior (trusted,
+    network-allowed) so every existing caller is unaffected; a caller loading from an
+    already-verified local endpoint (Task 013's Gate 2 smoke test) passes
+    `trust_remote_code=False, local_files_only=True` explicitly instead.
+    """
     log.info(f"Loading model: {model_path} subfolder={subfolder!r} (dtype={dtype}, device_map={device_map})")
     kwargs = {
         "torch_dtype": dtype,
         "device_map": device_map,
-        "trust_remote_code": True,
+        "trust_remote_code": trust_remote_code,
+        "local_files_only": local_files_only,
     }
     if subfolder:
         kwargs["subfolder"] = subfolder

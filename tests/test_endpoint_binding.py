@@ -734,3 +734,76 @@ def test_to_model_config_rejects_a_model_type_mismatch_between_it_and_dpo():
     resolved = eb.ResolvedPair(pair="A", it=it, dpo=dpo, candidate_manifest_hash=_hex64("1"), source_manifest_hash=_hex64("2"))
     with pytest.raises(eb.EndpointBindingError, match="model_type disagree"):
         resolved.to_model_config("name")
+
+
+# resolve_all_roles / ALL_ROLES (Task 013): the reusable all-role counterpart of
+# resolve_pair, used by the Gate 2 smoke test.
+
+
+def _all_five_roots(source_roots):
+    return {"pair_a_sft": source_roots["pair_a_sft"], "pair_a_dpo": source_roots["pair_a_dpo"], "pair_b_sft": source_roots["pair_b_sft"]}
+
+
+def test_all_roles_is_the_frozen_five_role_order():
+    assert eb.ALL_ROLES == ("M0-A", "M+-A", "M--A", "M0-B", "M+-B")
+
+
+def test_resolve_all_roles_resolves_every_role_with_correct_status(tmp_path):
+    manifest_path, source_roots, bundle_root, _, source_manifest_path = build_candidate_env(tmp_path)
+    resolved = eb.resolve_all_roles(
+        manifest_path, _all_five_roots(source_roots), bundle_root, source_manifest_path=source_manifest_path,
+    )
+
+    assert set(resolved.roles) == set(eb.ALL_ROLES)
+    assert resolved.roles["M0-A"].status == "direct"
+    assert resolved.roles["M+-A"].status == "direct"
+    assert resolved.roles["M--A"].status == "merged"
+    assert resolved.roles["M0-B"].status == "direct"
+    assert resolved.roles["M+-B"].status == "merged"
+    assert resolved.roles["M0-A"].local_path == source_roots["pair_a_sft"].resolve()
+    assert resolved.roles["M--A"].local_path == (Path(bundle_root) / "M--A").resolve()
+
+
+def test_resolve_all_roles_requires_exactly_the_three_direct_source_artifact_ids(tmp_path):
+    manifest_path, source_roots, bundle_root, _, source_manifest_path = build_candidate_env(tmp_path)
+
+    with pytest.raises(eb.EndpointBindingError, match="missing"):
+        eb.resolve_all_roles(manifest_path, {}, bundle_root, source_manifest_path=source_manifest_path)
+
+    incomplete = {"pair_a_sft": source_roots["pair_a_sft"]}
+    with pytest.raises(eb.EndpointBindingError, match="missing"):
+        eb.resolve_all_roles(manifest_path, incomplete, bundle_root, source_manifest_path=source_manifest_path)
+
+
+def test_resolve_all_roles_rejects_an_unexpected_source_mapping(tmp_path):
+    manifest_path, source_roots, bundle_root, _, source_manifest_path = build_candidate_env(tmp_path)
+    extra = dict(_all_five_roots(source_roots))
+    extra["pair_a_flip_adapter"] = bundle_root / "M--A"  # never a valid direct-source key
+    with pytest.raises(eb.EndpointBindingError, match="unexpected"):
+        eb.resolve_all_roles(manifest_path, extra, bundle_root, source_manifest_path=source_manifest_path)
+
+
+def test_resolve_all_roles_also_binds_against_the_frozen_source_manifest(tmp_path):
+    """resolve_all_roles must not skip the frozen-source cross-check that resolve_pair
+    performs -- a correctly self-rehashed candidate with a tampered direct revision
+    must still be rejected."""
+    manifest_path, source_roots, bundle_root, _, source_manifest_path = build_candidate_env(tmp_path)
+    _tamper_and_rehash(manifest_path, _tamper_direct_revision)
+
+    with pytest.raises(eb.EndpointBindingError, match="location.revision"):
+        eb.resolve_all_roles(manifest_path, _all_five_roots(source_roots), bundle_root, source_manifest_path=source_manifest_path)
+
+
+def test_resolved_endpoint_set_run_metadata_covers_all_five_roles(tmp_path):
+    manifest_path, source_roots, bundle_root, candidate, source_manifest_path = build_candidate_env(tmp_path)
+    resolved = eb.resolve_all_roles(
+        manifest_path, _all_five_roots(source_roots), bundle_root, source_manifest_path=source_manifest_path,
+    )
+
+    meta = resolved.run_metadata()
+    assert meta["mode"] == "endpoint_all_roles"
+    assert meta["candidate_manifest_hash"] == candidate["manifest_hash"]
+    assert meta["roles"] == list(eb.ALL_ROLES)
+    assert set(meta["endpoints"]) == set(eb.ALL_ROLES)
+    for role in eb.ALL_ROLES:
+        assert meta["endpoints"][role]["role"] == role

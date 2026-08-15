@@ -38,6 +38,11 @@ PAIR_ROLES: Dict[str, Dict[str, str]] = {
 }
 VALID_PAIRS: Tuple[str, ...] = tuple(sorted(PAIR_ROLES))
 
+#: Every role the candidate manifest declares, in the frozen order the protocol lists
+#: them (Section 4). The Gate 2 smoke test (and any future entrypoint needing every
+#: endpoint at once, not one pair) resolves against this instead of PAIR_ROLES.
+ALL_ROLES: Tuple[str, ...] = ("M0-A", "M+-A", "M--A", "M0-B", "M+-B")
+
 #: The committed frozen source-artifact manifest -- the one authority a candidate
 #: endpoint manifest is bound against. Never overridden by CLI/YAML input; the
 #: `source_manifest_path` parameter threaded through below exists only so tests can
@@ -470,25 +475,34 @@ def default_run_name(pair: str, candidate_manifest_hash: str) -> str:
     return f"endpoint-{pair}-{candidate_manifest_hash[:12]}"
 
 
+def _load_and_bind_candidate(
+    manifest_path: Union[str, Path], source_manifest_path: Optional[Union[str, Path]],
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Load the candidate manifest (existing hash and structural validation), load and
+    verify the frozen source-artifact manifest, and bind the two together -- shared by
+    every entrypoint that resolves one or more roles, whether one pair or all five.
+
+    The frozen-source binding runs for the *entire* candidate manifest (every declared
+    endpoint), not only the roles about to be resolved -- a candidate that lies about
+    an endpoint the caller does not happen to need is still a candidate that lied.
+    """
+    manifest = load_endpoint_manifest(manifest_path)
+    source_manifest = load_verified_frozen_source_manifest(source_manifest_path)
+    validate_candidate_against_frozen_source(manifest, source_manifest)
+    return manifest, source_manifest
+
+
 def resolve_pair(
     manifest_path: Union[str, Path], pair: str,
     source_roots: Mapping[str, Path], bundle_root: Union[str, Path],
     source_manifest_path: Optional[Union[str, Path]] = None,
 ) -> ResolvedPair:
-    """Load the candidate manifest (existing hash and structural validation), bind it
-    to the verified frozen source-artifact manifest, resolve Pair A/B's IT and DPO
-    endpoints, and stream-verify every declared file for both before returning.
-
-    The frozen-source binding runs for the *entire* candidate manifest (every declared
-    endpoint), not only the two roles being resolved -- a candidate that lies about an
-    endpoint outside the requested pair is still a candidate that lied.
-    """
+    """Resolve Pair A/B's IT and DPO endpoints, and stream-verify every declared file
+    for both, after binding the candidate to the verified frozen source manifest."""
     if pair not in PAIR_ROLES:
         raise EndpointBindingError(f"unknown pair {pair!r}; must be one of {VALID_PAIRS}")
 
-    manifest = load_endpoint_manifest(manifest_path)
-    source_manifest = load_verified_frozen_source_manifest(source_manifest_path)
-    validate_candidate_against_frozen_source(manifest, source_manifest)
+    manifest, source_manifest = _load_and_bind_candidate(manifest_path, source_manifest_path)
 
     it_role, dpo_role = roles_for_pair(pair)
     validate_source_mappings(manifest, (it_role, dpo_role), source_roots)
@@ -498,6 +512,55 @@ def resolve_pair(
 
     return ResolvedPair(
         pair=pair, it=it, dpo=dpo,
+        candidate_manifest_hash=manifest["manifest_hash"],
+        source_manifest_hash=manifest["source_manifest_hash"],
+    )
+
+
+@dataclass
+class ResolvedEndpointSet:
+    """Every declared candidate-manifest role, resolved and file-verified at once, in
+    `ALL_ROLES` order -- the all-role counterpart of `ResolvedPair`, for an entrypoint
+    (the Gate 2 smoke test) that needs every endpoint rather than one pair."""
+
+    roles: Dict[str, ResolvedEndpoint]
+    candidate_manifest_hash: str
+    source_manifest_hash: str
+
+    def run_metadata(self) -> Dict[str, Any]:
+        """Complete endpoint provenance for all five roles, for `run_meta.json`."""
+        return {
+            "mode": "endpoint_all_roles",
+            "candidate_manifest_hash": self.candidate_manifest_hash,
+            "source_manifest_hash": self.source_manifest_hash,
+            "roles": list(ALL_ROLES),
+            "endpoints": {role: self.roles[role].as_metadata() for role in ALL_ROLES},
+        }
+
+
+def resolve_all_roles(
+    manifest_path: Union[str, Path],
+    source_roots: Mapping[str, Path], bundle_root: Union[str, Path],
+    source_manifest_path: Optional[Union[str, Path]] = None,
+) -> ResolvedEndpointSet:
+    """Resolve and file-verify every declared candidate-manifest role in `ALL_ROLES`
+    order (`M0-A, M+-A, M--A, M0-B, M+-B`), after binding the candidate to the verified
+    frozen source manifest. Direct endpoints (`M0-A`, `M+-A`, `M0-B`) are resolved only
+    from the matching supplied source root; merged endpoints (`M--A`, `M+-B`) are
+    resolved only beneath `bundle_root`. Exactly the direct-source artifact IDs among
+    `ALL_ROLES` are required in `source_roots` -- no fewer, no more.
+    """
+    manifest, source_manifest = _load_and_bind_candidate(manifest_path, source_manifest_path)
+
+    validate_source_mappings(manifest, ALL_ROLES, source_roots)
+
+    roles = {
+        role: resolve_endpoint(manifest, role, source_manifest, source_roots, bundle_root)
+        for role in ALL_ROLES
+    }
+
+    return ResolvedEndpointSet(
+        roles=roles,
         candidate_manifest_hash=manifest["manifest_hash"],
         source_manifest_hash=manifest["source_manifest_hash"],
     )
