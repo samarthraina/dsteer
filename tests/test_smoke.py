@@ -50,10 +50,12 @@ def test_iteval_config_loads():
     assert cfg.max_new_tokens > 0
     assert cfg.judge.model_name.startswith("Qwen")
     assert cfg.judge.server_url.startswith("http")
-    # Nested judge settings must survive the YAML round-trip, including the
-    # probability-weighting fields.
-    assert isinstance(cfg.judge.use_logprobs, bool)
-    assert cfg.judge.max_score > 0
+    # Nested judge settings must survive the YAML round-trip. it_eval.yaml does not
+    # override these, so they must resolve to the safe defaults: probability weighting
+    # off (Task 005 made the emitted discrete integer the sole authoritative score) and
+    # the scale frozen at 10.
+    assert cfg.judge.use_logprobs is False
+    assert cfg.judge.max_score == 10
 
 
 # IO helpers

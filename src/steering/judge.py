@@ -1,22 +1,24 @@
 """Custom LLM-as-judge client for vLLM. Replaces the deepeval dependency.
 
-Connects to a vLLM server running Qwen2.5-32B-Instruct (or similar) and
-returns parsed JSON scores. Handles retries, JSON extraction, and
-score normalization to [0, 1].
+Connects to a vLLM server running Qwen2.5-32B-Instruct (or similar) and returns parsed
+JSON scores. Handles retries, JSON extraction, and score normalization to [0, 1].
 
-Scores are probability-weighted where the server returns logprobs. A judge asked for an
-integer at temperature 0 concentrates on a few band anchors -- in our runs one metric put
-87.5% of its mass on a single value -- which leaves a nominally 11-point scale behaving
-like a 3-point one. G-Eval (Liu et al., 2023) handles this by weighting the score by the
-token probabilities, sum(p(s) * s), and that is what `_weighted_score` does. The raw
-integer is kept alongside so the two can be compared.
+The judge-emitted discrete integer (0-10) is the sole authoritative score (protocol
+Section 10). A JSON `score` is accepted only when it is a genuine JSON integer in that
+range -- never a string, a float, a bool, or anything out of range -- and never clamped,
+rounded, or coerced into range. An earlier version of this module re-weighted the
+emitted integer by the token-probability distribution at its position (G-Eval, Liu et
+al. 2023 sec. 2.3), to recover a continuous metric from a judge that concentrates its
+mass on a few band anchors at temperature 0. That estimator is ambiguous for
+multi-token scores and is not the outcome the protocol froze, so it has been removed
+from the scoring path entirely: judge requests no longer ask for logprobs, and
+`Judge.__init__` refuses to construct if a config asks for it.
 """
 
 from __future__ import annotations
 
 import json
 import logging
-import math
 import re
 import time
 from dataclasses import dataclass
@@ -28,31 +30,26 @@ from .config import JudgeConfig
 
 log = logging.getLogger(__name__)
 
-
-def _is_ascii_digits(text: str) -> bool:
-    """True only for plain 0-9.
-
-    str.isdigit() is not this test. It accepts superscripts and subscripts -- the judge's
-    alternatives at a score position include tokens like the subscript one -- and int()
-    then raises on them. That took out 86% of one metric's scores as failed calls before
-    it was caught, which is the failure mode this whole path is meant to avoid: a
-    silently unscored record looks the same as a judge that declined.
-    """
-    return bool(text) and text.isascii() and text.isdigit()
+#: The frozen scale (protocol Section 10). Not configurable per instance -- see
+#: `Judge.__init__`, which rejects any `JudgeConfig.max_score != PROTOCOL_MAX_SCORE`.
+PROTOCOL_MAX_SCORE = 10
 
 
 @dataclass
 class JudgeResponse:
     """One judge response.
 
-    score:     value in [0, 1] -- probability-weighted when logprobs were available
-    raw_score: the integer the judge emitted, normalised to [0, 1], always populated
-    weighted:  whether `score` used probability weighting
+    score:          the emitted integer normalised to [0, 1] (discrete_score / 10.0),
+                     or None on abstention -- the sole authoritative value.
+    discrete_score: the raw integer 0-10 the judge emitted, or None on abstention.
+    raw_score:      deprecated compatibility alias, always equal to `score`.
+    weighted:       deprecated; always False. No active path selects a weighted value.
     """
     score: Optional[float]
     reason: str
     raw: str
     error: Optional[str] = None
+    discrete_score: Optional[int] = None
     raw_score: Optional[float] = None
     weighted: bool = False
 
@@ -73,6 +70,18 @@ class Judge:
     )
 
     def __init__(self, cfg: JudgeConfig):
+        if cfg.use_logprobs:
+            raise ValueError(
+                "JudgeConfig.use_logprobs=True is no longer supported: probability "
+                "weighting was removed from the scoring path (protocol Section 10 makes "
+                "the judge's emitted discrete integer the sole authoritative score). "
+                "Set use_logprobs=False."
+            )
+        if cfg.max_score != PROTOCOL_MAX_SCORE:
+            raise ValueError(
+                f"JudgeConfig.max_score={cfg.max_score} is not supported: this protocol "
+                f"path freezes the scale at 0-{PROTOCOL_MAX_SCORE}."
+            )
         self.cfg = cfg
         self.client = OpenAI(base_url=cfg.server_url, api_key=cfg.api_key)
         log.info(f"Judge connected to {cfg.server_url} (model={cfg.model_name})")
@@ -111,21 +120,22 @@ class Judge:
                     last_error = f"no 'score' key in JSON: {parsed!r}"
                     continue
 
-                def norm(v: float) -> float:
-                    return max(0.0, min(1.0, v / self.cfg.max_score))
+                discrete = self._validate_discrete_score(score_raw)
+                if discrete is None:
+                    last_error = (
+                        f"score must be a JSON integer 0-{PROTOCOL_MAX_SCORE} inclusive "
+                        f"(not a string, float, or bool); got {score_raw!r}"
+                    )
+                    continue
 
-                raw_score = norm(float(score_raw))
-
-                weighted = None
-                if self.cfg.use_logprobs:
-                    weighted = self._weighted_score(score_raw, response)
-
+                normalized = discrete / float(PROTOCOL_MAX_SCORE)
                 return JudgeResponse(
-                    score=raw_score if weighted is None else norm(weighted),
+                    score=normalized,
                     reason=str(reason),
                     raw=raw,
-                    raw_score=raw_score,
-                    weighted=weighted is not None,
+                    discrete_score=discrete,
+                    raw_score=normalized,
+                    weighted=False,
                 )
             except Exception as e:
                 last_error = f"{type(e).__name__}: {e}"
@@ -135,63 +145,22 @@ class Judge:
 
         return JudgeResponse(score=None, reason="", raw="", error=last_error)
 
-    def _weighted_score(self, emitted_score: Any, response: Any) -> Optional[float]:
-        """G-Eval probability weighting: sum(p(s) * s) over the score token's alternatives.
+    @staticmethod
+    def _validate_discrete_score(value: Any) -> Optional[int]:
+        """Accept only a genuine JSON integer 0-10 inclusive.
 
-        The score is located by position rather than by string match. On a 0-10 scale the
-        top of the range is emitted as two tokens -- '1' then '0' -- so searching for the
-        literal "10" finds nothing and the weighting silently never fires, which is what
-        it did before this. Instead: walk to the first digit token, and read the
-        alternatives there.
-
-        At that position the alternatives are the model's candidate scores. For an
-        emitted 10 they look like ['1', '9', '8', '7', ...], where '1' is the opening
-        digit of 10 and the rest are whole single-digit scores. So an alternative equal
-        to the emitted value's first digit is read as the full emitted value, and every
-        other digit as itself. That holds for any scale whose only multi-digit value is
-        its maximum, which covers 0-10.
-
-        Returns None when there are no logprobs or no digit token, and the caller keeps
-        the raw integer.
+        `bool` is rejected even though it subclasses `int` in Python -- `true`/`false`
+        are not scores. Strings (`"7"`), floats (`7.0`, `7.5`), and out-of-range
+        integers are all rejected, never coerced or clamped into range: an invalid
+        score is a reason to retry or abstain, not a number to guess at.
         """
-        try:
-            content = response.choices[0].logprobs.content
-        except AttributeError:
+        if isinstance(value, bool):
             return None
-        if not content:
+        if not isinstance(value, int):
             return None
-
-        emitted = str(emitted_score).strip()
-        if not _is_ascii_digits(emitted):
+        if not 0 <= value <= PROTOCOL_MAX_SCORE:
             return None
-
-        for token_info in content:
-            text = token_info.token.strip()
-            if not _is_ascii_digits(text):
-                continue
-
-            # First digit token: this is the score position.
-            probs: Dict[int, float] = {}
-            for alt in getattr(token_info, "top_logprobs", None) or []:
-                alt_text = alt.token.strip()
-                if not _is_ascii_digits(alt_text):
-                    continue
-                # A single digit matching the emitted value's opening digit stands for
-                # the whole emitted value (the '1' of '10'); anything else is itself.
-                if len(emitted) > 1 and alt_text == emitted[0]:
-                    value = int(emitted)
-                else:
-                    value = int(alt_text)
-                if 0 <= value <= self.cfg.max_score:
-                    # vLLM can return the same value under different token strings.
-                    probs[value] = probs.get(value, 0.0) + math.exp(alt.logprob)
-
-            total = sum(probs.values())
-            if not probs or total <= 0:
-                return None
-            return sum(value * p for value, p in probs.items()) / total
-
-        return None
+        return value
 
     # internals
 
@@ -212,7 +181,8 @@ class Judge:
         return "\n".join(parts)
 
     def _call(self, user_msg: str):
-        """Returns the full completion object; the caller needs logprobs as well as text."""
+        """Returns the full completion object. Never requests logprobs: `__init__`
+        already refused to construct this instance if `cfg.use_logprobs` were true."""
         kwargs: Dict[str, Any] = {
             "model": self.cfg.model_name,
             "messages": [
@@ -223,9 +193,6 @@ class Judge:
             "max_tokens": self.cfg.max_tokens,
             "timeout": self.cfg.timeout,
         }
-        if self.cfg.use_logprobs:
-            kwargs["logprobs"] = True
-            kwargs["top_logprobs"] = self.cfg.top_logprobs
         return self.client.chat.completions.create(**kwargs)
 
     @staticmethod

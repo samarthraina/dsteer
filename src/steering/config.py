@@ -41,13 +41,15 @@ class JudgeConfig:
     temperature: float = 0.0
     timeout: float = 180.0
 
-    # G-Eval probability weighting. The judge emits a single integer, and at temperature 0
-    # it lands on a handful of band anchors, so plain parsing yields a near-discrete metric.
-    # Re-weighting the score by the token probabilities recovers a continuous one, as in
-    # Liu et al. (2023) sec. 2.3. Set use_logprobs=False to fall back to the raw integer.
-    use_logprobs: bool = True
-    top_logprobs: int = 20
-    max_score: int = 10
+    # Deprecated (Task 005): G-Eval probability weighting used to re-weight the emitted
+    # score by token probabilities (Liu et al. 2023 sec. 2.3). The protocol (Section 10)
+    # freezes the judge's emitted discrete integer as the sole authoritative score, so
+    # `Judge` now refuses to construct at all if `use_logprobs=True` -- kept here only so
+    # a historical config setting it fails with a clear error instead of silently
+    # re-enabling the old estimator.
+    use_logprobs: bool = False
+    top_logprobs: int = 20  # unused; the judge request never asks for logprobs anymore
+    max_score: int = 10  # frozen at 10 for this protocol path; any other value fails clearly
 
 
 @dataclass

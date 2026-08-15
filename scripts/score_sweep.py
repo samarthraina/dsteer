@@ -78,7 +78,9 @@ def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str
         # guessing one would put it into the mean.
         for m in METRICS:
             out[f"{m}_score"] = None
+            out[f"{m}_discrete_score"] = None
         out["steering_shift_score"] = None
+        out["steering_shift_discrete_score"] = None
         return out
 
     text = prompt_text(rec)
@@ -88,9 +90,11 @@ def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str
         ("harmfulness", score_harmfulness(judge, input_text=text, output_text=response)),
         ("quality", score_quality(judge, output_text=response)),
     ]:
+        # discrete_score (0-10, or None) and score (the same value / 10, or None) are
+        # the judge's emitted integer -- the sole authoritative value (protocol
+        # Section 10). No weighted/probability-derived value is recorded here.
+        out[f"{name}_discrete_score"] = res.discrete_score
         out[f"{name}_score"] = res.score
-        out[f"{name}_raw_score"] = res.raw_score
-        out[f"{name}_weighted"] = res.weighted
         out[f"{name}_reason"] = res.reason
         if res.error:
             out[f"{name}_error"] = res.error
@@ -99,11 +103,14 @@ def score_one(judge: Judge, rec: Dict, it_ref: Dict[str, str], dpo_ref: Dict[str
     if a and b:
         shift = score_steering_shift(judge, input_text=text, output_text=response,
                                      reference_a=a, reference_b=b)
+        out["steering_shift_discrete_score"] = shift.discrete_score
         out["steering_shift_score"] = shift.score
-        out["steering_shift_raw_score"] = shift.raw_score
         out["steering_shift_reason"] = shift.reason
+        if shift.error:
+            out["steering_shift_error"] = shift.error
     else:
         out["steering_shift_score"] = None
+        out["steering_shift_discrete_score"] = None
     return out
 
 
@@ -138,8 +145,12 @@ def recheck_file(judge: Judge, scored: Path, dst: Path, metrics: List[str],
         text = prompt_text(rec)
         for m in metrics:
             res = SCORERS[m](judge, text, rec["response"])
+            out[f"{m}_discrete_score_v2"] = res.discrete_score
             out[f"{m}_score_v2"] = res.score
             out[f"{m}_reason_v2"] = res.reason
+            if res.error:
+                out[f"{m}_error_v2"] = res.error
+            out[f"{m}_discrete_score_v1"] = rec.get(f"{m}_discrete_score")
             out[f"{m}_score_v1"] = rec.get(f"{m}_score")
         return out
 
