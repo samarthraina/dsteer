@@ -360,11 +360,9 @@ def test_metadata_carries_exact_harmfulqa_provenance(tmp_path, monkeypatch):
         layer_profile.main()
 
     extra = calls[0]["kwargs"]["extra"]
-    assert extra == {
-        "harmfulqa_partition": "construction",
-        "harmfulqa_manifest_hash": "manifest-abc",
-        "harmfulqa_record_count": 4,
-    }
+    assert extra["harmfulqa_partition"] == "construction"
+    assert extra["harmfulqa_manifest_hash"] == "manifest-abc"
+    assert extra["harmfulqa_record_count"] == 4
 
 
 def test_write_run_metadata_is_called_before_setup_logging(tmp_path, monkeypatch):
@@ -559,12 +557,24 @@ def test_endpoint_metadata_is_merged_into_run_meta_extra(tmp_path, monkeypatch):
         "endpoints": {"it": {"role": "M0-A"}, "dpo": {"role": "M+-A"}},
     }
     monkeypatch.setattr(layer_profile, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+    monkeypatch.setattr(layer_profile, "verify_construction_prompt_identity", lambda *a, **k: None)
 
+    # Endpoint-backed activation extraction is only accepted on the frozen primary
+    # construction path (Task 014); the fixture must satisfy it for this "does the
+    # endpoint metadata reach run_meta.json" wiring check to reach write_run_metadata
+    # at all.
     eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
-        "prompt_source": "hh_rlhf", "n_prompts": 2, "output_dir": str(tmp_path / "out"),
+        "prompt_source": "harmfulqa", "prompt_partition": "construction",
+        "token_position": "prompt_last", "output_dir": str(tmp_path / "out"),
     })
-    fake_hh_records = [{"id": "hh-0", "prompt": [{"role": "user", "content": "q0"}], "chosen": "a0"}]
-    monkeypatch.setattr(layer_profile, "load_hh_rlhf_test", lambda n, seed: fake_hh_records[:n])
+    fake_records = [
+        {
+            "prompt": f"p{i}", "chosen": None, "source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}",
+            "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc",
+        }
+        for i in range(layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT)
+    ]
+    monkeypatch.setattr(layer_profile, "load_harmfulqa_partition", lambda partition: fake_records)
     monkeypatch.setattr(sys, "argv", [
         "layer_profile.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
         "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml),
@@ -577,4 +587,329 @@ def test_endpoint_metadata_is_merged_into_run_meta_extra(tmp_path, monkeypatch):
         layer_profile.main()
 
     assert calls[0]["kwargs"]["extra"]["endpoint"] == fake_endpoint_meta
+    assert calls[0]["kwargs"]["extra"]["protocol_profile"] == "primary_v1"
     assert calls[0]["kwargs"]["config"]["model"]["name"] == "endpoint-A-abc123"
+
+
+# Protocol-profile classification: primary construction requirements (Task 014)
+
+
+def _fake_construction_manifest(n: int):
+    return {
+        "records": [
+            {"source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}", "partition": "construction", "permuted_position": i}
+            for i in range(n)
+        ],
+    }
+
+
+def _valid_construction_prompts(n: int):
+    return [
+        {
+            "prompt": f"p{i}", "chosen": None, "source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}",
+            "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc",
+        }
+        for i in range(n)
+    ]
+
+
+def _construction_cfg(**overrides):
+    d = dict(prompt_source="harmfulqa", prompt_partition="construction", token_position="prompt_last")
+    d.update(overrides)
+    return layer_profile.LayerProfileConfig(**d)
+
+
+def _mock_frozen_manifest(monkeypatch, n: int):
+    monkeypatch.setattr(layer_profile, "load_manifest", lambda path: _fake_construction_manifest(n))
+    monkeypatch.setattr(layer_profile, "validate_manifest_identity", lambda m: None)
+
+
+# verify_construction_prompt_identity
+
+
+def test_verify_construction_prompt_identity_accepts_a_correctly_ordered_match(monkeypatch):
+    _mock_frozen_manifest(monkeypatch, 5)
+    prompts = [{"source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}"} for i in range(5)]
+    layer_profile.verify_construction_prompt_identity(prompts)  # must not raise
+
+
+def test_verify_construction_prompt_identity_rejects_reordered_records(monkeypatch):
+    _mock_frozen_manifest(monkeypatch, 5)
+    prompts = [{"source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}"} for i in [0, 2, 1, 3, 4]]
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.verify_construction_prompt_identity(prompts)
+
+
+def test_verify_construction_prompt_identity_rejects_a_wrong_prompt_hash(monkeypatch):
+    _mock_frozen_manifest(monkeypatch, 5)
+    prompts = [{"source_id": f"harmfulqa-{i}", "prompt_hash": ("tampered" if i == 2 else f"hash{i}")} for i in range(5)]
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.verify_construction_prompt_identity(prompts)
+
+
+def test_verify_construction_prompt_identity_rejects_a_wrong_source_id(monkeypatch):
+    _mock_frozen_manifest(monkeypatch, 5)
+    prompts = [{"source_id": ("tampered" if i == 3 else f"harmfulqa-{i}"), "prompt_hash": f"hash{i}"} for i in range(5)]
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.verify_construction_prompt_identity(prompts)
+
+
+# classify_activation_profile (phase 2: assumes phase 1 already passed -- record
+# count and manifest-verified identity, which need the prompts already loaded)
+
+
+def test_classify_activation_profile_primary_v1_for_a_conforming_endpoint_backed_run(monkeypatch):
+    n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
+    _mock_frozen_manifest(monkeypatch, n)
+    profile = layer_profile.classify_activation_profile(True, _construction_cfg(), _valid_construction_prompts(n))
+    assert profile == "primary_v1"
+
+
+def test_classify_activation_profile_legacy_is_unconditional_regardless_of_settings():
+    """A non-endpoint-backed run is always legacy_nonconfirmatory, even with settings
+    that would otherwise satisfy (or badly violate) the primary construction path."""
+    cfg = _construction_cfg(prompt_source="hh_rlhf", prompt_partition=None, token_position="response_last")
+    assert layer_profile.classify_activation_profile(False, cfg, [{"prompt": "x"}]) == "legacy_nonconfirmatory"
+
+
+# validate_endpoint_backed_construction_config (phase 1: config-only, before
+# load_prompts -- source, partition, and token_position need no loaded prompts)
+
+
+def test_validate_endpoint_backed_construction_config_accepts_a_conforming_config():
+    layer_profile.validate_endpoint_backed_construction_config(True, _construction_cfg())  # must not raise
+
+
+def test_validate_endpoint_backed_construction_config_is_a_noop_for_legacy_runs():
+    cfg = layer_profile.LayerProfileConfig(prompt_source="hh_rlhf", prompt_partition=None, token_position="response_last")
+    layer_profile.validate_endpoint_backed_construction_config(False, cfg)  # must not raise
+
+
+def test_validate_endpoint_backed_construction_config_rejects_hh_rlhf_for_endpoint_backed():
+    cfg = layer_profile.LayerProfileConfig(prompt_source="hh_rlhf", token_position="prompt_last")
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.validate_endpoint_backed_construction_config(True, cfg)
+
+
+def test_validate_endpoint_backed_construction_config_rejects_mixed_for_endpoint_backed():
+    cfg = layer_profile.LayerProfileConfig(prompt_source="mixed", token_position="prompt_last")
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.validate_endpoint_backed_construction_config(True, cfg)
+
+
+def test_validate_endpoint_backed_construction_config_rejects_a_non_construction_partition_for_endpoint_backed():
+    cfg = _construction_cfg(prompt_partition="development")
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.validate_endpoint_backed_construction_config(True, cfg)
+
+
+def test_validate_endpoint_backed_construction_config_rejects_response_last_for_endpoint_backed():
+    cfg = _construction_cfg(token_position="response_last")
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.validate_endpoint_backed_construction_config(True, cfg)
+
+
+@pytest.mark.parametrize("n", [1377, 1379, 100, 0])
+def test_classify_activation_profile_rejects_a_wrong_construction_record_count(n):
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.classify_activation_profile(True, _construction_cfg(), _valid_construction_prompts(n))
+
+
+def test_classify_activation_profile_rejects_reordered_construction_identities(monkeypatch):
+    n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
+    _mock_frozen_manifest(monkeypatch, n)
+    prompts = _valid_construction_prompts(n)
+    prompts[0], prompts[1] = prompts[1], prompts[0]  # same set of records, wrong order
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.classify_activation_profile(True, _construction_cfg(), prompts)
+
+
+def test_classify_activation_profile_rejects_an_unverified_construction_set(monkeypatch):
+    """The frozen manifest disagrees with every record -- simulating a drifted or
+    fabricated prompt list that happens to have the right count and partition label."""
+    n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
+    monkeypatch.setattr(layer_profile, "load_manifest", lambda path: _fake_construction_manifest(n))
+    monkeypatch.setattr(layer_profile, "validate_manifest_identity", lambda m: None)
+    prompts = [
+        {
+            "prompt": f"p{i}", "chosen": None, "source_id": f"not-the-real-id-{i}", "prompt_hash": f"not-the-real-hash-{i}",
+            "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc",
+        }
+        for i in range(n)
+    ]
+    with pytest.raises(layer_profile.ProtocolProfileError):
+        layer_profile.classify_activation_profile(True, _construction_cfg(), prompts)
+
+
+# main(): fail-before-mutation ordering, metadata, and safe loading (Task 014)
+
+
+@pytest.mark.parametrize("eval_overrides", [
+    {"prompt_source": "hh_rlhf"},
+    {"prompt_source": "mixed"},
+    {"prompt_source": "harmfulqa", "prompt_partition": "development", "token_position": "prompt_last"},
+    {"prompt_source": "harmfulqa", "prompt_partition": "construction", "token_position": "response_last"},
+], ids=["hh_rlhf", "mixed", "wrong_partition", "response_last"])
+def test_layer_profile_endpoint_backed_protocol_mismatch_fails_before_any_side_effect(tmp_path, monkeypatch, eval_overrides):
+    """Phase 1 (validate_endpoint_backed_construction_config) runs before
+    load_prompts, so an endpoint-backed HH/mixed/wrong-partition/response_last
+    configuration must fail before any prompt loader, output creation, metadata
+    writing, logging, checkpoint deletion, or model/tokenizer/GPU access occurs.
+
+    mixed, wrong_partition, and response_last are already rejected earlier still, by
+    the pre-existing, endpoint-agnostic validate_harmfulqa_construction_config (a
+    ValueError); only hh_rlhf reaches the endpoint-backed phase-1 check itself (a
+    ProtocolProfileError). Either is a legitimate fail-before-mutation exit -- the
+    forbidden calls below are what actually pins the "no side effects" guarantee.
+    """
+    fake_model_cfg = layer_profile.ModelConfig(**_model_cfg_dict())
+    fake_endpoint_meta = {"mode": "endpoint", "pair": "A"}
+    monkeypatch.setattr(layer_profile, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+
+    eval_cfg_dict = {"n_prompts": 3, "output_dir": str(tmp_path / "out")}
+    eval_cfg_dict.update(eval_overrides)
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", eval_cfg_dict)
+    monkeypatch.setattr(sys, "argv", [
+        "layer_profile.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
+        "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml),
+    ])
+
+    _forbid(monkeypatch, "load_prompts")
+    _forbid(monkeypatch, "load_hh_rlhf_test")
+    _forbid(monkeypatch, "load_harmfulqa_partition")
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "write_run_metadata")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises((layer_profile.ProtocolProfileError, ValueError)):
+        layer_profile.main()
+
+
+def test_layer_profile_metadata_contains_protocol_profile_and_loading_policy(tmp_path, monkeypatch):
+    fake_model_cfg = layer_profile.ModelConfig(**_model_cfg_dict(name="endpoint-A-abc123"))
+    fake_endpoint_meta = {"mode": "endpoint", "pair": "A"}
+    monkeypatch.setattr(layer_profile, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+    monkeypatch.setattr(layer_profile, "verify_construction_prompt_identity", lambda *a, **k: None)
+
+    n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
+    fake_records = [
+        {"prompt": f"p{i}", "chosen": None, "source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}",
+         "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc"}
+        for i in range(n)
+    ]
+    monkeypatch.setattr(layer_profile, "load_harmfulqa_partition", lambda partition: fake_records)
+
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "harmfulqa", "prompt_partition": "construction",
+        "token_position": "prompt_last", "output_dir": str(tmp_path / "out"),
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "layer_profile.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
+        "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml),
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        layer_profile.main()
+
+    extra = calls[0]["kwargs"]["extra"]
+    assert extra["protocol_profile"] == "primary_v1"
+    assert extra["endpoint_backed"] is True
+    assert extra["model_loading_policy"] == {"local_files_only": True, "trust_remote_code": False}
+
+
+def test_endpoint_backed_run_passes_the_safe_loading_policy_to_tokenizer_and_activation_extraction(tmp_path, monkeypatch):
+    fake_model_cfg = layer_profile.ModelConfig(**_model_cfg_dict(name="endpoint-A-abc123"))
+    fake_endpoint_meta = {"mode": "endpoint", "pair": "A"}
+    monkeypatch.setattr(layer_profile, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+    monkeypatch.setattr(layer_profile, "verify_construction_prompt_identity", lambda *a, **k: None)
+
+    n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
+    fake_records = [
+        {"prompt": f"p{i}", "chosen": None, "source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}",
+         "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc"}
+        for i in range(n)
+    ]
+    monkeypatch.setattr(layer_profile, "load_harmfulqa_partition", lambda partition: fake_records)
+
+    tokenizer_calls = []
+    monkeypatch.setattr(layer_profile, "load_tokenizer", lambda *a, **k: tokenizer_calls.append(k) or object())
+
+    extraction_calls = []
+
+    def fake_extract_activations(model_path, subfolder, tokenizer, prompts, cfg, checkpoint_path=None, loading_policy=None):
+        extraction_calls.append(loading_policy)
+        return torch.zeros(2, len(prompts), 2)
+
+    monkeypatch.setattr(layer_profile, "extract_activations", fake_extract_activations)
+
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "harmfulqa", "prompt_partition": "construction",
+        "token_position": "prompt_last", "output_dir": str(tmp_path / "out"),
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "layer_profile.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
+        "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml),
+    ])
+
+    layer_profile.main()
+
+    assert len(tokenizer_calls) == 1
+    assert tokenizer_calls[0]["local_files_only"] is True
+    assert tokenizer_calls[0]["trust_remote_code"] is False
+    assert extraction_calls == [
+        {"local_files_only": True, "trust_remote_code": False},
+        {"local_files_only": True, "trust_remote_code": False},
+    ]
+
+
+def test_legacy_run_passes_the_historical_permissive_policy_to_tokenizer_and_activation_extraction(tmp_path, monkeypatch):
+    """Legacy behavior remains usable, and is explicitly non-confirmatory -- the loading
+    policy stays the historical, more permissive default, unchanged."""
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    tokenizer_calls = []
+    monkeypatch.setattr(layer_profile, "load_tokenizer", lambda *a, **k: tokenizer_calls.append(k) or object())
+
+    extraction_calls = []
+
+    def fake_extract_activations(model_path, subfolder, tokenizer, prompts, cfg, checkpoint_path=None, loading_policy=None):
+        extraction_calls.append(loading_policy)
+        return torch.zeros(2, len(prompts), 2)
+
+    monkeypatch.setattr(layer_profile, "extract_activations", fake_extract_activations)
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls, raise_sentinel=False)
+
+    layer_profile.main()
+
+    assert len(tokenizer_calls) == 1
+    assert tokenizer_calls[0]["local_files_only"] is False
+    assert tokenizer_calls[0]["trust_remote_code"] is True
+    assert extraction_calls == [
+        {"local_files_only": False, "trust_remote_code": True},
+        {"local_files_only": False, "trust_remote_code": True},
+    ]
+    assert calls[0]["kwargs"]["extra"]["protocol_profile"] == "legacy_nonconfirmatory"
+    assert calls[0]["kwargs"]["extra"]["endpoint_backed"] is False
+
+
+def test_summary_write_uses_utf8_so_the_real_arrow_character_round_trips(tmp_path):
+    """Pins the fix for a real bug: summary.txt.write_text(summary) with no explicit
+    encoding used the Windows cp1252 codepage, which cannot represent the U+2192 arrow
+    that summarize_findings's real output always contains -- crashing main() on
+    Windows the first time a test exercised its summary-writing step all the way
+    through. The fix is an explicit encoding="utf-8", not stubbing the summary away."""
+    stats_df = layer_profile.compute_layer_stats(torch.randn(4, 5, 8), torch.randn(4, 5, 8))
+    summary = layer_profile.summarize_findings(stats_df, num_layers=4)
+    assert "→" in summary
+
+    path = tmp_path / "summary.txt"
+    path.write_text(summary, encoding="utf-8")
+    assert path.read_text(encoding="utf-8") == summary

@@ -25,7 +25,7 @@ import json
 import sys
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 
@@ -44,6 +44,41 @@ from steering.utils import append_jsonl, load_yaml, read_jsonl, set_all_seeds, s
 HARMFULQA_SWEEP_PARTITIONS = ("development", "calibration")
 
 
+#: Frozen primary steering protocol (Task 014). An endpoint-backed run is only
+#: protocol_profile="primary_v1" when its resolved configuration matches every one of
+#: these exactly -- see classify_protocol_profile below. Kept as the single source of
+#: truth: SteerSweepConfig's own defaults are built from these same constants, so the
+#: dataclass defaults and configs/steer_sweep.yaml cannot silently drift apart.
+PRIMARY_COEFFICIENTS: Tuple[float, ...] = (0.01, 0.025, 0.05, 0.075, 0.10)
+PRIMARY_LAYERS: Tuple[int, ...] = (27, 28, 29, 30, 31)
+PRIMARY_VECTOR_METHOD = "mean"
+PRIMARY_VECTOR_NORMALISE = "relative"
+PRIMARY_POSITIONS = "all"
+PRIMARY_PRESERVE_NORM = False
+PRIMARY_MAX_NEW_TOKENS = 512
+PRIMARY_MAX_INPUT_LENGTH = 2048
+PRIMARY_HARMFULQA_PARTITION = "calibration"
+PRIMARY_LAYERS_LAST_K = 5
+
+#: The only seeds a matched random-direction control may use (protocol Section 8).
+RANDOM_CONTROL_SEEDS: Tuple[int, ...] = (11, 22, 33, 44, 55)
+
+#: The only layers a single-layer diagnostic may evaluate (protocol Section 6: "A
+#: compact single-layer diagnostic may evaluate layers 11, 19, 27, 31").
+DIAGNOSTIC_LAYERS: Tuple[int, ...] = (11, 19, 27, 31)
+
+#: A full projection removal uses exactly one coefficient, 1.0 -- the primary grid
+#: (PRIMARY_COEFFICIENTS) sweeps installation/reversal strength and is not itself the
+#: predeclared ablation diagnostic.
+ABLATION_LAMBDAS: Tuple[float, ...] = (1.0,)
+
+#: Every label a run's metadata may carry -- exactly one, never inferred by omission.
+PROTOCOL_PROFILES: Tuple[str, ...] = (
+    "primary_v1", "secondary_random_control_v1", "secondary_ablation_v1",
+    "secondary_layer_diagnostic_v1", "legacy_nonconfirmatory",
+)
+
+
 @dataclass
 class SteerSweepConfig:
     """Settings for one direction of a steering sweep."""
@@ -54,38 +89,261 @@ class SteerSweepConfig:
     # Frozen manifest partition, when prompt_source == "harmfulqa". Only "development"
     # or "calibration" are allowed here -- construction is direction-estimation data,
     # and final_evaluation is reserved for the later confirmatory runner. A CLI
-    # --partition, if given, overrides this.
-    prompt_partition: Optional[str] = None
+    # --partition, if given, overrides this. "calibration" is the frozen primary
+    # protocol's default evaluation partition (Task 014).
+    prompt_partition: Optional[str] = PRIMARY_HARMFULQA_PARTITION
 
     # Not consulted when prompt_source == "harmfulqa": the named partition is loaded in
     # full, with no sampling.
     n_prompts: int = 300
 
-    # Steering strengths, given as magnitudes; the sign comes from --side.
-    lambdas: Sequence[float] = field(default_factory=lambda: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
+    # Frozen primary coefficients (Task 014), given as magnitudes; the sign comes from
+    # --side.
+    lambdas: Sequence[float] = field(default_factory=lambda: list(PRIMARY_COEFFICIENTS))
 
-    # Which layers, counted from the top. The paper steers the last 5.
-    layers_last_k: int = 5
+    # Which layers, counted from the top. layers_last_k=5 on a 32-layer checkpoint
+    # (both frozen pairs) resolves to the frozen primary layer set PRIMARY_LAYERS.
+    layers_last_k: int = PRIMARY_LAYERS_LAST_K
 
-    # Vector construction. "mean" is Eq. 2; "pc3" is what the v1 notebook ran.
-    vector_method: str = "mean"
-    vector_normalise: Optional[str] = None   # None | unit | relative
-    positions: str = "all"                   # all | new
-    preserve_norm: bool = False
+    # Vector construction. "mean" is the frozen primary direction (Eq. 2); "pc3" is
+    # what the v1 notebook ran -- never labelled primary_v1.
+    vector_method: str = PRIMARY_VECTOR_METHOD
+    vector_normalise: Optional[str] = PRIMARY_VECTOR_NORMALISE   # None | unit | relative
+    positions: str = PRIMARY_POSITIONS                            # all | new
+    preserve_norm: bool = PRIMARY_PRESERVE_NORM
 
-    # Where the activations for vector construction live.
-    activations_dir: str = "outputs/layer_profile_response_token"
+    # Where the activations for vector construction live -- must agree with
+    # layer_profile.py's own LayerProfileConfig.output_dir default, since both name the
+    # same manifest-backed construction tree (<activations_dir>/<model>/construction/).
+    activations_dir: str = "outputs/layer_profile"
 
     # Generation
-    max_new_tokens: int = 512
+    max_new_tokens: int = PRIMARY_MAX_NEW_TOKENS
     batch_size: Optional[int] = None         # None -> size from free VRAM
-    max_input_length: int = 2048
+    max_input_length: int = PRIMARY_MAX_INPUT_LENGTH
 
     output_dir: str = "outputs/steer"
 
     @classmethod
     def from_yaml(cls, path: Union[str, Path]) -> "SteerSweepConfig":
         return cls(**load_yaml(path))
+
+
+# Protocol-profile classification (Task 014)
+#
+# Every run gets exactly one label. Rather than a general experiment-management
+# framework, this is a single pure function over the resolved facts a run already has
+# before any prompt, vector, model, or GPU access -- so it can run first and raise
+# before any of that, and so "ambiguous" is a real, reachable outcome rather than a
+# silently-picked default.
+
+
+class ProtocolProfileError(ValueError):
+    """An endpoint-backed steering-sweep run's resolved configuration does not match
+    any of the five declared protocol profiles."""
+
+
+@dataclass
+class RunProfileInputs:
+    """The resolved facts a steering-sweep run's protocol-profile classification
+    depends on -- config values plus CLI flags, all available before any prompt,
+    vector, model, or GPU access.
+
+    `random_seed` is the dedicated `--random-seed` random-direction identity, never
+    the general `--seed` run seed -- the two are independent (see
+    validate_random_seed_args).
+    """
+
+    endpoint_backed: bool
+    lambdas: Sequence[float]
+    layers: Sequence[int]
+    vector_method: str
+    vector_normalise: Optional[str]
+    positions: str
+    preserve_norm: bool
+    max_new_tokens: int
+    max_input_length: int
+    mode: str
+    random_control: bool
+    random_seed: Optional[int]
+    external_vectors: bool
+    single_layer_override: bool
+
+
+def _matches_frozen_primary_core(inputs: RunProfileInputs) -> bool:
+    """Every frozen-protocol field a `primary_v1` run must match exactly, and that a
+    `secondary_random_control_v1` run must "otherwise preserve" (protocol Section 8) --
+    everything about the primary intervention except which direction is used."""
+    return (
+        tuple(inputs.lambdas) == PRIMARY_COEFFICIENTS
+        and tuple(inputs.layers) == PRIMARY_LAYERS
+        and inputs.vector_method == PRIMARY_VECTOR_METHOD
+        and inputs.vector_normalise == PRIMARY_VECTOR_NORMALISE
+        and inputs.positions == PRIMARY_POSITIONS
+        and inputs.preserve_norm == PRIMARY_PRESERVE_NORM
+        and inputs.max_new_tokens == PRIMARY_MAX_NEW_TOKENS
+        and inputs.max_input_length == PRIMARY_MAX_INPUT_LENGTH
+    )
+
+
+def _matches_frozen_settings_except_layers(inputs: RunProfileInputs) -> bool:
+    """Everything `_matches_frozen_primary_core` checks except the layer set itself --
+    what a `secondary_layer_diagnostic_v1` run (a single, different, predeclared
+    layer) must still match."""
+    return (
+        tuple(inputs.lambdas) == PRIMARY_COEFFICIENTS
+        and inputs.vector_method == PRIMARY_VECTOR_METHOD
+        and inputs.vector_normalise == PRIMARY_VECTOR_NORMALISE
+        and inputs.positions == PRIMARY_POSITIONS
+        and inputs.preserve_norm == PRIMARY_PRESERVE_NORM
+        and inputs.max_new_tokens == PRIMARY_MAX_NEW_TOKENS
+        and inputs.max_input_length == PRIMARY_MAX_INPUT_LENGTH
+    )
+
+
+def _matches_frozen_ablation_core(inputs: RunProfileInputs) -> bool:
+    """What a `secondary_ablation_v1` run must match: the frozen primary layer set,
+    vector method/normalisation, positions, preserve_norm, and generation limits --
+    but exactly the single full-removal coefficient (1.0), never the primary
+    installation/reversal grid."""
+    return (
+        tuple(inputs.lambdas) == ABLATION_LAMBDAS
+        and tuple(inputs.layers) == PRIMARY_LAYERS
+        and inputs.vector_method == PRIMARY_VECTOR_METHOD
+        and inputs.vector_normalise == PRIMARY_VECTOR_NORMALISE
+        and inputs.positions == PRIMARY_POSITIONS
+        and inputs.preserve_norm == PRIMARY_PRESERVE_NORM
+        and inputs.max_new_tokens == PRIMARY_MAX_NEW_TOKENS
+        and inputs.max_input_length == PRIMARY_MAX_INPUT_LENGTH
+    )
+
+
+def classify_protocol_profile(inputs: RunProfileInputs) -> str:
+    """Exactly one of the five declared protocol-profile labels, or raise
+    `ProtocolProfileError` if the resolved configuration is ambiguous rather than
+    guess at one.
+
+    Legacy (non-endpoint-backed) runs are always "legacy_nonconfirmatory", regardless
+    of their own settings -- there is no legacy primary or secondary profile. An
+    endpoint-backed run using an externally supplied vector file never matches any
+    declared profile (primary_v1 requires the real manifest-backed mean direction, and
+    no secondary profile is defined for an arbitrary external source), so it is
+    rejected outright rather than folded into one. At most one of random-control,
+    projection-ablation, or a single-layer diagnostic may be active at once. Each
+    secondary profile represents exactly one deliberate deviation from the frozen
+    primary protocol -- every other setting must still match it exactly, so a
+    secondary label can never be used to authorize arbitrary additional drift.
+    """
+    if not inputs.endpoint_backed:
+        return "legacy_nonconfirmatory"
+
+    if inputs.external_vectors:
+        raise ProtocolProfileError(
+            "endpoint-backed runs with an externally supplied vector file (--vectors) do not "
+            "match any declared protocol profile: primary_v1 requires the real manifest-backed "
+            "mean direction, and no secondary profile is defined for an arbitrary external source"
+        )
+
+    active = [
+        name for name, flag in (
+            ("random-control", inputs.random_control),
+            ("projection-ablation", inputs.mode == "ablate"),
+            ("single-layer diagnostic", inputs.single_layer_override),
+        ) if flag
+    ]
+    if len(active) > 1:
+        raise ProtocolProfileError(f"ambiguous combination of secondary options: {', '.join(active)}")
+
+    if not active:
+        if _matches_frozen_primary_core(inputs):
+            return "primary_v1"
+        raise ProtocolProfileError(
+            "endpoint-backed run does not match the frozen primary steering protocol and uses "
+            "no recognized secondary-profile flag (random control, projection ablation, or a "
+            "single-layer diagnostic); refusing to guess a profile"
+        )
+
+    if inputs.random_control:
+        if inputs.random_seed is None or inputs.random_seed not in RANDOM_CONTROL_SEEDS:
+            raise ProtocolProfileError(
+                f"secondary_random_control_v1 requires --random-seed to be exactly one of "
+                f"{RANDOM_CONTROL_SEEDS}, got {inputs.random_seed!r}"
+            )
+        if not _matches_frozen_primary_core(inputs):
+            raise ProtocolProfileError(
+                "secondary_random_control_v1 requires the run to otherwise preserve the frozen "
+                "primary intervention settings (coefficients, layers, vector method/normalisation, "
+                "positions, preserve_norm, and generation limits) -- the only permitted deviation "
+                "is the random direction itself"
+            )
+        return "secondary_random_control_v1"
+
+    if inputs.mode == "ablate":
+        if not _matches_frozen_ablation_core(inputs):
+            raise ProtocolProfileError(
+                f"secondary_ablation_v1 requires lambdas={list(ABLATION_LAMBDAS)!r} (a full projection "
+                "removal, not the primary installation/reversal grid), the frozen primary layer set "
+                f"{list(PRIMARY_LAYERS)!r}, and otherwise the frozen primary settings (vector "
+                "method/normalisation, positions, preserve_norm, and generation limits)"
+            )
+        return "secondary_ablation_v1"
+
+    # single-layer diagnostic
+    if len(inputs.layers) != 1 or inputs.layers[0] not in DIAGNOSTIC_LAYERS:
+        raise ProtocolProfileError(
+            f"secondary_layer_diagnostic_v1 requires exactly one of the predeclared diagnostic "
+            f"layers {list(DIAGNOSTIC_LAYERS)!r}, got {list(inputs.layers)!r}"
+        )
+    if not _matches_frozen_settings_except_layers(inputs):
+        raise ProtocolProfileError(
+            "secondary_layer_diagnostic_v1 requires all other settings to match the frozen primary "
+            "protocol (coefficients, vector method/normalisation, positions, preserve_norm, and "
+            "generation limits) -- the only permitted deviation is the single diagnostic layer"
+        )
+    return "secondary_layer_diagnostic_v1"
+
+
+def validate_random_seed_args(args: argparse.Namespace) -> None:
+    """`--random-control` and `--random-seed` must be given together, exactly -- a pure
+    CLI-shape check, independent of endpoint verification or protocol classification,
+    so it is checked first and has no side effects of its own.
+
+    The permitted-value check (one of RANDOM_CONTROL_SEEDS) is a protocol question and
+    stays in classify_protocol_profile; this only checks the two flags travel together.
+    """
+    if args.random_control and args.random_seed is None:
+        raise ProtocolProfileError(
+            f"--random-control requires --random-seed (exactly one of {RANDOM_CONTROL_SEEDS})"
+        )
+    if args.random_seed is not None and not args.random_control:
+        raise ProtocolProfileError("--random-seed requires --random-control")
+
+
+def resolve_effective_layers(args: argparse.Namespace, cfg: "SteerSweepConfig", model_cfg: ModelConfig) -> List[int]:
+    """The absolute layer indices this run will steer, computed before any vector file
+    is loaded: an explicit --layers override, or the frozen last-k layers otherwise.
+    Computed once, early, so protocol classification can see the resolved layer set
+    before any side effect, and reused (not recomputed) once generation actually
+    begins -- except when --vectors is given, which determines its own layer set from
+    the loaded file and is never classified as primary_v1 (see
+    classify_protocol_profile), so this placeholder value is never relied upon there.
+    """
+    if args.layers:
+        layers = [int(x) for x in args.layers.split(",")]
+        bad = [l for l in layers if not 0 <= l < model_cfg.num_layers]
+        if bad:
+            raise ValueError(f"layers {bad} outside 0..{model_cfg.num_layers - 1}")
+        return layers
+    return steered_layers(model_cfg.num_layers, cfg.layers_last_k)
+
+
+def _model_loading_policy(endpoint_backed: bool) -> Dict[str, bool]:
+    """The effective model/tokenizer loading policy (Tasks 012/013): endpoint-backed
+    loads are restricted to verified local files with no remote code execution; legacy
+    loads keep the historical, more permissive defaults unchanged."""
+    if endpoint_backed:
+        return {"local_files_only": True, "trust_remote_code": False}
+    return {"local_files_only": False, "trust_remote_code": True}
 
 
 LOADERS = {
@@ -308,7 +566,11 @@ def run_tag(side: str, args, extra: str = "") -> str:
     if getattr(args, "hold_out", 0):
         parts.append(f"_ho{args.hold_out}")
     if getattr(args, "random_control", False):
-        parts.append("_random")
+        # The seed is part of the run's identity, not just its RNG state: five
+        # controls with different seeds must land in five different directories, or
+        # they collide, fail the metadata resume check, or silently reuse each
+        # other's generations.
+        parts.append(f"_random_s{getattr(args, 'random_seed', None)}")
     return "".join(parts)
 
 
@@ -345,7 +607,16 @@ def main():
     parser.add_argument(
         "--random-control", action="store_true",
         help="Replace the vectors with norm-matched random directions. If this moves "
-             "behaviour as much as the real ones, the sweep measures perturbation size.",
+             "behaviour as much as the real ones, the sweep measures perturbation size. "
+             "Requires --random-seed.",
+    )
+    parser.add_argument(
+        "--random-seed", type=int, default=None, metavar="SEED",
+        help="Required with --random-control: the random-direction identity, exactly "
+             f"one of {RANDOM_CONTROL_SEEDS} (protocol Section 8). Independent of "
+             "--seed, which is the general run seed and must never double as the "
+             "random-direction identity -- five controls with the same --seed but "
+             "different --random-seed must resolve to five different run directories.",
     )
     parser.add_argument(
         "--mode", choices=["add", "ablate"], default="add",
@@ -389,6 +660,11 @@ def main():
     parser.add_argument("--hourly-rate", type=float, default=None)
     args = parser.parse_args()
 
+    # A pure CLI-shape check (--random-control and --random-seed must travel
+    # together) -- before endpoint verification even runs, since it needs nothing from
+    # it and has no side effects of its own.
+    validate_random_seed_args(args)
+
     # Endpoint verification (frozen-source binding, candidate-manifest hash/structural
     # validation, and per-file SHA-256/size streaming, for endpoint-backed mode)
     # happens here, before anything below -- including `set_all_seeds`, which touches
@@ -399,13 +675,32 @@ def main():
         model_config=args.model_config, endpoint_manifest=args.endpoint_manifest,
         endpoint_bundle_root=args.endpoint_bundle_root, pair=args.pair, endpoint_source=args.endpoint_source,
     )
-
-    set_all_seeds(args.seed)
+    endpoint_backed = endpoint_meta is not None
 
     cfg = SteerSweepConfig.from_yaml(args.eval_config)
 
     partition = resolve_harmfulqa_partition(cfg, args.partition)
     reject_hold_out_for_harmfulqa(cfg.prompt_source, args.hold_out)
+
+    # The effective layer set, and the protocol-profile classification it feeds into,
+    # are both resolved from config/CLI facts only -- before set_all_seeds (CUDA),
+    # prompt loading, output creation, metadata writing, logging, checkpoint deletion,
+    # model/tokenizer loading, vector loading, or generation. A profile mismatch
+    # raises here, before any of that has run.
+    layers = resolve_effective_layers(args, cfg, model_cfg)
+    protocol_profile = classify_protocol_profile(RunProfileInputs(
+        endpoint_backed=endpoint_backed,
+        lambdas=tuple(cfg.lambdas), layers=tuple(layers),
+        vector_method=cfg.vector_method, vector_normalise=cfg.vector_normalise,
+        positions=cfg.positions, preserve_norm=cfg.preserve_norm,
+        max_new_tokens=cfg.max_new_tokens, max_input_length=cfg.max_input_length,
+        mode=args.mode, random_control=args.random_control, random_seed=args.random_seed,
+        external_vectors=bool(args.vectors),
+        single_layer_override=bool(args.layers) and len(layers) == 1,
+    ))
+    loading_policy = _model_loading_policy(endpoint_backed)
+
+    set_all_seeds(args.seed)
 
     tag = run_tag(args.side, args)
     out_root = Path(cfg.output_dir) / model_cfg.name / output_source_segment(cfg.prompt_source, partition) / tag
@@ -423,8 +718,13 @@ def main():
             "harmfulqa_manifest_hash": next(iter(manifest_hashes)) if len(manifest_hashes) == 1 else None,
             "harmfulqa_record_count": len(records),
         }
+    run_meta_extra = dict(run_meta_extra or {})
+    run_meta_extra["protocol_profile"] = protocol_profile
+    run_meta_extra["endpoint_backed"] = endpoint_backed
+    run_meta_extra["model_loading_policy"] = loading_policy
+    run_meta_extra["resolved_layers"] = layers
+    run_meta_extra["random_control_seed"] = args.random_seed if args.random_control else None
     if endpoint_meta is not None:
-        run_meta_extra = dict(run_meta_extra or {})
         run_meta_extra["endpoint"] = endpoint_meta
     write_run_metadata(
         out_root,
@@ -438,23 +738,20 @@ def main():
     # mismatched resume fails here, before it can touch anything.
     log = setup_logging(out_root / "steer_sweep.log")
     log.info(f"{len(records)} prompts from {cfg.prompt_source}" + (f" partition={partition}" if cfg.prompt_source == "harmfulqa" else ""))
+    log.info(f"protocol_profile={protocol_profile}")
 
     # Vectors come from the activations for this pair, at the response readout.
     if args.vectors:
         # A vector trained under the DPO loss, rather than read off a checkpoint pair.
-        # It arrives already per-layer, so the layer set comes from the file.
+        # It arrives already per-layer, so the layer set comes from the file --
+        # overriding the placeholder `layers` resolved above for classification
+        # (protocol_profile is never primary_v1 for an external-vectors run; see
+        # classify_protocol_profile).
         loaded = torch.load(Path(args.vectors), map_location="cpu")
         vectors = {int(k): v.float() for k, v in loaded.items()}
         layers = sorted(vectors)
         log.info(f"Loaded {len(vectors)} vectors from {args.vectors}; layers {layers}")
     else:
-        if args.layers:
-            layers = [int(x) for x in args.layers.split(",")]
-            bad = [l for l in layers if not 0 <= l < model_cfg.num_layers]
-            if bad:
-                parser.error(f"layers {bad} outside 0..{model_cfg.num_layers - 1}")
-        else:
-            layers = steered_layers(model_cfg.num_layers, cfg.layers_last_k)
         acts = Path(cfg.activations_dir) / model_cfg.name / "construction" / "activations.pt"
         if not acts.exists():
             raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")
@@ -463,15 +760,16 @@ def main():
                                 normalise=cfg.vector_normalise,
                                 skip_first=args.hold_out)
     if args.random_control:
-        vectors = random_vectors_like(vectors, seed=args.seed)
-        log.info("Using norm-matched RANDOM directions (control)")
+        vectors = random_vectors_like(vectors, seed=args.random_seed)
+        log.info(f"Using norm-matched RANDOM directions (control), random_seed={args.random_seed}")
     log.info(f"Steering layers {layers[0]}-{layers[-1]} with method={cfg.vector_method}")
 
     which = model_cfg.it_model if args.side == "it" else model_cfg.dpo_model
     sub = (model_cfg.it_subfolder if args.side == "it" else model_cfg.dpo_subfolder) or ""
     tokenizer = load_tokenizer(model_cfg.tokenizer_id or which,
-                               subfolder=model_cfg.tokenizer_subfolder or sub)
-    model = load_model(which, subfolder=sub)
+                               subfolder=model_cfg.tokenizer_subfolder or sub,
+                               **loading_policy)
+    model = load_model(which, subfolder=sub, **loading_policy)
     chats = build_chat_prompts(tokenizer, [r["prompt"] for r in records])
 
     batch_size = cfg.batch_size or suggest_batch_size(model)

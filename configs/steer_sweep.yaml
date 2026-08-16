@@ -1,35 +1,39 @@
 # Steering sweep, one direction per invocation (--side it | dpo).
 #
-# Scope is deliberately smaller than the earlier 16 lambdas x 1000 prompts. That
-# grid exists already; what is missing is a correct one. 7 settings x a frozen
-# partition is enough to locate the usable range and to test whether behaviour tracks
-# the geometry, at roughly an eighth of the generation cost.
+# These are the frozen primary steering protocol's settings (Task 014): 5 relative
+# coefficients x the last 5 layers x a frozen partition, mean direction, relative
+# normalisation. An endpoint-backed run only classifies as protocol_profile=primary_v1
+# when every field below is exactly this; --random-control, --mode ablate, and a
+# single-layer --layers override remain available as explicitly labelled secondary
+# profiles (see classify_protocol_profile in scripts/steer_sweep.py).
 
 prompt_source: harmfulqa
 
-# calibration is the safe default for coefficient selection (protocol Section 7).
-# Development pilots override this with --partition development on the CLI.
+# calibration is the frozen default HarmfulQA evaluation partition (protocol Section
+# 7). Development pilots override this with --partition development on the CLI.
 # construction and final_evaluation are rejected by the script itself.
 prompt_partition: calibration
 
 # Not consulted for prompt_source=harmfulqa: the named partition is loaded in full.
 n_prompts: 300
 
-# Magnitudes. --side supplies the sign: +lambda on the IT checkpoint, -lambda on DPO.
-lambdas: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+# Frozen primary coefficients (protocol Section 7), given as magnitudes; --side
+# supplies the sign: +lambda on the IT checkpoint, -lambda on DPO.
+lambdas: [0.01, 0.025, 0.05, 0.075, 0.10]
 
-# The paper steers the last five layers with a single scalar. Kept for comparability;
-# the per-layer schedule is a separate experiment.
+# layers_last_k=5 on a 32-layer checkpoint (both frozen pairs) resolves to the frozen
+# primary layer set [27, 28, 29, 30, 31] (protocol Section 6).
 layers_last_k: 5
 
-# "mean" is the paper's Eq. 2. Set "pc3" to reproduce what the v1 notebook actually ran
-# -- the two are near-orthogonal, so this is a real fork, not a detail.
+# "mean" is the frozen primary direction (protocol Section 6, Eq. 2). Set "pc3" to
+# reproduce what the v1 notebook actually ran -- the two are near-orthogonal, so this
+# is a real fork, not a detail. Never labelled primary_v1 (see classify_protocol_profile).
 vector_method: mean
 
-# null keeps the natural scale, so lambda matches the published numbers. "relative"
-# makes lambda a fraction of typical activation norm, which is what makes an optimal
-# range comparable across models.
-vector_normalise: null
+# "relative" is frozen for the primary protocol: it rescales the vector to the mean
+# activation norm at its layer, making lambda a dimensionless fraction of typical
+# activation magnitude and comparable across the two model pairs.
+vector_normalise: relative
 
 positions: all
 preserve_norm: false

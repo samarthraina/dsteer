@@ -59,7 +59,23 @@ from steering.config import ModelConfig
 from steering.data import load_hh_rlhf_test, load_harmfulqa_partition
 from steering.endpoint_binding import resolve_model_source
 from steering.models import load_model, load_tokenizer
+from steering.splits import load_manifest, validate_manifest_identity
 from steering.utils import load_yaml, resolve_device, set_all_seeds, setup_logging
+
+#: Frozen primary construction requirements (protocol Sections 6, 13 Gate 1; Task 014).
+#: An endpoint-backed activation-extraction run is only protocol_profile="primary_v1"
+#: when it matches every one of these exactly -- see classify_activation_profile below.
+PRIMARY_CONSTRUCTION_SOURCE = "harmfulqa"
+PRIMARY_CONSTRUCTION_PARTITION = "construction"
+PRIMARY_CONSTRUCTION_RECORD_COUNT = 1378
+PRIMARY_TOKEN_POSITION = "prompt_last"
+
+PROTOCOL_PROFILES = ("primary_v1", "legacy_nonconfirmatory")
+
+
+class ProtocolProfileError(ValueError):
+    """An endpoint-backed activation-extraction run does not satisfy the frozen
+    primary construction requirements."""
 
 
 # Config
@@ -146,25 +162,27 @@ def main():
 
     # Endpoint verification (frozen-source binding, candidate-manifest hash/structural
     # validation, and per-file SHA-256/size streaming, for endpoint-backed mode)
-    # happens here, before anything below -- including `set_all_seeds`, which touches
-    # CUDA (`torch.cuda.is_available()`/`manual_seed_all`) on a GPU machine -- creates
-    # output, initializes logging, removes a partial checkpoint, or loads a
-    # prompt/model/GPU resource. A mismatch has no side effects.
+    # happens here, before anything below touches output, logging, a checkpoint, or a
+    # model/GPU resource. A mismatch has no side effects.
     model_cfg, endpoint_meta = resolve_model_source(
         model_config=args.model_config, endpoint_manifest=args.endpoint_manifest,
         endpoint_bundle_root=args.endpoint_bundle_root, pair=args.pair, endpoint_source=args.endpoint_source,
     )
-
-    set_all_seeds(args.seed)
+    endpoint_backed = endpoint_meta is not None
 
     eval_cfg = LayerProfileConfig.from_yaml(args.eval_config)
     validate_harmfulqa_construction_config(eval_cfg)
 
-    output_root = output_root_for(eval_cfg.output_dir, model_cfg.name, eval_cfg.prompt_source, eval_cfg.prompt_partition)
+    # Phase 1 of endpoint-backed primary construction eligibility (protocol Sections 6,
+    # 13 Gate 1): prompt_source/prompt_partition/token_position are checkable from
+    # config alone, so they are rejected here -- before any prompt loader runs, before
+    # set_all_seeds (CUDA), output creation, metadata writing, logging, checkpoint
+    # deletion, or any model/tokenizer/GPU access.
+    validate_endpoint_backed_construction_config(endpoint_backed, eval_cfg)
 
-    # Read-only preparation for the metadata identity check below -- loading prompts
-    # (and, for HarmfulQA, the frozen manifest partition they came from) mutates
-    # nothing on disk, so it is safe to do before the check that guards every write.
+    # Read-only preparation, safe before set_all_seeds (CUDA) and phase 2 of the
+    # protocol-profile check below: loading prompts (and, for HarmfulQA, the frozen
+    # manifest partition they came from) mutates nothing on disk.
     prompts = load_prompts(eval_cfg.prompt_source, eval_cfg.n_prompts, args.seed, eval_cfg.prompt_partition)
     if eval_cfg.token_position == "response_last":
         prompts = [p for p in prompts if p.get("chosen")]
@@ -172,6 +190,17 @@ def main():
             raise ValueError(
                 "response_last needs reference responses; prompt_source must be hh_rlhf"
             )
+
+    # Phase 2: record count and manifest-verified identity, which need the prompts
+    # already loaded -- still before set_all_seeds, output creation, metadata writing,
+    # logging, checkpoint deletion, or any model/tokenizer/GPU access. Legacy runs are
+    # always legacy_nonconfirmatory, unconditionally.
+    protocol_profile = classify_activation_profile(endpoint_backed, eval_cfg, prompts)
+    loading_policy = _model_loading_policy(endpoint_backed)
+
+    set_all_seeds(args.seed)
+
+    output_root = output_root_for(eval_cfg.output_dir, model_cfg.name, eval_cfg.prompt_source, eval_cfg.prompt_partition)
 
     run_meta_extra = None
     if eval_cfg.prompt_source == "harmfulqa":
@@ -181,8 +210,11 @@ def main():
             "harmfulqa_manifest_hash": prov["manifest_hash"],
             "harmfulqa_record_count": len(prompts),
         }
+    run_meta_extra = dict(run_meta_extra or {})
+    run_meta_extra["protocol_profile"] = protocol_profile
+    run_meta_extra["endpoint_backed"] = endpoint_backed
+    run_meta_extra["model_loading_policy"] = loading_policy
     if endpoint_meta is not None:
-        run_meta_extra = dict(run_meta_extra or {})
         run_meta_extra["endpoint"] = endpoint_meta
     write_run_metadata(
         output_root,
@@ -199,6 +231,7 @@ def main():
     log.info(f"Output: {output_root}")
     log.info(f"Architecture: {model_cfg.architecture}, layers: {model_cfg.num_layers}")
     log.info(f"Loaded {len(prompts)} prompts from {eval_cfg.prompt_source} (readout: {eval_cfg.token_position})")
+    log.info(f"protocol_profile={protocol_profile}")
 
     if args.no_resume:
         for stale in output_root.glob("*.partial.pt"):
@@ -208,7 +241,7 @@ def main():
     # Load tokenizer
     tokenizer_path = model_cfg.tokenizer_id or model_cfg.it_model
     tokenizer_subfolder = model_cfg.tokenizer_subfolder or (model_cfg.it_subfolder or "")
-    tokenizer = load_tokenizer(tokenizer_path, subfolder=tokenizer_subfolder)
+    tokenizer = load_tokenizer(tokenizer_path, subfolder=tokenizer_subfolder, **loading_policy)
 
     # Extract activations from both models on the same prompts.
     with GpuMonitor(output_root, hourly_rate=args.hourly_rate) as gpu:
@@ -219,6 +252,7 @@ def main():
             model_cfg.it_model, model_cfg.it_subfolder or "",
             tokenizer, prompts, eval_cfg,
             checkpoint_path=output_root / "it.partial.pt",
+            loading_policy=loading_policy,
         )
         log.info(f"IT activations shape: {activations_it.shape}  (layers, prompts, hidden)")
 
@@ -229,6 +263,7 @@ def main():
             model_cfg.dpo_model, model_cfg.dpo_subfolder or "",
             tokenizer, prompts, eval_cfg,
             checkpoint_path=output_root / "dpo.partial.pt",
+            loading_policy=loading_policy,
         )
         log.info(f"DPO activations shape: {activations_dpo.shape}")
 
@@ -264,7 +299,7 @@ def main():
 
     # Text summary of findings.
     summary = summarize_findings(stats_df, model_cfg.num_layers)
-    (output_root / "summary.txt").write_text(summary)
+    (output_root / "summary.txt").write_text(summary, encoding="utf-8")
     log.info("\n" + summary)
 
     if args.sync:
@@ -314,6 +349,125 @@ def validate_harmfulqa_construction_config(cfg: LayerProfileConfig) -> None:
             "includes an ad hoc HarmfulQA component outside the frozen manifest. Use "
             "'hh_rlhf', or 'harmfulqa' with prompt_partition='construction', instead."
         )
+
+
+# Protocol-profile classification (Task 014)
+
+
+def _default_harmfulqa_manifest_path() -> Path:
+    """manifests/harmfulqa_v1.json relative to the repository root, independent of the
+    caller's current working directory. Mirrors steer_sweep.py's own helper of the
+    same name -- kept file-local rather than shared, since both are tiny and the two
+    scripts otherwise share no module."""
+    return Path(__file__).resolve().parents[1] / "manifests" / "harmfulqa_v1.json"
+
+
+def _construction_records(manifest: Dict) -> List[Dict]:
+    """This manifest's construction-partition records, in ascending permuted_position."""
+    return sorted(
+        (e for e in manifest["records"] if e["partition"] == "construction"),
+        key=lambda e: e["permuted_position"],
+    )
+
+
+def verify_construction_prompt_identity(prompts: List[Dict], manifest_path: Optional[Union[str, Path]] = None) -> None:
+    """Re-verify the loaded construction prompts against the frozen manifest itself --
+    not merely trusted because `load_harmfulqa_partition` is the one path that
+    produces them -- so a corrupted, reordered, or drifted prompt list is caught
+    before it ever reaches activation extraction. Mirrors
+    `steer_sweep.validate_construction_activations`'s not-just-internal-self-consistency
+    approach, applied to the prompt list rather than the post-extraction tensor.
+    """
+    path = Path(manifest_path) if manifest_path is not None else _default_harmfulqa_manifest_path()
+    manifest = load_manifest(path)
+    validate_manifest_identity(manifest)
+
+    construction = _construction_records(manifest)
+    expected_source_ids = [e["source_id"] for e in construction]
+    expected_prompt_hashes = [e["prompt_hash"] for e in construction]
+
+    actual_source_ids = [p["source_id"] for p in prompts]
+    actual_prompt_hashes = [p["prompt_hash"] for p in prompts]
+
+    if actual_source_ids != expected_source_ids[:len(actual_source_ids)]:
+        raise ProtocolProfileError(
+            "construction prompt source IDs do not exactly match the frozen manifest's "
+            "ordered construction partition -- altered, reordered, or drifted provenance"
+        )
+    if actual_prompt_hashes != expected_prompt_hashes[:len(actual_prompt_hashes)]:
+        raise ProtocolProfileError(
+            "construction prompt hashes do not exactly match the frozen manifest's "
+            "ordered construction partition -- altered, reordered, or drifted provenance"
+        )
+
+
+def validate_endpoint_backed_construction_config(endpoint_backed: bool, eval_cfg: LayerProfileConfig) -> None:
+    """Phase 1: everything about endpoint-backed primary construction eligibility that
+    is checkable from config alone -- prompt_source, prompt_partition, and
+    token_position -- before `load_prompts()` is ever called. Record count and
+    identity (phase 2, `classify_activation_profile`) require the prompts to already
+    be loaded and so cannot be checked here.
+
+    A no-op for legacy (non-endpoint-backed) runs: legacy prompt-source flexibility
+    (hh_rlhf, and whatever `validate_harmfulqa_construction_config` already permits) is
+    unrestricted by this function.
+    """
+    if not endpoint_backed:
+        return
+
+    problems: List[str] = []
+    if eval_cfg.prompt_source != PRIMARY_CONSTRUCTION_SOURCE:
+        problems.append(f"prompt_source must be {PRIMARY_CONSTRUCTION_SOURCE!r}, got {eval_cfg.prompt_source!r}")
+    if eval_cfg.prompt_source == PRIMARY_CONSTRUCTION_SOURCE and eval_cfg.prompt_partition != PRIMARY_CONSTRUCTION_PARTITION:
+        problems.append(f"prompt_partition must be {PRIMARY_CONSTRUCTION_PARTITION!r}, got {eval_cfg.prompt_partition!r}")
+    if eval_cfg.token_position != PRIMARY_TOKEN_POSITION:
+        problems.append(f"token_position must be {PRIMARY_TOKEN_POSITION!r}, got {eval_cfg.token_position!r}")
+
+    if problems:
+        raise ProtocolProfileError(
+            "endpoint-backed activation extraction does not match the frozen primary "
+            "construction protocol: " + "; ".join(problems)
+        )
+
+
+def classify_activation_profile(
+    endpoint_backed: bool, eval_cfg: LayerProfileConfig, prompts: List[Dict],
+    manifest_path: Optional[Union[str, Path]] = None,
+) -> str:
+    """Phase 2: assumes `validate_endpoint_backed_construction_config` (phase 1) has
+    already passed -- prompt_source/prompt_partition/token_position are correct.
+    Checks what can only be known once the prompts are actually loaded: the exact
+    record count and re-verified identity against the frozen manifest. Returns
+    "primary_v1" for the frozen primary construction path; "legacy_nonconfirmatory"
+    for the historical (non-endpoint-backed) path, unconditionally, regardless of its
+    own settings.
+
+    An endpoint-backed run that drifts from the primary construction requirements is
+    rejected outright (raises), not silently downgraded to legacy_nonconfirmatory -- a
+    verified endpoint claiming a non-primary activation profile is a configuration
+    error, not a legitimate secondary use. Nothing here reads a model, touches a GPU,
+    or mutates output.
+    """
+    if not endpoint_backed:
+        return "legacy_nonconfirmatory"
+
+    if len(prompts) != PRIMARY_CONSTRUCTION_RECORD_COUNT:
+        raise ProtocolProfileError(
+            "endpoint-backed activation extraction does not match the frozen primary "
+            f"construction protocol: construction record count must be exactly "
+            f"{PRIMARY_CONSTRUCTION_RECORD_COUNT}, got {len(prompts)}"
+        )
+    verify_construction_prompt_identity(prompts, manifest_path)  # raises ProtocolProfileError on any mismatch
+    return "primary_v1"
+
+
+def _model_loading_policy(endpoint_backed: bool) -> Dict[str, bool]:
+    """The effective model/tokenizer loading policy (Tasks 012/013): endpoint-backed
+    loads are restricted to verified local files with no remote code execution; legacy
+    loads keep the historical, more permissive defaults unchanged."""
+    if endpoint_backed:
+        return {"local_files_only": True, "trust_remote_code": False}
+    return {"local_files_only": False, "trust_remote_code": True}
 
 
 def harmfulqa_provenance(prompts: List[Dict]) -> Dict[str, object]:
@@ -400,6 +554,7 @@ def extract_activations(
     prompts: List[Dict[str, str]],
     cfg: LayerProfileConfig,
     checkpoint_path: Optional[Path] = None,
+    loading_policy: Optional[Dict[str, bool]] = None,
 ) -> torch.Tensor:
     """Extract the residual stream at the readout token, for every layer.
 
@@ -408,11 +563,15 @@ def extract_activations(
     With a checkpoint_path, progress is flushed periodically and a re-run resumes
     from the last flush rather than starting over. Two models x 2000 prompts is long
     enough that losing it to a dropped connection matters.
+
+    `loading_policy` (`local_files_only`/`trust_remote_code`) defaults to the
+    historical, more permissive load when omitted, so a direct call from an existing
+    caller/test is unaffected; `main()` always passes the resolved policy explicitly.
     """
     log = logging.getLogger(__name__)
     log.info(f"Loading: {model_path} subfolder={subfolder!r}")
 
-    model = load_model(model_path, subfolder=subfolder)
+    model = load_model(model_path, subfolder=subfolder, **(loading_policy or {}))
     device = next(model.parameters()).device
 
     num_layers = model.config.num_hidden_layers
