@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from datasets import load_dataset
 
+from steering.advbench import load_advbench_evaluation as _load_advbench_evaluation
 from steering.hh_rlhf import load_hh_rlhf_evaluation as _load_hh_rlhf_evaluation
 from steering.hh_rlhf import parse_transcript as _parse_hh_transcript
 from steering.splits import (
@@ -248,3 +249,14 @@ def load_advbench(n: Optional[int] = None, seed: int = 42) -> List[Dict[str, str
         })
     log.info(f"Loaded AdvBench: {len(records)} prompts")
     return records
+
+
+def load_advbench_evaluation(manifest_path: Optional[Union[str, Path]] = None) -> List[Dict[str, Any]]:
+    """Load the frozen 200-prompt AdvBench OOD evaluation panel (Task 018).
+
+    Thin re-export of `steering.advbench.load_advbench_evaluation` so callers of this
+    module do not need to know the panel lives in its own module. See there for the
+    full contract: membership, order, and content are fixed by the manifest and
+    re-verified against the pinned source at every call.
+    """
+    return _load_advbench_evaluation(manifest_path=manifest_path)

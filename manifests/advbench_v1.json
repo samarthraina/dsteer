@@ -1,0 +1,1428 @@
+{
+  "dataset": {
+    "config": "default",
+    "repository": "walledai/AdvBench",
+    "revision": "9d4730540082fa4017450b65ca1c0e1d8d30446e",
+    "split": "train"
+  },
+  "duplicate_excluded_count": 0,
+  "duplicate_exclusions": [],
+  "eligible_record_count": 520,
+  "invalid_excluded_count": 0,
+  "invalid_exclusions": [],
+  "manifest_hash": "0bb0269883d6137157fd5f41f48e74f7d4d74251430452ff5508daa9bf5313f9",
+  "permutation": {
+    "algorithm": "sha256(seed:source_id)-sort-source_id-tiebreak-v1",
+    "seed": 20260815
+  },
+  "raw_record_count": 520,
+  "records": [
+    {
+      "partition": "evaluation",
+      "permuted_position": 64,
+      "prompt_hash": "d5ea8284b8ff154f05dae7a9a93ad0c63b756c03066e52c1af9abf0dfc88faf4",
+      "source_id": "advbench-10",
+      "source_index": 10
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 77,
+      "prompt_hash": "a3639f2e2b84bd94ee3a8bff912171b35f473a8f119d0f150b22130795e644ea",
+      "source_id": "advbench-101",
+      "source_index": 101
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 63,
+      "prompt_hash": "442903eb1d36c06588deb04171b13092161b8c4d0f0627b631d47f33617b653e",
+      "source_id": "advbench-105",
+      "source_index": 105
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 171,
+      "prompt_hash": "2b7671978e1c480183f5211f65830cfc137dfc7c78bd587fcef7d93ca5c6ee5b",
+      "source_id": "advbench-110",
+      "source_index": 110
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 179,
+      "prompt_hash": "0825d5421907d0b66d32da0ea2f427dc76a1b98d0ba7ab02506604e5028f05d1",
+      "source_id": "advbench-114",
+      "source_index": 114
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 108,
+      "prompt_hash": "116eb9a7506e1d7ca222d5595a3061b4e21afb8f452bc88692a5115c633dfc89",
+      "source_id": "advbench-116",
+      "source_index": 116
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 91,
+      "prompt_hash": "1d01b77c79d88762057182a076790d7dfe3843ed88897a8bf4fc773056d9c90c",
+      "source_id": "advbench-117",
+      "source_index": 117
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 145,
+      "prompt_hash": "ee5b56ccdcb2760d0b78aacf4a174c018a18f51a4b8f3cd563a7f9242decb51c",
+      "source_id": "advbench-118",
+      "source_index": 118
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 29,
+      "prompt_hash": "b9055c884aeac404903ef65f2b1e25d5d03b3c4e5db3aff083f3000e9c8452ea",
+      "source_id": "advbench-119",
+      "source_index": 119
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 189,
+      "prompt_hash": "9022e3c16577eb947a9a8d9c8ac7e54ed42bdd3b848bf560cf7fca65f03dccee",
+      "source_id": "advbench-12",
+      "source_index": 12
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 99,
+      "prompt_hash": "fd60481d32faedf4a7a72e40fd5327606cc64c4585bfa4db3fb535b202971cb5",
+      "source_id": "advbench-121",
+      "source_index": 121
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 96,
+      "prompt_hash": "d92901ee62e99d71ffce6ad9c49532be7ee4988f449415f16baf0a196a0e62e3",
+      "source_id": "advbench-122",
+      "source_index": 122
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 158,
+      "prompt_hash": "01e477ea6e8ee2be2bf961da0dda6bc3c414b601cb5be6acb68735fd12eb6c97",
+      "source_id": "advbench-123",
+      "source_index": 123
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 193,
+      "prompt_hash": "d6246c2a0a9bcc6d3efe80f0f8fe4e2a8e8ba18fef26d10dbfde8e778e1e1c2b",
+      "source_id": "advbench-124",
+      "source_index": 124
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 148,
+      "prompt_hash": "caa1c2e239dc73de2788b7371a51dd1a4b2f14616233052f46383267eb46335d",
+      "source_id": "advbench-127",
+      "source_index": 127
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 185,
+      "prompt_hash": "1e0aaa9737e65d09ee5c1d080983b769b99b9eaeceef8b1c35cd71c6c4e6c1a2",
+      "source_id": "advbench-128",
+      "source_index": 128
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 57,
+      "prompt_hash": "7c8471cc7cc743e5c202997681f76d8955e1c801ddeacd0864ad049a6f605277",
+      "source_id": "advbench-13",
+      "source_index": 13
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 56,
+      "prompt_hash": "c69cae41e3350d9d97642dad58ed9a52d82cee6425a50a39db071b03dad2c8ad",
+      "source_id": "advbench-130",
+      "source_index": 130
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 54,
+      "prompt_hash": "e04aa1dee67d622a735f0d2ec4245388795384f7aa9791bcbfcb3b301784b613",
+      "source_id": "advbench-131",
+      "source_index": 131
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 4,
+      "prompt_hash": "bc9f1b658c5420d239a50eee7dc551c3014d6a925fb689aebf798a47c7aca3fc",
+      "source_id": "advbench-132",
+      "source_index": 132
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 27,
+      "prompt_hash": "ccae0048a478043ecce875c8f06b2cb63ea5f6f44f69f5db140e01869c8e8d58",
+      "source_id": "advbench-135",
+      "source_index": 135
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 69,
+      "prompt_hash": "edfcf1e6c2e3c11505d44f6713440ceda409f2fdc224672cbe46ff67b0ad0b5e",
+      "source_id": "advbench-138",
+      "source_index": 138
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 103,
+      "prompt_hash": "9e99f87d227009b3eef2781fa58c0f686b1cd5790ea412a5db8f0d83de1f135c",
+      "source_id": "advbench-142",
+      "source_index": 142
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 65,
+      "prompt_hash": "42bff2d3b5b86c33ab8539c4ba4b194136bf97409b9f4fe1abc5b33cde18f7cd",
+      "source_id": "advbench-143",
+      "source_index": 143
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 115,
+      "prompt_hash": "81e17a34a73d550f5647a49de50c827c37c6baa8afdf1eda0af7b4451df5d0e9",
+      "source_id": "advbench-145",
+      "source_index": 145
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 55,
+      "prompt_hash": "ec5da74d5b9cb22656f806a5a3a85b040c5439b6a7e5e1bd7b46e0184566e777",
+      "source_id": "advbench-148",
+      "source_index": 148
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 177,
+      "prompt_hash": "78805b0b1c9bc6a64111f797ec331683d5627d0b4fec274c4c6a9a8105c236e3",
+      "source_id": "advbench-149",
+      "source_index": 149
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 80,
+      "prompt_hash": "cc50fe57775867c04c1ed87b9412a3a0119a3aba7595ec02feff04a61f0568f5",
+      "source_id": "advbench-15",
+      "source_index": 15
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 151,
+      "prompt_hash": "4dcabef983953a4b2e407a3a7e11bef62ebe2bb1e94244368b120577b2c718ab",
+      "source_id": "advbench-150",
+      "source_index": 150
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 68,
+      "prompt_hash": "1ebbc3582e80d95911481f7cdaf2697fc61485271c1720403bcf0e224b883dcc",
+      "source_id": "advbench-152",
+      "source_index": 152
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 33,
+      "prompt_hash": "fc04b4a04d4eda03eaed89d4fe33aae3fa6c53478950d7b51a90cbf877ee4428",
+      "source_id": "advbench-154",
+      "source_index": 154
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 159,
+      "prompt_hash": "1331b7857ff526e50edc49e00d5d92f2c6264b3123c8188c38ed2a04ccc9f045",
+      "source_id": "advbench-156",
+      "source_index": 156
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 114,
+      "prompt_hash": "95444d64228fb5c948d861271b1de2f0647a77fb58293474ab0a8101e53817ce",
+      "source_id": "advbench-16",
+      "source_index": 16
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 173,
+      "prompt_hash": "a3cf74d394fcd8f73428f8b60a0be69f382c848079aa1de334b8cea54645c5da",
+      "source_id": "advbench-163",
+      "source_index": 163
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 117,
+      "prompt_hash": "b390ed0f4b090cf503c154c9e4f602fcb872977aa40fa50537da96027e691755",
+      "source_id": "advbench-165",
+      "source_index": 165
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 167,
+      "prompt_hash": "7343f4846f1ab57035e622adcccd74b962c77fd8218c848c5e8c2014f5de939c",
+      "source_id": "advbench-166",
+      "source_index": 166
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 67,
+      "prompt_hash": "643e5c64451d68a93a99e6458019ea6bc422f75481caf7bbbc21430ae8b45c4e",
+      "source_id": "advbench-169",
+      "source_index": 169
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 16,
+      "prompt_hash": "7958f36a1d0509e7c1fa0cb2b7e1846547b43068e7369c390a8f400951f6253e",
+      "source_id": "advbench-173",
+      "source_index": 173
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 152,
+      "prompt_hash": "ccce2df4217094bf6e178d8361fa421dc90b0cfba11bac9e066887038f666763",
+      "source_id": "advbench-175",
+      "source_index": 175
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 97,
+      "prompt_hash": "bbd959340e73505ac19423e7ffe4e0b29baab669d5e15140241f1155803d6623",
+      "source_id": "advbench-176",
+      "source_index": 176
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 160,
+      "prompt_hash": "f9c392519521f198f11b6c82b096c3863c69dcf882c4d8303fb31244f64c389d",
+      "source_id": "advbench-177",
+      "source_index": 177
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 137,
+      "prompt_hash": "771c1f55e99dc39ca6606350b908896003d4fd958d3373bd0ebbc5e5f8498519",
+      "source_id": "advbench-179",
+      "source_index": 179
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 34,
+      "prompt_hash": "4b48889bbfbf4145c2ae1c40bd2f6d37b94c1b94c8167518ce4bf419bd81fe56",
+      "source_id": "advbench-18",
+      "source_index": 18
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 106,
+      "prompt_hash": "0687fc659cd924c2acf431c5d4b719bdff05f2a381352ae53f3a16a8256b2f93",
+      "source_id": "advbench-182",
+      "source_index": 182
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 119,
+      "prompt_hash": "55d0617e28dba63cb82e990e54f2f8065aa83a204f26f0d352260a0299def47d",
+      "source_id": "advbench-188",
+      "source_index": 188
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 132,
+      "prompt_hash": "66eb3572e007001c8f792d0c94fb5fc1fb8f2358039bd5f5c2d3b6128f61ec43",
+      "source_id": "advbench-191",
+      "source_index": 191
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 36,
+      "prompt_hash": "2cede9da81cfe945c7ff570acd41732c10210fab0c53af4841170d98abe4314c",
+      "source_id": "advbench-192",
+      "source_index": 192
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 181,
+      "prompt_hash": "ffbcfce002e33f70fbc93cf5ff97c90c86ab59859a3258e02ac2b54b792c181a",
+      "source_id": "advbench-193",
+      "source_index": 193
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 121,
+      "prompt_hash": "618082a45379d1f7d925a366fefb71f57020f557f3055041732219078fcd8d62",
+      "source_id": "advbench-196",
+      "source_index": 196
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 44,
+      "prompt_hash": "0a75d1652e4b45c358a4d1664275712790ca8a06a7d2b85cb66482b6116dc8c9",
+      "source_id": "advbench-199",
+      "source_index": 199
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 180,
+      "prompt_hash": "18550ea6041669fd6cbd12010175c33d03adec71f585fc0bd0e8b2fdf963f279",
+      "source_id": "advbench-20",
+      "source_index": 20
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 0,
+      "prompt_hash": "12e6d91fedc9f71a21b00ecc13c57ab6664df0a1771925e911894cd9cf5adca0",
+      "source_id": "advbench-200",
+      "source_index": 200
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 166,
+      "prompt_hash": "65cfd85678b4d1761dfe983de2b28b918a57cdc58e135d27b3be0ec13c056fda",
+      "source_id": "advbench-202",
+      "source_index": 202
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 105,
+      "prompt_hash": "e7c0f2b39142b157d19cdbc9e2e44b95d4471cb5adfb9bda548f843e849d54c1",
+      "source_id": "advbench-203",
+      "source_index": 203
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 13,
+      "prompt_hash": "07145e220ba13162016972c9337aac0806db5ca471f098ff858bd7cea09380c0",
+      "source_id": "advbench-205",
+      "source_index": 205
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 10,
+      "prompt_hash": "5c37d030a4a7e3b7f83aff7a2d559c35dacf4ba1c87932a1da542c49becd8736",
+      "source_id": "advbench-209",
+      "source_index": 209
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 161,
+      "prompt_hash": "b808856c05ac26ba4af6fd781a247ba78fba779b421724d017463c4779ff00b2",
+      "source_id": "advbench-212",
+      "source_index": 212
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 149,
+      "prompt_hash": "09dd8a5ff9bab77952a503061b4800493ea429628910ff57041c0ad3cf35e5fe",
+      "source_id": "advbench-214",
+      "source_index": 214
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 170,
+      "prompt_hash": "edf5ab6bc93dce11a4e2afda0f8bc06b5e5564052a64e98abefa297666b117d1",
+      "source_id": "advbench-216",
+      "source_index": 216
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 143,
+      "prompt_hash": "5d3c8a80bb657ae1e128ceccc5a740dedb82b260fb51cbd0d90052ae8430ace5",
+      "source_id": "advbench-218",
+      "source_index": 218
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 187,
+      "prompt_hash": "55104ede8b4cfb91869bc655882c0d986d7bdf3ec7b48d245c7f02856e64ff07",
+      "source_id": "advbench-219",
+      "source_index": 219
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 38,
+      "prompt_hash": "f6c7c1b063ea9a10acb8ddcffc6322cc083d48cf8f2b231c4075c00a0dfb6a51",
+      "source_id": "advbench-223",
+      "source_index": 223
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 135,
+      "prompt_hash": "876e0375903dc5ac1458788f839b9a8a187b0765a881a15cdf0a637c7a63af0f",
+      "source_id": "advbench-225",
+      "source_index": 225
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 94,
+      "prompt_hash": "65f275ee399c95746c80b160263280baad80d2ad8f4fbdfd6790fe15160a164b",
+      "source_id": "advbench-226",
+      "source_index": 226
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 133,
+      "prompt_hash": "810ab83ccfd3c93aa4dfc9fc0099ea426a8825ad35a01cd4353c1b77cf4d678a",
+      "source_id": "advbench-228",
+      "source_index": 228
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 174,
+      "prompt_hash": "f2782a3a5ea62e3de0edb8558fb201f78432300764d2e922cf0c5e605f90eb16",
+      "source_id": "advbench-232",
+      "source_index": 232
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 5,
+      "prompt_hash": "25507a27bad04b5f811e5ead9003b14d9769fbc19c2df239015f459940e86554",
+      "source_id": "advbench-233",
+      "source_index": 233
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 3,
+      "prompt_hash": "1d0d7f0fdc0f1ab422c87426e16becdb291ed80dbe0c21e51fb4560211bb0c47",
+      "source_id": "advbench-234",
+      "source_index": 234
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 172,
+      "prompt_hash": "df4cf05731613f6feaf5c7343f19069df7749e943dcab8be49442eb43508e61f",
+      "source_id": "advbench-236",
+      "source_index": 236
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 52,
+      "prompt_hash": "00e0e7aac76d35c5e8adddea334579973cb607b520bc1c4b00b6866d16ca40dd",
+      "source_id": "advbench-238",
+      "source_index": 238
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 198,
+      "prompt_hash": "a17ca48f1ddf4936c13d8dc2137422aa10929d913e6be175a7a86b2fdec5965f",
+      "source_id": "advbench-240",
+      "source_index": 240
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 28,
+      "prompt_hash": "46e573b0df69d45dec59637f2e2aa52eb658a4ca9876ac071695209e533998e7",
+      "source_id": "advbench-241",
+      "source_index": 241
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 51,
+      "prompt_hash": "64259f48114404dccc12f393ea57dd259dffe0180ad51d9840da9ff7e20566f9",
+      "source_id": "advbench-245",
+      "source_index": 245
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 18,
+      "prompt_hash": "85cd3fd107949564de046ecc1e49b4375137e8dd34cf432da58e291c5cc179e7",
+      "source_id": "advbench-246",
+      "source_index": 246
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 118,
+      "prompt_hash": "3b09190f10fc98e95df9416f45e373cd3efd6103202c67c0ce05d812ffe71a2f",
+      "source_id": "advbench-25",
+      "source_index": 25
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 78,
+      "prompt_hash": "a86f58a8f0c230b8c4647be682c6bddb8199b7c93ba1ee92007240961c5ee772",
+      "source_id": "advbench-251",
+      "source_index": 251
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 81,
+      "prompt_hash": "db47b17d2b36548f82877bfba3194ddb8e7549772d390a73edbcedab90c102be",
+      "source_id": "advbench-253",
+      "source_index": 253
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 12,
+      "prompt_hash": "f35459e12f99fe049aa9081f5de903cc12bc14e5403f5b4a4d60721677675fc2",
+      "source_id": "advbench-259",
+      "source_index": 259
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 138,
+      "prompt_hash": "92878afbd43de2b7a169b99cc24f0207f7a98b1a7682f973ca02189c08db24ab",
+      "source_id": "advbench-26",
+      "source_index": 26
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 85,
+      "prompt_hash": "a67cbc415f01c86c42430668bc1a25c7583e06765146befeac007e5a825aadb6",
+      "source_id": "advbench-263",
+      "source_index": 263
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 93,
+      "prompt_hash": "97036dfde09f05abd0f092442339c42f463a01cf5e5cdbb3a7f641f26453496a",
+      "source_id": "advbench-264",
+      "source_index": 264
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 22,
+      "prompt_hash": "28b286b743230772711527947f297867c916b5224855973175c519516b2db9b0",
+      "source_id": "advbench-266",
+      "source_index": 266
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 45,
+      "prompt_hash": "ee370ed9b01137244e04c8655315233cb6e0b7a4d9ae82dbb120ff67c43a7ada",
+      "source_id": "advbench-269",
+      "source_index": 269
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 74,
+      "prompt_hash": "e9b9962d05e64c0cc9f0cc5d23a583b788837c704ac4abc48e6a31bed6bb730d",
+      "source_id": "advbench-274",
+      "source_index": 274
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 58,
+      "prompt_hash": "5f26175aca166c757b0a4d9e13d9e7edd69c0003889fc70a86a3acd7cad43aad",
+      "source_id": "advbench-276",
+      "source_index": 276
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 62,
+      "prompt_hash": "efe9f2094eff0174e06efa1642e894b739187ac656aa1b4e66cb5e36e5f82de9",
+      "source_id": "advbench-278",
+      "source_index": 278
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 70,
+      "prompt_hash": "8a241a66612e1e7f76b30ff474cbef7cc0f0b70565211093fafe226c49bcefb5",
+      "source_id": "advbench-285",
+      "source_index": 285
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 11,
+      "prompt_hash": "c7dd9f532e967a92af0a5437bf673233e2ca61d486f7fcd1c7d5f8e07450ecfa",
+      "source_id": "advbench-288",
+      "source_index": 288
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 72,
+      "prompt_hash": "bb6eda0b2a6bc572a877430e7da4d97c352c717187de0820cca68889d436b43d",
+      "source_id": "advbench-289",
+      "source_index": 289
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 199,
+      "prompt_hash": "4cafd28fb149ee93d82d0dad5f9c11d0e6e576a3ec88d195fd2a6ce8073b7040",
+      "source_id": "advbench-290",
+      "source_index": 290
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 127,
+      "prompt_hash": "4140287f9e9f9e2d36f414dfde7a71116a02691c1b54108455c5258d9240fd05",
+      "source_id": "advbench-293",
+      "source_index": 293
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 2,
+      "prompt_hash": "6b4cdbd100a2c36694c052650dbdfe8be0317502988781aa1ebb86d1c057e741",
+      "source_id": "advbench-299",
+      "source_index": 299
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 131,
+      "prompt_hash": "bd05c1670186fdded9fc3b492e3e3b9887f2e5810f58718f1410974cea5461d8",
+      "source_id": "advbench-300",
+      "source_index": 300
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 147,
+      "prompt_hash": "b92e23912c8e0735fbb436cac2deb0a526f934ddf78dd7f77f3ea33de4f64269",
+      "source_id": "advbench-303",
+      "source_index": 303
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 109,
+      "prompt_hash": "92b039ce0e63ddf032a65f42b973e7db2269d4398303091985905f04726ca886",
+      "source_id": "advbench-306",
+      "source_index": 306
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 155,
+      "prompt_hash": "29e00999d57ebaa7d460154f86c0c7baa9b3721b8cdd72b797d635a6a14f97a4",
+      "source_id": "advbench-307",
+      "source_index": 307
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 92,
+      "prompt_hash": "0fa3c5c7e094fc940ba9a2f827e1fd97c2819ef21a74d54f868688a725a1a466",
+      "source_id": "advbench-308",
+      "source_index": 308
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 156,
+      "prompt_hash": "2d2ba0ae30841a5479cba16c88a792f505837fdaf1284f98ce0aad2156c9b6d8",
+      "source_id": "advbench-31",
+      "source_index": 31
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 165,
+      "prompt_hash": "e124648efa9a3d221112f6c3f06f1903776f42692a45c17242d4a0c436b1bfd4",
+      "source_id": "advbench-310",
+      "source_index": 310
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 76,
+      "prompt_hash": "b8a7c966b3ea9432e4cd595a076d125fd2e4489d36f312bf2d74b7dcfc40f934",
+      "source_id": "advbench-311",
+      "source_index": 311
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 162,
+      "prompt_hash": "59dda876fa5c6e40741965224321a2ed2fae501a39a942b6aefec70add37d2b9",
+      "source_id": "advbench-312",
+      "source_index": 312
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 195,
+      "prompt_hash": "16485ffa6a3a5b20d36185bad789b4fdf1e9901ecde3622182ce119446e81aee",
+      "source_id": "advbench-313",
+      "source_index": 313
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 104,
+      "prompt_hash": "f9a8e1eb7bfc3f53934f8d9c16d80951cfc3d6b9fa5807615a0eb46957705ad6",
+      "source_id": "advbench-315",
+      "source_index": 315
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 71,
+      "prompt_hash": "d05ffbc76d8fa71a1ddfc3ddf8a7cb4a0b0599aae4a16d59c1bc2985e7698451",
+      "source_id": "advbench-316",
+      "source_index": 316
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 37,
+      "prompt_hash": "d8a776b4ad7767fe8be9564c5d36c7c4d7137541bfa2b54f25b15c200285ab62",
+      "source_id": "advbench-317",
+      "source_index": 317
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 19,
+      "prompt_hash": "d0d52ed24a6e2c71439fcce78527f29cac5554c3adb3a6ecbdaae4f7905c7022",
+      "source_id": "advbench-318",
+      "source_index": 318
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 191,
+      "prompt_hash": "b4b28672167d68d284855763202ecc956aecdc2f9b11a39cd984f0c58fdd9e1c",
+      "source_id": "advbench-319",
+      "source_index": 319
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 59,
+      "prompt_hash": "b7e1ab003c0b27162785e22e37affa00d6184d29b504e4dcc2a3130ee4bf2da7",
+      "source_id": "advbench-320",
+      "source_index": 320
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 39,
+      "prompt_hash": "f0bcdb3438d5d6f574fd342396db8c2181416b378070143ca7cdaadf058e434b",
+      "source_id": "advbench-324",
+      "source_index": 324
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 157,
+      "prompt_hash": "210194e9d89cc177b9f39b5b1fbe581c4be5be87c42994be23451b66af462f22",
+      "source_id": "advbench-326",
+      "source_index": 326
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 25,
+      "prompt_hash": "9f7057b4676b5583ea38e321eeda7a7ccc7c25bb34169d07d51d422c7ec8e2db",
+      "source_id": "advbench-33",
+      "source_index": 33
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 87,
+      "prompt_hash": "c5b1edcf111321cf0f20a9c80b879b08b947852702e62d5c80e658b41fc5252c",
+      "source_id": "advbench-331",
+      "source_index": 331
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 98,
+      "prompt_hash": "f8fd45afc048ff92e80da3e45704d32a43568831c77f5850b5bb74200e07daa0",
+      "source_id": "advbench-339",
+      "source_index": 339
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 154,
+      "prompt_hash": "8681583029bb369fd2f26d1b1fc71a5d299dd78691360086791b1ebf90fdb8eb",
+      "source_id": "advbench-344",
+      "source_index": 344
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 186,
+      "prompt_hash": "7cde0c06d376d89567ea62e4d5cfe2d19e02e7a8e94342ab5c30826e152245d5",
+      "source_id": "advbench-349",
+      "source_index": 349
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 194,
+      "prompt_hash": "f8035d7686a6d848a8054a00f2b51011b2b365169b8cd56dfe8b2fdce1b581e1",
+      "source_id": "advbench-35",
+      "source_index": 35
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 43,
+      "prompt_hash": "e416a7cac2b82a7bf13411e1553d1735b1c4372a80f1137737f439ed71f9f166",
+      "source_id": "advbench-352",
+      "source_index": 352
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 86,
+      "prompt_hash": "3226db7a26fe4dc57c657f9162781541e4780288ad623ac1bf027fbc352f5ff7",
+      "source_id": "advbench-353",
+      "source_index": 353
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 176,
+      "prompt_hash": "a554caf5e909d64cd7fe45fea59613ce85bd5191ca51d8edbb4695db9f931fb1",
+      "source_id": "advbench-354",
+      "source_index": 354
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 32,
+      "prompt_hash": "a389d76928ca757c621f2008d4c84ac216f3818c9043399088d2274b29cf1bf0",
+      "source_id": "advbench-356",
+      "source_index": 356
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 82,
+      "prompt_hash": "72323e116715e8e243fa261768434a10e7af00e0098e631acb81e6132f79e583",
+      "source_id": "advbench-36",
+      "source_index": 36
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 23,
+      "prompt_hash": "bb895dc93af2bf7b74b3c2b17a059faec1da659f2a0c27ed9b90a27283015d4e",
+      "source_id": "advbench-361",
+      "source_index": 361
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 9,
+      "prompt_hash": "35ffa60c09d0a2f84bc71d39f56c3fcf6405cd06d78468ce32c2423978441bb5",
+      "source_id": "advbench-371",
+      "source_index": 371
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 190,
+      "prompt_hash": "28a5d0b440fd164fbe97e42eb5865dd820ae43908cc98064b9f5740ddc2f1d48",
+      "source_id": "advbench-372",
+      "source_index": 372
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 183,
+      "prompt_hash": "5c0947da98b4c7c86909ed2e9136508621c036f53520cdcaf152d62d44588718",
+      "source_id": "advbench-373",
+      "source_index": 373
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 196,
+      "prompt_hash": "f697ca7466cdf8ea72e85178c1a3338d022cf4424d2ffd9f3f069954e476fdea",
+      "source_id": "advbench-375",
+      "source_index": 375
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 1,
+      "prompt_hash": "9eaf85d3bb01fbd7761d3cd5d2c6fb5bdfbdcb4714d681d2720eaacc59dc1ef6",
+      "source_id": "advbench-379",
+      "source_index": 379
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 141,
+      "prompt_hash": "934832379c01ad4afe03935fa6ffb685bf63dddc81314218853398cfd7261e72",
+      "source_id": "advbench-380",
+      "source_index": 380
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 175,
+      "prompt_hash": "e2bb98fb5abdf60c327b5e94d229c7ecc42176bb2b2b9d609aa6b212439f0d4e",
+      "source_id": "advbench-383",
+      "source_index": 383
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 61,
+      "prompt_hash": "d2c4a9b24efa6f595a687a0c9e9982528d9d6660ddef9b39af3de205ae9fdab6",
+      "source_id": "advbench-386",
+      "source_index": 386
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 139,
+      "prompt_hash": "f8dacedde19cba76fbb5fd5d3f13cc6721e86dcc45c34038148459c0b58a5467",
+      "source_id": "advbench-387",
+      "source_index": 387
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 42,
+      "prompt_hash": "25e7dd33ce97bb1d3b008a7b8aef57b6deccf7fad055f7414961fb3ea9793dd1",
+      "source_id": "advbench-39",
+      "source_index": 39
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 21,
+      "prompt_hash": "53d13ce0d381d1669a143fdfda3545d21dba7376f3eddcb395aac9e49698fabc",
+      "source_id": "advbench-392",
+      "source_index": 392
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 113,
+      "prompt_hash": "7385245a175e2f243105182634d667b2150eabbb451991c998d2f0f3ba3cd472",
+      "source_id": "advbench-393",
+      "source_index": 393
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 140,
+      "prompt_hash": "2d87aa82e73064f2289140d643a471ba5ace0a44d94ce3076b667d2e7a680b25",
+      "source_id": "advbench-395",
+      "source_index": 395
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 110,
+      "prompt_hash": "c6de7eab8bb6db9dc600da9f22a4341bda3e582e39108ebf4bb59bebd38fd58a",
+      "source_id": "advbench-397",
+      "source_index": 397
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 153,
+      "prompt_hash": "344b3ee7805300738357a9a37f47ab70449d8496c0c7478498107d757ee62f05",
+      "source_id": "advbench-398",
+      "source_index": 398
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 84,
+      "prompt_hash": "b410a63b5545b0d1027d83ebff01409f613a9bad45b69e5789c3e6f09368ced8",
+      "source_id": "advbench-40",
+      "source_index": 40
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 89,
+      "prompt_hash": "964b07bb85b404d8d75cbb797d995cb3b35e69f4ee61fd75e5afec9fae54587e",
+      "source_id": "advbench-400",
+      "source_index": 400
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 24,
+      "prompt_hash": "3ada69057d1aa83fa9e80974cc3230c94ef999909f0c45a5960afb88c023928e",
+      "source_id": "advbench-401",
+      "source_index": 401
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 142,
+      "prompt_hash": "609593fad121921dde3743a50b9d2585f0b031081e412fc89289b3af9ed5d103",
+      "source_id": "advbench-402",
+      "source_index": 402
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 31,
+      "prompt_hash": "0238f059c4aab4d1127daa6fa910f11364637ee6315546a23352e4b2197b1916",
+      "source_id": "advbench-404",
+      "source_index": 404
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 83,
+      "prompt_hash": "37f886f6dbaac6c0762c2df3aa3123d69c3dbe074459d2163608391e62fc4a4b",
+      "source_id": "advbench-406",
+      "source_index": 406
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 75,
+      "prompt_hash": "969ed8b9c531f585d76a43992a8875e1c23534d14ff1b73cc5a4e705c900b362",
+      "source_id": "advbench-409",
+      "source_index": 409
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 73,
+      "prompt_hash": "0faba882834d4c944861a326cfe04e22ab8d3416da9f0713c50075db679a52a9",
+      "source_id": "advbench-411",
+      "source_index": 411
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 123,
+      "prompt_hash": "3c78904d7b1a43f5d5db9e82a7038b17486a4929aa3642ef51fa6adcc1f5825a",
+      "source_id": "advbench-415",
+      "source_index": 415
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 20,
+      "prompt_hash": "e2044e3c0fc12f930d535797b42685a791a1dbc77da79929dc77ae65720b451c",
+      "source_id": "advbench-417",
+      "source_index": 417
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 53,
+      "prompt_hash": "3d8d7ecb1493d471ed9b26cdf211160ad5f733635c54db619175b7c4a84fbb31",
+      "source_id": "advbench-422",
+      "source_index": 422
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 8,
+      "prompt_hash": "317ef427e5550890315979db2d5493866a7bc23230011b7f8a949266430e3e15",
+      "source_id": "advbench-425",
+      "source_index": 425
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 136,
+      "prompt_hash": "b8fc02d6b271052d5307b048073d088edc60ef9c4a95385ffd4f55dcb908cc73",
+      "source_id": "advbench-432",
+      "source_index": 432
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 102,
+      "prompt_hash": "ca1c2c81a2357bccf75cfbbf443a1d7009aba9ffd9a065eae8a91f6996779d7b",
+      "source_id": "advbench-438",
+      "source_index": 438
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 130,
+      "prompt_hash": "8caaa59f62657a69795280fc2490e6ba2ab78de93d4048c1332d31c18176edd5",
+      "source_id": "advbench-442",
+      "source_index": 442
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 17,
+      "prompt_hash": "dc00399276a02391926b2dac7b9ab1672b2ee44eca4b0ac1b6f331e64a819bac",
+      "source_id": "advbench-448",
+      "source_index": 448
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 66,
+      "prompt_hash": "ea600ad97c3853ccf273f35616a8cd942d493329dd63a52384db15975ee281b9",
+      "source_id": "advbench-451",
+      "source_index": 451
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 6,
+      "prompt_hash": "b9aad34f547e3190e9864360e9a88f5aa16739cfb29f06a036e84837e896a2b9",
+      "source_id": "advbench-453",
+      "source_index": 453
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 100,
+      "prompt_hash": "c2532e3b9c1dd4869e6750a85911aa386be83d7e5e5c039e45ca1cafb430b973",
+      "source_id": "advbench-457",
+      "source_index": 457
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 188,
+      "prompt_hash": "c6144e4192870d4f6f38e0d7c3a7137211bd4e6c57791e86fef86bcfd57ae120",
+      "source_id": "advbench-460",
+      "source_index": 460
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 128,
+      "prompt_hash": "6e8f2f7ec28440d2d4151c445e959b5cab784da8d81bc5cbe2ef998be929265c",
+      "source_id": "advbench-466",
+      "source_index": 466
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 49,
+      "prompt_hash": "ec2ff11ddd180eea0de842899e92e8baa57faf88ca6425efecb72981e7f42387",
+      "source_id": "advbench-474",
+      "source_index": 474
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 129,
+      "prompt_hash": "8dcbcb1138d8c4b704376dccf80c6e09813fd4b5923eb58d2199e6e6d596ab16",
+      "source_id": "advbench-477",
+      "source_index": 477
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 150,
+      "prompt_hash": "b54ecec25db1fbb57d2ca70fa08a01b97edd83405d4a747a1c46d9d0bb69f69f",
+      "source_id": "advbench-481",
+      "source_index": 481
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 168,
+      "prompt_hash": "fda98372dcfcbb67a7d33b60d3b3a578789dab8a2e11d847b641168710cbb064",
+      "source_id": "advbench-482",
+      "source_index": 482
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 192,
+      "prompt_hash": "38a66cebbbb27d5147183539051728c3a2cae1bae63bfd7989cba16a50108c4f",
+      "source_id": "advbench-483",
+      "source_index": 483
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 46,
+      "prompt_hash": "a31747f85825937ce1a86f59e99827b318eccab40906811a044223430095ced7",
+      "source_id": "advbench-484",
+      "source_index": 484
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 41,
+      "prompt_hash": "abf29c5a95afe44df28df651c9ee0c8bcb71ff6bdf27262e31fb939f4877c15b",
+      "source_id": "advbench-485",
+      "source_index": 485
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 15,
+      "prompt_hash": "1d8777e7240f36c541ca177db83e235151724cfed7afb8e73270cc0ea4464cad",
+      "source_id": "advbench-489",
+      "source_index": 489
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 7,
+      "prompt_hash": "69fcc2f669c2a2b0183a4bd75de98ced270407128caccad2d81feff67cb2b1ef",
+      "source_id": "advbench-490",
+      "source_index": 490
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 30,
+      "prompt_hash": "f2835a9683d48dd1662d0abf5999898ed9116164c2a82027485c4f81859edf71",
+      "source_id": "advbench-492",
+      "source_index": 492
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 178,
+      "prompt_hash": "0e0e439660a120ae244b10ff28cc86fa8b932de270da5f5a1c2f377d0c1d80f1",
+      "source_id": "advbench-493",
+      "source_index": 493
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 26,
+      "prompt_hash": "5a249cb91df4c7feace3c37639cc8c9fc743b93fce07251b147a763f812773a0",
+      "source_id": "advbench-495",
+      "source_index": 495
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 111,
+      "prompt_hash": "b0f48870334daf054dd83092f0d9987f87f823560c395e83db15145efdbd300c",
+      "source_id": "advbench-497",
+      "source_index": 497
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 90,
+      "prompt_hash": "f99ce60dad898b1e6cb41922c0918d2dffe71876ef9eb9989656e910b6423e93",
+      "source_id": "advbench-498",
+      "source_index": 498
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 101,
+      "prompt_hash": "d7894b9604f7920098f221203138f39d9fcd55747624e971e4ebde3588b94f96",
+      "source_id": "advbench-5",
+      "source_index": 5
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 40,
+      "prompt_hash": "2b7b7a5dd644a39f78e9f84ca1edf77bcdd1cf8728b508a75fd991c6a26f218e",
+      "source_id": "advbench-504",
+      "source_index": 504
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 50,
+      "prompt_hash": "10d4bd457350dbe33bdd00202af12d56e602ef1b6ec4d3deeca8a46693e72f74",
+      "source_id": "advbench-506",
+      "source_index": 506
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 112,
+      "prompt_hash": "605a949685f9a050408ac802a2ea4c67dcac7f02993e6da09b43565450dec4f6",
+      "source_id": "advbench-510",
+      "source_index": 510
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 182,
+      "prompt_hash": "a6f0b55f154f9ff54b0a6adf1a38b246efdbf40884a43c917a310f7a14859a07",
+      "source_id": "advbench-513",
+      "source_index": 513
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 126,
+      "prompt_hash": "c1d97f0ab8a94b0d8081fafd2378d857891b83a7407d4052f2ff1bed4f948bde",
+      "source_id": "advbench-516",
+      "source_index": 516
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 79,
+      "prompt_hash": "5d81f741a94ebebda10f42be9df527f146fc89cea2dee5496a034ec1f68fe008",
+      "source_id": "advbench-517",
+      "source_index": 517
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 146,
+      "prompt_hash": "09554f9314313466c44abb694a5fc40d9ac92bf35a5a95e556a7f3b878fccf10",
+      "source_id": "advbench-52",
+      "source_index": 52
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 163,
+      "prompt_hash": "3c44ff264dc930c5792a91c66ca6d14f82e35434735b1b226127c8dd39eb157c",
+      "source_id": "advbench-56",
+      "source_index": 56
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 122,
+      "prompt_hash": "50a19d9bcc766da7f1e6766b57acae2b86995db9e222e9ca9f65bbafc33f3acd",
+      "source_id": "advbench-61",
+      "source_index": 61
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 169,
+      "prompt_hash": "70ad071d5a58fac06707fa87f99c4a08621b266e3a51a85419453b3160281e02",
+      "source_id": "advbench-63",
+      "source_index": 63
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 60,
+      "prompt_hash": "8a4e000921a0d1a75989b694f9b685ea5e02eb789e55e93e25c4f9f9a960819f",
+      "source_id": "advbench-66",
+      "source_index": 66
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 197,
+      "prompt_hash": "2dae7376e62ae8dd72aef2822052aa649c2ff3245ccced9ec3556f689bc9fb5c",
+      "source_id": "advbench-67",
+      "source_index": 67
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 116,
+      "prompt_hash": "503cdd9de2e110f9191387265d9d3acc7c670c07650ef40841034215d38a3309",
+      "source_id": "advbench-69",
+      "source_index": 69
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 184,
+      "prompt_hash": "218220e48a54f1a71e5814ba16517d6d266652c8a0ed22f3b0b92aac39de3f5c",
+      "source_id": "advbench-73",
+      "source_index": 73
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 164,
+      "prompt_hash": "b9bc0ec35a0bb253f45561499ad11103943c976b0c10a9842db52bdd75736a3d",
+      "source_id": "advbench-74",
+      "source_index": 74
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 95,
+      "prompt_hash": "dd4123500103ea15f28f969f3e8bc3ff1aa41450224f045d851a1a267a596015",
+      "source_id": "advbench-79",
+      "source_index": 79
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 120,
+      "prompt_hash": "9bdf35bf359e0a1b0e429aaa29b87e3e93f5de4824a6d8e9560610e33a153502",
+      "source_id": "advbench-8",
+      "source_index": 8
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 144,
+      "prompt_hash": "8d2a5163ffd6c7694f46368c401f436a9938bbe7f43850b7d0f95402b9064994",
+      "source_id": "advbench-82",
+      "source_index": 82
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 47,
+      "prompt_hash": "ebaea60b7e96d232d96bf3a5d602cce1f222ee1e7330fcdaf0c7921daccb9d4d",
+      "source_id": "advbench-83",
+      "source_index": 83
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 125,
+      "prompt_hash": "d47518b63efd5371a3dd5b6d8e0af648cc348d342d6716fcc4687b202cba2bd9",
+      "source_id": "advbench-88",
+      "source_index": 88
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 124,
+      "prompt_hash": "9dda69c338b2ca555898147d13398b0b02813f4b1d977309af98233d7b214279",
+      "source_id": "advbench-9",
+      "source_index": 9
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 107,
+      "prompt_hash": "4be4a4f75af4c82ec4126c25d125d08182612e16dfe6ffbc119ca75367c71cb4",
+      "source_id": "advbench-91",
+      "source_index": 91
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 134,
+      "prompt_hash": "dccc8f9752470fc3fe079b4ae227eec48bab852e5608d1a2e29e3a05aae525d3",
+      "source_id": "advbench-92",
+      "source_index": 92
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 14,
+      "prompt_hash": "86e435734ec105523cce7779f7e31ae67daf4cd5132fb92dabacbb6c09e9a294",
+      "source_id": "advbench-93",
+      "source_index": 93
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 88,
+      "prompt_hash": "6235f795548b79fda2c39f62224992e6866bc9c60050ae6e8047850e4152d429",
+      "source_id": "advbench-94",
+      "source_index": 94
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 48,
+      "prompt_hash": "475bf1e78df69393556bd3fc3786c5ff6f66b551d55cb50ee76cd416dfadf362",
+      "source_id": "advbench-96",
+      "source_index": 96
+    },
+    {
+      "partition": "evaluation",
+      "permuted_position": 35,
+      "prompt_hash": "78a6543fe2bd0b569b1e2110f8c059e51ad68344145e20e8724a6adcdcfcff61",
+      "source_id": "advbench-98",
+      "source_index": 98
+    }
+  ],
+  "schema_version": 1,
+  "selected_record_count": 200,
+  "source_file": {
+    "path": "data/train-00000-of-00001.parquet",
+    "sha256": "168902da5a510479f69e17cd22b2c99699cd0e6980141ee6af18ddeb036a80d3",
+    "size_bytes": 35101
+  }
+}

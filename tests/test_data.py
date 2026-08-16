@@ -348,3 +348,34 @@ def test_load_hh_rlhf_test_skips_malformed_and_history_mismatched_rows(monkeypat
 
     assert len(records) == 1
     assert records[0]["id"] == "hh-0"
+
+
+# load_advbench / load_advbench_evaluation (Task 018: frozen panel integration)
+
+
+def test_load_advbench_unaffected_by_the_frozen_panel_work(monkeypatch):
+    """The general-purpose loader is unrelated to the frozen 200-prompt panel and must
+    keep working exactly as before."""
+    rows = [{"prompt": f"prompt {i}", "target": f"target {i}"} for i in range(10)]
+    monkeypatch.setattr(data_module, "load_dataset", lambda *a, **k: _FakeDataset(rows))
+
+    records = data_module.load_advbench(n=5, seed=1)
+    assert len(records) == 5
+    for r in records:
+        assert r["id"].startswith("advbench-")
+        assert "prompt" in r
+
+
+def test_load_advbench_evaluation_is_wired_to_the_frozen_advbench_module(monkeypatch):
+    sentinel = [{"source_id": "advbench-0", "prompt": "x"}]
+    calls = []
+
+    def fake_loader(manifest_path=None):
+        calls.append(manifest_path)
+        return sentinel
+
+    monkeypatch.setattr(data_module, "_load_advbench_evaluation", fake_loader)
+    result = data_module.load_advbench_evaluation(manifest_path="some/path.json")
+
+    assert result is sentinel
+    assert calls == ["some/path.json"]
