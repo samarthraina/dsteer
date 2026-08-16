@@ -36,42 +36,61 @@ def _cfg(**overrides):
     return steer_sweep.SteerSweepConfig(**overrides)
 
 
-# resolve_harmfulqa_partition
+# resolve_prompt_partition
 
 
 def test_resolve_partition_cli_overrides_yaml():
     cfg = _cfg(prompt_source="harmfulqa", prompt_partition="calibration")
-    assert steer_sweep.resolve_harmfulqa_partition(cfg, "development") == "development"
+    assert steer_sweep.resolve_prompt_partition(cfg, "development") == "development"
 
 
 def test_resolve_partition_falls_back_to_yaml_when_no_cli_override():
     cfg = _cfg(prompt_source="harmfulqa", prompt_partition="calibration")
-    assert steer_sweep.resolve_harmfulqa_partition(cfg, None) == "calibration"
+    assert steer_sweep.resolve_prompt_partition(cfg, None) == "calibration"
 
 
 def test_resolve_partition_rejects_construction():
     cfg = _cfg(prompt_source="harmfulqa", prompt_partition="construction")
     with pytest.raises(ValueError):
-        steer_sweep.resolve_harmfulqa_partition(cfg, None)
+        steer_sweep.resolve_prompt_partition(cfg, None)
 
 
 def test_resolve_partition_rejects_final_evaluation():
     cfg = _cfg(prompt_source="harmfulqa", prompt_partition="final_evaluation")
     with pytest.raises(ValueError):
-        steer_sweep.resolve_harmfulqa_partition(cfg, None)
+        steer_sweep.resolve_prompt_partition(cfg, None)
 
 
 def test_resolve_partition_rejects_a_missing_partition():
     """No silent default: an unset partition for prompt_source='harmfulqa' must raise."""
     cfg = _cfg(prompt_source="harmfulqa", prompt_partition=None)
     with pytest.raises(ValueError):
-        steer_sweep.resolve_harmfulqa_partition(cfg, None)
+        steer_sweep.resolve_prompt_partition(cfg, None)
 
 
-def test_resolve_partition_is_a_noop_for_non_harmfulqa_sources():
-    cfg = _cfg(prompt_source="advbench", prompt_partition=None)
-    assert steer_sweep.resolve_harmfulqa_partition(cfg, None) is None
-    assert steer_sweep.resolve_harmfulqa_partition(cfg, "development") == "development"
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_resolve_partition_accepts_null_for_frozen_secondary_sources(source):
+    cfg = _cfg(prompt_source=source, prompt_partition=None)
+    assert steer_sweep.resolve_prompt_partition(cfg, None) is None
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_resolve_partition_rejects_a_nonnull_yaml_partition_for_frozen_secondary_sources(source):
+    """Task 019: a HarmfulQA partition value must never be silently ignored for the
+    frozen secondary panels -- the leftover default (PRIMARY_HARMFULQA_PARTITION) must
+    be rejected outright unless the config explicitly nulls it out."""
+    cfg = _cfg(prompt_source=source, prompt_partition="calibration")
+    with pytest.raises(ValueError):
+        steer_sweep.resolve_prompt_partition(cfg, None)
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_resolve_partition_rejects_a_cli_partition_override_for_frozen_secondary_sources(source):
+    """A CLI --partition must be rejected outright for these sources, never silently
+    ignored -- even when the YAML-level prompt_partition is already null."""
+    cfg = _cfg(prompt_source=source, prompt_partition=None)
+    with pytest.raises(ValueError):
+        steer_sweep.resolve_prompt_partition(cfg, "development")
 
 
 # load_prompts
@@ -94,17 +113,153 @@ def test_load_prompts_harmfulqa_uses_the_partition_loader_ignoring_n_and_seed(mo
     assert a == b == fake_records
 
 
-def test_load_prompts_advbench_unaffected(monkeypatch):
-    """Existing non-HarmfulQA behavior (n-slicing via LOADERS) must be untouched."""
-    fake_records = [{"id": f"advbench-{i}", "prompt": f"p{i}"} for i in range(10)]
-    monkeypatch.setitem(steer_sweep.LOADERS, "advbench", lambda n, seed: fake_records[:n])
-    out = steer_sweep.load_prompts("advbench", n=4, seed=1)
-    assert len(out) == 4
+def _fake_frozen_record(source, i, n=200):
+    return {
+        "source_id": f"{source}-{i}", "source_index": i, "prompt": f"p{i}",
+        "prompt_hash": f"hash{i}", "partition": "evaluation", "permuted_position": i,
+        "manifest_hash": "manifest-" + source,
+    }
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_load_prompts_frozen_secondary_sources_call_only_their_own_frozen_loader_with_no_args(source, monkeypatch):
+    """Task 019, requirement 2: no n/seed is ever passed to the frozen loader, and the
+    other frozen loader must never be touched."""
+    calls = []
+    fake_records = [_fake_frozen_record(source, i, n=5) for i in range(5)]
+
+    def spy(*args, **kwargs):
+        calls.append((args, kwargs))
+        return list(fake_records)
+
+    other = "advbench" if source == "hh_rlhf" else "hh_rlhf"
+
+    def forbid_other(*args, **kwargs):
+        raise AssertionError(f"the {other!r} frozen loader must not be called for prompt_source={source!r}")
+
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, spy)
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, other, forbid_other)
+
+    out = steer_sweep.load_prompts(source, n=5, seed=12345)
+
+    assert calls == [((), {})]  # exactly one call, with no positional or keyword args
+    assert len(out) == 5
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_load_prompts_requires_n_prompts_to_equal_the_exact_panel_size(source, monkeypatch):
+    fake_records = [_fake_frozen_record(source, i, n=5) for i in range(5)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, lambda: list(fake_records))
+
+    with pytest.raises(ValueError):
+        steer_sweep.load_prompts(source, n=4, seed=1)  # one short of the panel
+    with pytest.raises(ValueError):
+        steer_sweep.load_prompts(source, n=6, seed=1)  # one over the panel
+
+    out = steer_sweep.load_prompts(source, n=5, seed=1)  # exact match: must not raise
+    assert len(out) == 5
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_load_prompts_never_slices_or_reorders_the_frozen_panel(source, monkeypatch):
+    fake_records = [_fake_frozen_record(source, i, n=7) for i in range(7)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, lambda: list(fake_records))
+
+    out = steer_sweep.load_prompts(source, n=7, seed=1)
+
+    assert [r["source_id"] for r in out] == [r["source_id"] for r in fake_records]
+    assert len(out) == len(fake_records)
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_load_prompts_sets_id_to_source_id_and_preserves_provenance_fields(source, monkeypatch):
+    fake_records = [_fake_frozen_record(source, i, n=3) for i in range(3)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, lambda: list(fake_records))
+
+    out = steer_sweep.load_prompts(source, n=3, seed=1)
+
+    for rec, fake in zip(out, fake_records):
+        assert rec["id"] == rec["source_id"] == fake["source_id"]
+        for key in ("source_id", "source_index", "prompt_hash", "partition", "permuted_position", "manifest_hash"):
+            assert rec[key] == fake[key]
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_load_prompts_returns_copies_not_the_loaders_own_dicts(source, monkeypatch):
+    """Mutating a returned record must never mutate the frozen loader's own record."""
+    fake_records = [_fake_frozen_record(source, 0, n=1)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, lambda: list(fake_records))
+
+    out = steer_sweep.load_prompts(source, n=1, seed=1)
+    out[0]["prompt"] = "mutated"
+
+    assert fake_records[0]["prompt"] == "p0"
 
 
 def test_load_prompts_rejects_an_unknown_source():
     with pytest.raises(ValueError):
         steer_sweep.load_prompts("nonsense", n=1, seed=1)
+
+
+# build_prompt_panel_metadata
+
+
+def test_build_prompt_panel_metadata_returns_exact_provenance():
+    records = [_fake_frozen_record("advbench", i, n=3) for i in range(3)]
+    for r in records:
+        r["manifest_hash"] = "same-hash"
+    meta = steer_sweep.build_prompt_panel_metadata("advbench", records)
+    assert meta == {"source": "advbench", "partition": "evaluation", "manifest_hash": "same-hash", "record_count": 3}
+
+
+def test_build_prompt_panel_metadata_rejects_mixed_manifest_hashes():
+    records = [_fake_frozen_record("advbench", i, n=2) for i in range(2)]
+    records[0]["manifest_hash"] = "hash-a"
+    records[1]["manifest_hash"] = "hash-b"
+    with pytest.raises(ValueError):
+        steer_sweep.build_prompt_panel_metadata("advbench", records)
+
+
+def test_build_prompt_panel_metadata_rejects_a_missing_manifest_hash():
+    records = [_fake_frozen_record("advbench", i, n=2) for i in range(2)]
+    records[0]["manifest_hash"] = "same-hash"
+    records[1]["manifest_hash"] = "same-hash"
+    records[1].pop("manifest_hash")
+    with pytest.raises(ValueError):
+        steer_sweep.build_prompt_panel_metadata("advbench", records)
+
+
+def test_build_prompt_panel_metadata_rejects_a_null_manifest_hash():
+    records = [_fake_frozen_record("advbench", i, n=2) for i in range(2)]
+    for r in records:
+        r["manifest_hash"] = "same-hash"
+    records[0]["manifest_hash"] = None
+    with pytest.raises(ValueError):
+        steer_sweep.build_prompt_panel_metadata("advbench", records)
+
+
+def test_build_prompt_panel_metadata_rejects_mixed_partitions():
+    records = [_fake_frozen_record("harmfulqa", i, n=2) for i in range(2)]
+    for r in records:
+        r["manifest_hash"] = "same-hash"
+    records[0]["partition"] = "development"
+    records[1]["partition"] = "calibration"
+    with pytest.raises(ValueError):
+        steer_sweep.build_prompt_panel_metadata("harmfulqa", records)
+
+
+def test_build_prompt_panel_metadata_rejects_a_missing_partition():
+    records = [_fake_frozen_record("advbench", i, n=2) for i in range(2)]
+    for r in records:
+        r["manifest_hash"] = "same-hash"
+    records[1].pop("partition")
+    with pytest.raises(ValueError):
+        steer_sweep.build_prompt_panel_metadata("advbench", records)
+
+
+def test_build_prompt_panel_metadata_rejects_an_empty_panel():
+    with pytest.raises(ValueError):
+        steer_sweep.build_prompt_panel_metadata("advbench", [])
 
 
 # output_source_segment
@@ -122,20 +277,24 @@ def test_output_segment_unchanged_for_non_harmfulqa():
     assert steer_sweep.output_source_segment("advbench", None) == Path("advbench")
 
 
-# reject_hold_out_for_harmfulqa
+# reject_hold_out_for_manifest_backed_source
 
 
-def test_hold_out_rejected_for_harmfulqa_when_nonzero():
+@pytest.mark.parametrize("source", ["harmfulqa", "hh_rlhf", "advbench"])
+def test_hold_out_rejected_for_every_manifest_backed_source_when_nonzero(source):
+    """Task 019: hh_rlhf and advbench are manifest-backed exactly like harmfulqa --
+    --hold-out must be 0 for all three."""
     with pytest.raises(ValueError):
-        steer_sweep.reject_hold_out_for_harmfulqa("harmfulqa", 5)
+        steer_sweep.reject_hold_out_for_manifest_backed_source(source, 5)
 
 
-def test_hold_out_allowed_for_harmfulqa_when_zero():
-    steer_sweep.reject_hold_out_for_harmfulqa("harmfulqa", 0)  # must not raise
+@pytest.mark.parametrize("source", ["harmfulqa", "hh_rlhf", "advbench"])
+def test_hold_out_allowed_for_every_manifest_backed_source_when_zero(source):
+    steer_sweep.reject_hold_out_for_manifest_backed_source(source, 0)  # must not raise
 
 
-def test_hold_out_unrestricted_for_non_harmfulqa():
-    steer_sweep.reject_hold_out_for_harmfulqa("advbench", 300)  # must not raise
+def test_hold_out_unrestricted_for_a_non_manifest_backed_source():
+    steer_sweep.reject_hold_out_for_manifest_backed_source("nonsense", 300)  # must not raise
 
 
 # validate_construction_activations
@@ -283,6 +442,44 @@ def test_run_one_preserves_provenance_fields_in_jsonl(tmp_path, monkeypatch):
         assert out["lambda"] == 0.0
 
 
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_load_prompts_output_survives_run_one_into_the_jsonl(source, tmp_path, monkeypatch):
+    """End-to-end for Task 019, requirement 8: the frozen loader's provenance fields
+    (via load_prompts's id==source_id copy) reach the generated JSONL unchanged,
+    because run_one copies each input record verbatim."""
+    fake_records = [_fake_frozen_record(source, i, n=2) for i in range(2)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, lambda: list(fake_records))
+
+    records = steer_sweep.load_prompts(source, n=2, seed=1)
+    chats = [f"chat-{r['id']}" for r in records]
+
+    def fake_generate_batched(model, tokenizer, todo_chats, **kwargs):
+        return [
+            GenerationResult(text=f"response for {c}", generated_token_count=5,
+                              stop_reason="eos_token", stop_token_id=2)
+            for c in todo_chats
+        ]
+
+    monkeypatch.setattr(steer_sweep, "generate_batched", fake_generate_batched)
+
+    cfg = _cfg()
+    path = tmp_path / "baseline.jsonl"
+    n = steer_sweep.run_one(
+        model=None, tokenizer=None, records=records, chats=chats,
+        coefficient=0.0, vectors={}, cfg=cfg, path=path, label="test", batch_size=2,
+    )
+    assert n == 2
+
+    written = read_jsonl(path)
+    assert len(written) == 2
+    for rec, chat, out in zip(records, chats, written):
+        assert out["id"] == out["source_id"] == rec["source_id"]
+        for key in ("source_id", "source_index", "prompt_hash", "partition", "permuted_position", "manifest_hash"):
+            assert out[key] == rec[key]
+        assert out["response"] == f"response for {chat}"
+        assert out["lambda"] == 0.0
+
+
 # run_one: generation metadata (Task 006)
 
 
@@ -374,7 +571,7 @@ def test_steer_sweep_yaml_parses_to_protocol_values():
     assert cfg.prompt_source == "harmfulqa"
     assert cfg.prompt_partition == "calibration"
     assert cfg.activations_dir == "outputs/layer_profile"
-    assert steer_sweep.resolve_harmfulqa_partition(cfg, None) == "calibration"
+    assert steer_sweep.resolve_prompt_partition(cfg, None) == "calibration"
 
 
 def test_activations_dir_default_matches_the_active_yaml_and_the_manifest_backed_construction_path():
@@ -480,15 +677,22 @@ def _forbid(monkeypatch, name):
     monkeypatch.setattr(steer_sweep, name, boom)
 
 
-def _setup_advbench_run(tmp_path, monkeypatch, extra_eval=None):
+def _setup_frozen_secondary_run(tmp_path, monkeypatch, source, extra_eval=None, n=3):
     model_yaml = _write_yaml(tmp_path / "model.yaml", _model_cfg_dict())
-    eval_cfg_dict = {"prompt_source": "advbench", "n_prompts": 3, "output_dir": str(tmp_path / "out")}
+    eval_cfg_dict = {
+        "prompt_source": source, "prompt_partition": None,
+        "n_prompts": n, "output_dir": str(tmp_path / "out"),
+    }
     eval_cfg_dict.update(extra_eval or {})
     eval_yaml = _write_yaml(tmp_path / "eval.yaml", eval_cfg_dict)
 
-    fake_records = [{"id": f"advbench-{i}", "prompt": f"p{i}"} for i in range(3)]
-    monkeypatch.setitem(steer_sweep.LOADERS, "advbench", lambda n, seed: fake_records[:n])
+    fake_records = [_fake_frozen_record(source, i, n=n) for i in range(n)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, source, lambda: list(fake_records))
     return model_yaml, eval_yaml
+
+
+def _setup_advbench_run(tmp_path, monkeypatch, extra_eval=None):
+    return _setup_frozen_secondary_run(tmp_path, monkeypatch, "advbench", extra_eval)
 
 
 def test_argv_is_passed_as_an_exact_json_list_preserving_spaces_and_unicode(tmp_path, monkeypatch):
@@ -554,7 +758,7 @@ def test_metadata_carries_exact_harmfulqa_provenance(tmp_path, monkeypatch):
         "prompt_source": "harmfulqa", "prompt_partition": "calibration", "output_dir": str(tmp_path / "out"),
     })
     fake_records = [
-        {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "manifest-abc"}
+        {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "manifest-abc", "partition": "calibration"}
         for i in range(4)
     ]
     monkeypatch.setattr(steer_sweep, "load_harmfulqa_partition", lambda partition: fake_records)
@@ -572,6 +776,9 @@ def test_metadata_carries_exact_harmfulqa_provenance(tmp_path, monkeypatch):
     assert extra["harmfulqa_partition"] == "calibration"
     assert extra["harmfulqa_manifest_hash"] == "manifest-abc"
     assert extra["harmfulqa_record_count"] == 4
+    assert extra["prompt_panel"] == {
+        "source": "harmfulqa", "partition": "calibration", "manifest_hash": "manifest-abc", "record_count": 4,
+    }
 
 
 def test_metadata_carries_the_resolved_partition_when_supplied_through_the_cli_override(tmp_path, monkeypatch):
@@ -582,7 +789,7 @@ def test_metadata_carries_the_resolved_partition_when_supplied_through_the_cli_o
         "prompt_source": "harmfulqa", "prompt_partition": "calibration", "output_dir": str(tmp_path / "out"),
     })
     fake_records = [
-        {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "manifest-xyz"}
+        {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "manifest-xyz", "partition": "development"}
         for i in range(2)
     ]
     calls_to_loader = []
@@ -606,6 +813,7 @@ def test_metadata_carries_the_resolved_partition_when_supplied_through_the_cli_o
     assert calls_to_loader == ["development"]  # the CLI override, not the YAML's "calibration"
     extra = calls[0]["kwargs"]["extra"]
     assert extra["harmfulqa_partition"] == "development"
+    assert extra["prompt_panel"]["partition"] == "development"
     assert calls[0]["kwargs"]["config"]["cli"]["partition"] == "development"
 
 
@@ -783,10 +991,10 @@ def test_endpoint_metadata_is_merged_into_run_meta_extra(tmp_path, monkeypatch):
     _stub_activation_artifact_validation(monkeypatch)
 
     eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
-        "prompt_source": "advbench", "n_prompts": 2, "output_dir": str(tmp_path / "out"),
+        "prompt_source": "advbench", "prompt_partition": None, "n_prompts": 2, "output_dir": str(tmp_path / "out"),
     })
-    fake_records = [{"id": "advbench-0", "prompt": "p0"}]
-    monkeypatch.setitem(steer_sweep.LOADERS, "advbench", lambda n, seed: fake_records[:n])
+    fake_records = [_fake_frozen_record("advbench", i, n=2) for i in range(2)]
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, "advbench", lambda: list(fake_records))
     monkeypatch.setattr(sys, "argv", [
         "steer_sweep.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
         "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml), "--side", "it",
@@ -800,6 +1008,176 @@ def test_endpoint_metadata_is_merged_into_run_meta_extra(tmp_path, monkeypatch):
 
     assert calls[0]["kwargs"]["extra"]["endpoint"] == fake_endpoint_meta
     assert calls[0]["kwargs"]["config"]["model"]["name"] == "endpoint-A-abc123"
+
+
+# main(): frozen secondary evaluation panels -- hh_rlhf/advbench wiring (Task 019)
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_metadata_carries_exact_prompt_panel_provenance_for_each_frozen_secondary_source(source, tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(tmp_path, monkeypatch, source, n=5)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    extra = calls[0]["kwargs"]["extra"]
+    assert extra["prompt_panel"] == {
+        "source": source, "partition": "evaluation", "manifest_hash": f"manifest-{source}", "record_count": 5,
+    }
+    # The HarmfulQA-specific compatibility keys are never written for a non-HarmfulQA source.
+    assert "harmfulqa_partition" not in extra
+    assert "harmfulqa_manifest_hash" not in extra
+    assert "harmfulqa_record_count" not in extra
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_frozen_panel_record_count_mismatch_fails_before_any_side_effect(source, tmp_path, monkeypatch):
+    """n_prompts=4 configured, but the frozen panel actually has 5 records -- this must
+    fail inside load_prompts, before write_run_metadata, set_all_seeds, logging, or
+    model loading ever runs."""
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(
+        tmp_path, monkeypatch, source, extra_eval={"n_prompts": 4}, n=5,
+    )
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    _forbid(monkeypatch, "write_run_metadata")
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises(ValueError):
+        steer_sweep.main()
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_frozen_secondary_source_with_a_nonnull_partition_fails_before_any_side_effect(source, tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(
+        tmp_path, monkeypatch, source, extra_eval={"prompt_partition": "calibration"},
+    )
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    _forbid(monkeypatch, "write_run_metadata")
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises(ValueError):
+        steer_sweep.main()
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_frozen_secondary_source_with_a_cli_partition_override_fails_before_any_side_effect(source, tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(tmp_path, monkeypatch, source)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml),
+        "--side", "it", "--partition", "development",
+    ])
+
+    _forbid(monkeypatch, "write_run_metadata")
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises(ValueError):
+        steer_sweep.main()
+
+
+@pytest.mark.parametrize("source", ["hh_rlhf", "advbench"])
+def test_frozen_secondary_source_rejects_a_nonzero_hold_out_before_any_side_effect(source, tmp_path, monkeypatch):
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(tmp_path, monkeypatch, source)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml),
+        "--side", "it", "--hold-out", "5",
+    ])
+
+    _forbid(monkeypatch, "write_run_metadata")
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+    _forbid(monkeypatch, "load_tokenizer")
+    _forbid(monkeypatch, "load_model")
+
+    with pytest.raises(ValueError):
+        steer_sweep.main()
+
+
+def test_frozen_panel_mixed_manifest_hashes_fail_before_any_side_effect(tmp_path, monkeypatch):
+    """A panel whose records disagree on manifest_hash (e.g. a stale cached mix) must
+    never reach write_run_metadata -- it would otherwise write ambiguous provenance."""
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(tmp_path, monkeypatch, "advbench", n=3)
+    bad_records = [_fake_frozen_record("advbench", i, n=3) for i in range(3)]
+    bad_records[0]["manifest_hash"] = "manifest-advbench-drifted"
+    monkeypatch.setitem(steer_sweep.FROZEN_SECONDARY_LOADERS, "advbench", lambda: list(bad_records))
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    _forbid(monkeypatch, "write_run_metadata")
+    _forbid(monkeypatch, "set_all_seeds")
+    _forbid(monkeypatch, "setup_logging")
+
+    with pytest.raises(ValueError):
+        steer_sweep.main()
+
+
+def test_frozen_panel_provenance_failure_prevents_all_later_side_effects(tmp_path, monkeypatch):
+    """Full ordering guarantee (Task 019, requirement 7): a dataset-binding failure --
+    here, a record-count mismatch -- must happen before set_all_seeds/CUDA, output or
+    metadata mutation, logging setup, and tokenizer/model/vector loading, exercised
+    together in one assertion rather than one forbidden call at a time."""
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(
+        tmp_path, monkeypatch, "advbench", extra_eval={"n_prompts": 999}, n=3,
+    )
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    for name in ("write_run_metadata", "set_all_seeds", "setup_logging", "load_tokenizer",
+                 "load_model", "build_vectors", "run_one", "sync_to_hub"):
+        _forbid(monkeypatch, name)
+
+    with pytest.raises(ValueError):
+        steer_sweep.main()
+
+
+def test_frozen_secondary_loading_and_metadata_run_before_set_all_seeds(tmp_path, monkeypatch):
+    """Direct regression for requirement 7's ordering: unlike the pre-Task-019 code
+    (which called set_all_seeds before load_prompts), dataset binding and the metadata
+    resume/mismatch check must both complete before set_all_seeds -- recorded via an
+    explicit order list rather than only forbidding the call."""
+    model_yaml, eval_yaml = _setup_frozen_secondary_run(tmp_path, monkeypatch, "advbench", n=3)
+    monkeypatch.setattr(sys, "argv", [
+        "steer_sweep.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml), "--side", "it",
+    ])
+
+    order = []
+
+    def fake_write_run_metadata(*a, **k):
+        order.append("write_run_metadata")
+        raise _MetadataSentinel()
+
+    def fake_set_all_seeds(*a, **k):
+        order.append("set_all_seeds")
+
+    monkeypatch.setattr(steer_sweep, "write_run_metadata", fake_write_run_metadata)
+    monkeypatch.setattr(steer_sweep, "set_all_seeds", fake_set_all_seeds)
+
+    with pytest.raises(_MetadataSentinel):
+        steer_sweep.main()
+
+    assert order == ["write_run_metadata"]  # set_all_seeds never ran
 
 
 # Frozen primary steering protocol -- YAML and dataclass defaults (Task 014)

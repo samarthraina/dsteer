@@ -34,7 +34,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from steering import activation_artifact
 from steering.artifacts import GpuMonitor, sync_to_hub, write_run_metadata
 from steering.config import ModelConfig
-from steering.data import VALID_HARMFULQA_PARTITIONS, load_advbench, load_harmfulqa_partition, load_hh_rlhf_test
+from steering.data import (
+    VALID_HARMFULQA_PARTITIONS,
+    load_advbench_evaluation,
+    load_harmfulqa_partition,
+    load_hh_rlhf_evaluation,
+)
 from steering.endpoint_binding import resolve_model_source
 from steering.generate import build_chat_prompts, generate_batched, suggest_batch_size
 from steering.models import load_model, load_tokenizer
@@ -91,11 +96,15 @@ class SteerSweepConfig:
     # or "calibration" are allowed here -- construction is direction-estimation data,
     # and final_evaluation is reserved for the later confirmatory runner. A CLI
     # --partition, if given, overrides this. "calibration" is the frozen primary
-    # protocol's default evaluation partition (Task 014).
+    # protocol's default evaluation partition (Task 014). Must be explicitly null when
+    # prompt_source is "hh_rlhf" or "advbench" (Task 019) -- those frozen evaluation
+    # panels are not partitioned by manifest and never accept a HarmfulQA partition.
     prompt_partition: Optional[str] = PRIMARY_HARMFULQA_PARTITION
 
     # Not consulted when prompt_source == "harmfulqa": the named partition is loaded in
-    # full, with no sampling.
+    # full, with no sampling. For prompt_source in {"hh_rlhf", "advbench"} (Task 019),
+    # the complete frozen evaluation panel is always loaded in full, and n_prompts must
+    # equal its exact record count -- an assertion on the panel size, not a sample size.
     n_prompts: int = 300
 
     # Frozen primary coefficients (Task 014), given as magnitudes; the sign comes from
@@ -374,26 +383,51 @@ def validate_activation_artifact_for_run(
     )
 
 
-LOADERS = {
-    "advbench": load_advbench,
-    "hh_rlhf": load_hh_rlhf_test,
+#: Sources loaded from a frozen, manifest-backed evaluation panel via a dedicated
+#: loader that takes no n/seed -- the complete panel is always used (Task 019). Kept
+#: distinct from "harmfulqa", which is manifest-backed but partition-selected rather
+#: than a single fixed panel.
+FROZEN_SECONDARY_LOADERS = {
+    "hh_rlhf": load_hh_rlhf_evaluation,
+    "advbench": load_advbench_evaluation,
 }
 
+#: Every prompt_source whose records carry manifest-backed provenance (partition,
+#: manifest_hash) and therefore never needs --hold-out: harmfulqa's construction and
+#: evaluation partitions are already disjoint by manifest, and hh_rlhf/advbench's
+#: intervention vectors and coefficients come exclusively from HarmfulQA
+#: construction/calibration, never from these secondary evaluation panels themselves.
+MANIFEST_BACKED_SOURCES = ("harmfulqa",) + tuple(FROZEN_SECONDARY_LOADERS)
 
-def resolve_harmfulqa_partition(cfg: "SteerSweepConfig", cli_partition: Optional[str]) -> Optional[str]:
-    """CLI overrides YAML. For prompt_source == "harmfulqa" the result must be exactly
-    "development" or "calibration" -- construction is direction-estimation data, and
-    final_evaluation is reserved for the later confirmatory runner, not this grid
-    search. Never falls back silently: an invalid or missing partition raises.
+
+def resolve_prompt_partition(cfg: "SteerSweepConfig", cli_partition: Optional[str]) -> Optional[str]:
+    """CLI overrides YAML.
+
+    For prompt_source == "harmfulqa" the result must be exactly "development" or
+    "calibration" -- construction is direction-estimation data, and final_evaluation is
+    reserved for the later confirmatory runner, not this grid search. Never falls back
+    silently: an invalid or missing partition raises.
+
+    For the frozen secondary evaluation panels (hh_rlhf, advbench; Task 019) the result
+    must be exactly None: those panels are not partitioned by manifest the way
+    HarmfulQA is, and a HarmfulQA partition value -- from either the YAML default or a
+    CLI --partition override -- must never be silently ignored for them.
     """
     partition = cli_partition if cli_partition is not None else cfg.prompt_partition
-    if cfg.prompt_source != "harmfulqa":
+    if cfg.prompt_source == "harmfulqa":
+        if partition not in HARMFULQA_SWEEP_PARTITIONS:
+            raise ValueError(
+                "prompt_source='harmfulqa' requires --partition/prompt_partition to be "
+                f"one of {HARMFULQA_SWEEP_PARTITIONS}; got {partition!r}"
+            )
         return partition
-    if partition not in HARMFULQA_SWEEP_PARTITIONS:
-        raise ValueError(
-            "prompt_source='harmfulqa' requires --partition/prompt_partition to be "
-            f"one of {HARMFULQA_SWEEP_PARTITIONS}; got {partition!r}"
-        )
+    if cfg.prompt_source in FROZEN_SECONDARY_LOADERS:
+        if partition is not None:
+            raise ValueError(
+                f"prompt_source={cfg.prompt_source!r} does not accept a HarmfulQA partition: "
+                f"--partition/prompt_partition must be null, got {partition!r}"
+            )
+        return None
     return partition
 
 
@@ -412,24 +446,75 @@ def output_source_segment(prompt_source: str, partition: Optional[str]) -> Path:
     return Path(prompt_source)
 
 
-def reject_hold_out_for_harmfulqa(prompt_source: str, hold_out: int) -> None:
-    """Construction and evaluation partitions are already disjoint by manifest for
-    HarmfulQA; a nonzero --hold-out is obsolete there and could misalign the frozen
-    vector provenance."""
-    if prompt_source == "harmfulqa" and hold_out:
+def reject_hold_out_for_manifest_backed_source(prompt_source: str, hold_out: int) -> None:
+    """Every manifest-backed source (harmfulqa, hh_rlhf, advbench; Task 019) already
+    has disjoint construction/evaluation provenance by manifest; a nonzero --hold-out
+    is obsolete for all three and could misalign the frozen vector provenance."""
+    if prompt_source in MANIFEST_BACKED_SOURCES and hold_out:
         raise ValueError(
-            "--hold-out must be 0 for prompt_source='harmfulqa': construction and "
+            f"--hold-out must be 0 for prompt_source={prompt_source!r}: construction and "
             "evaluation partitions are already disjoint by manifest, and dropping "
             "leading construction tensors could misalign the frozen vector provenance."
         )
 
 
 def load_prompts(source: str, n: int, seed: int, partition: Optional[str] = None) -> List[Dict]:
+    """harmfulqa loads the named manifest partition in full. hh_rlhf/advbench load
+    their complete frozen 200-record evaluation panel -- no n/seed is ever passed to
+    the frozen loader, and the result is never sliced or shuffled; `n` only asserts
+    that the configured `n_prompts` equals the panel's actual record count, so a
+    drifted panel size fails clearly instead of silently truncating or padding.
+
+    Each returned record is a shallow copy of the frozen loader's record with `id` set
+    to `source_id` (resume/output code requires `id`), so source_id, source_index,
+    prompt_hash, partition, permuted_position, and manifest_hash all survive into the
+    generated JSONL via `run_one`'s own `dict(rec)` copy.
+    """
     if source == "harmfulqa":
         return load_harmfulqa_partition(partition)
-    if source not in LOADERS:
-        raise ValueError(f"unknown prompt_source {source!r}; use one of {sorted(LOADERS) + ['harmfulqa']}")
-    return LOADERS[source](n=n, seed=seed)[:n]
+    if source not in FROZEN_SECONDARY_LOADERS:
+        raise ValueError(f"unknown prompt_source {source!r}; use one of {sorted(FROZEN_SECONDARY_LOADERS) + ['harmfulqa']}")
+    records = FROZEN_SECONDARY_LOADERS[source]()
+    if len(records) != n:
+        raise ValueError(
+            f"prompt_source={source!r} loaded {len(records)} records from its frozen "
+            f"evaluation panel, but n_prompts={n} was configured; n_prompts must equal "
+            "the frozen panel's actual record count exactly -- the complete panel is "
+            "always used, never a slice of it."
+        )
+    return [dict(r, id=r["source_id"]) for r in records]
+
+
+def build_prompt_panel_metadata(source: str, records: List[Dict]) -> Dict[str, Any]:
+    """Generic manifest-backed provenance for run_meta.json's extra["prompt_panel"]
+    (Task 019) -- built for every manifest-backed source (harmfulqa, hh_rlhf,
+    advbench).
+
+    Every loaded panel must resolve to exactly one nonempty manifest_hash and one
+    nonempty partition value across all of its records: a mixed value means two
+    different manifests or partitions got concatenated somehow, and a missing value
+    means the records never carried real provenance in the first place. Either failure
+    mode means the provenance cannot be trusted, so this raises rather than writing
+    null or ambiguous provenance into the run's metadata.
+    """
+    manifest_hashes = {r.get("manifest_hash") for r in records}
+    partitions = {r.get("partition") for r in records}
+    if len(manifest_hashes) != 1 or not next(iter(manifest_hashes)):
+        raise ValueError(
+            f"prompt_source={source!r}: expected exactly one nonempty manifest_hash across "
+            f"all {len(records)} loaded records, got {sorted(str(h) for h in manifest_hashes)!r}"
+        )
+    if len(partitions) != 1 or not next(iter(partitions)):
+        raise ValueError(
+            f"prompt_source={source!r}: expected exactly one nonempty partition across "
+            f"all {len(records)} loaded records, got {sorted(str(p) for p in partitions)!r}"
+        )
+    return {
+        "source": source,
+        "partition": next(iter(partitions)),
+        "manifest_hash": next(iter(manifest_hashes)),
+        "record_count": len(records),
+    }
 
 
 def _default_harmfulqa_manifest_path() -> Path:
@@ -625,15 +710,16 @@ def main():
         "--hold-out", type=int, default=0,
         help="Drop this many leading samples when building the vector. Use the "
              "sweep's prompt count when the vector and the evaluation come from "
-             "the same corpus, so the two sets are disjoint. Must be 0 for "
-             "prompt_source='harmfulqa': construction and evaluation partitions are "
-             "already disjoint by manifest.",
+             "the same corpus, so the two sets are disjoint. Must be 0 for every "
+             "manifest-backed prompt_source (harmfulqa, hh_rlhf, advbench): their "
+             "construction and evaluation partitions are already disjoint by manifest.",
     )
     parser.add_argument(
         "--partition", choices=sorted(VALID_HARMFULQA_PARTITIONS), default=None,
         help="HarmfulQA partition, overriding prompt_partition in the eval config. "
              "Only 'development' or 'calibration' are accepted for this grid-search "
-             "script when prompt_source='harmfulqa'.",
+             "script when prompt_source='harmfulqa'; rejected outright (never silently "
+             "ignored) when prompt_source is 'hh_rlhf' or 'advbench'.",
     )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--sync", action="store_true")
@@ -659,8 +745,8 @@ def main():
 
     cfg = SteerSweepConfig.from_yaml(args.eval_config)
 
-    partition = resolve_harmfulqa_partition(cfg, args.partition)
-    reject_hold_out_for_harmfulqa(cfg.prompt_source, args.hold_out)
+    partition = resolve_prompt_partition(cfg, args.partition)
+    reject_hold_out_for_manifest_backed_source(cfg.prompt_source, args.hold_out)
 
     # The effective layer set, and the protocol-profile classification it feeds into,
     # are both resolved from config/CLI facts only -- before set_all_seeds (CUDA),
@@ -691,25 +777,25 @@ def main():
     if endpoint_backed and not args.vectors:
         activation_artifact_result = validate_activation_artifact_for_run(cfg, model_cfg, endpoint_meta)
 
-    set_all_seeds(args.seed)
-
     tag = run_tag(args.side, args)
     out_root = Path(cfg.output_dir) / model_cfg.name / output_source_segment(cfg.prompt_source, partition) / tag
 
-    # Read-only preparation for the metadata identity check below -- loading prompts
-    # (and, for HarmfulQA, the frozen manifest partition they came from) mutates
-    # nothing on disk, so it is safe to do before the check that guards every write.
+    # Dataset binding: load prompts (and, for the manifest-backed sources, validate
+    # their panel provenance) before set_all_seeds (CUDA), output/metadata mutation,
+    # logging setup, or any tokenizer/model/vector loading (Task 019). Both steps here
+    # are read-only -- they mutate nothing on disk -- so a malformed panel, a drifted
+    # frozen-panel record count, or ambiguous/missing provenance fails here, before any
+    # side effect has run.
     records = load_prompts(cfg.prompt_source, cfg.n_prompts, args.seed, partition)
+    panel_meta = build_prompt_panel_metadata(cfg.prompt_source, records)
 
-    run_meta_extra = None
+    run_meta_extra: Dict[str, Any] = {}
     if cfg.prompt_source == "harmfulqa":
-        manifest_hashes = {r["manifest_hash"] for r in records}
-        run_meta_extra = {
-            "harmfulqa_partition": partition,
-            "harmfulqa_manifest_hash": next(iter(manifest_hashes)) if len(manifest_hashes) == 1 else None,
-            "harmfulqa_record_count": len(records),
-        }
-    run_meta_extra = dict(run_meta_extra or {})
+        # Preserved for compatibility alongside the generic prompt_panel block below.
+        run_meta_extra["harmfulqa_partition"] = partition
+        run_meta_extra["harmfulqa_manifest_hash"] = panel_meta["manifest_hash"]
+        run_meta_extra["harmfulqa_record_count"] = panel_meta["record_count"]
+    run_meta_extra["prompt_panel"] = panel_meta
     run_meta_extra["protocol_profile"] = protocol_profile
     run_meta_extra["endpoint_backed"] = endpoint_backed
     run_meta_extra["model_loading_policy"] = loading_policy
@@ -725,6 +811,10 @@ def main():
             "run_identity_hash": activation_artifact_result.sidecar.get("run_identity_hash"),
             "endpoint": activation_artifact_result.sidecar.get("endpoint"),
         }
+
+    # The metadata resume/mismatch check -- still before set_all_seeds (CUDA), logging,
+    # model loading, or generation: a mismatched resume fails here, before it can touch
+    # any of that.
     write_run_metadata(
         out_root,
         config=build_run_config(model_cfg, cfg, args),
@@ -732,9 +822,11 @@ def main():
         argv=list(sys.argv),
     )
 
-    # Nothing below may run until the identity check above has succeeded: the log is
-    # not initialised and no model/tokenizer/vectors are loaded before this point -- a
-    # mismatched resume fails here, before it can touch anything.
+    set_all_seeds(args.seed)
+
+    # Nothing above initialised the log or loaded any model/tokenizer/vectors -- a
+    # mismatched resume, a malformed prompt panel, or a protocol-profile mismatch all
+    # fail before this point, with no side effects.
     log = setup_logging(out_root / "steer_sweep.log")
     log.info(f"{len(records)} prompts from {cfg.prompt_source}" + (f" partition={partition}" if cfg.prompt_source == "harmfulqa" else ""))
     log.info(f"protocol_profile={protocol_profile}")
