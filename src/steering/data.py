@@ -16,6 +16,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from datasets import load_dataset
 
+from steering.hh_rlhf import load_hh_rlhf_evaluation as _load_hh_rlhf_evaluation
+from steering.hh_rlhf import parse_transcript as _parse_hh_transcript
 from steering.splits import (
     load_manifest,
     prompt_hash,
@@ -83,20 +85,31 @@ def load_alpacaeval(n: int = 50, seed: int = 42) -> List[Dict[str, str]]:
 
 
 def load_hh_rlhf_test(n: Optional[int] = None, seed: int = 42) -> List[Dict[str, str]]:
-    """Load HH-RLHF harmless-base test split.
+    """Load HH-RLHF harmless-base test split (general-purpose, ad hoc sampling).
 
     Each record: {"id", "prompt", "chosen", "rejected"}
-    The "prompt" is the multi-turn conversation up to (but not including) the final assistant turn.
+    The "prompt" is the full multi-turn conversation up to (but not including) the final
+    assistant turn, as a list of {"role", "content"} messages.
+
+    `id` is assigned from the row's position in the unshuffled dataset, before any
+    sampling -- the same source row keeps the same identity no matter what `n`/`seed` a
+    caller requests. Rows whose chosen/rejected transcript is malformed, or whose
+    chosen/rejected prompt histories disagree, are skipped.
+
+    For the frozen, manifest-backed 200-record evaluation panel, use
+    `load_hh_rlhf_evaluation` instead -- this loader is not reproducible across dataset
+    snapshots and performs no source-identity verification.
     """
     ds = load_dataset("Anthropic/hh-rlhf", data_dir="harmless-base", split="test")
-    if n is not None and n < len(ds):
-        ds = ds.shuffle(seed=seed).select(range(n))
 
     records = []
     for i, row in enumerate(ds):
-        prompt, chosen = _split_hh_conversation(row["chosen"])
-        _, rejected = _split_hh_conversation(row["rejected"])
-        if prompt is None:
+        try:
+            prompt, chosen = _parse_hh_transcript(row["chosen"])
+            rejected_prompt, rejected = _parse_hh_transcript(row["rejected"])
+        except ValueError:
+            continue
+        if prompt != rejected_prompt:
             continue
         records.append({
             "id": f"hh-{i}",
@@ -104,8 +117,26 @@ def load_hh_rlhf_test(n: Optional[int] = None, seed: int = 42) -> List[Dict[str,
             "chosen": chosen,
             "rejected": rejected,
         })
+
+    if n is not None and n < len(records):
+        import random
+
+        rng = random.Random(seed)
+        records = rng.sample(records, n)
+
     log.info(f"Loaded HH-RLHF (harmless-base, test): {len(records)} prompts")
     return records
+
+
+def load_hh_rlhf_evaluation(manifest_path: Optional[Union[str, Path]] = None) -> List[Dict[str, Any]]:
+    """Load the frozen 200-record HH-RLHF harmless-base evaluation panel (Task 017).
+
+    Thin re-export of `steering.hh_rlhf.load_hh_rlhf_evaluation` so callers of this
+    module do not need to know the panel lives in its own module. See there for the
+    full contract: membership, order, and content are fixed by the manifest and
+    re-verified against the pinned source at every call.
+    """
+    return _load_hh_rlhf_evaluation(manifest_path=manifest_path)
 
 
 HARMFULQA_CONFIG = "default"
@@ -217,36 +248,3 @@ def load_advbench(n: Optional[int] = None, seed: int = 42) -> List[Dict[str, str
         })
     log.info(f"Loaded AdvBench: {len(records)} prompts")
     return records
-
-
-# Helpers
-
-def _split_hh_conversation(text: str):
-    """Split an HH-RLHF transcript into (prompt_messages, final_assistant_response).
-
-    The prompt is returned as a list of {"role", "content"} dicts (chat-template ready).
-    """
-    if not text:
-        return None, None
-
-    # HH transcripts look like: "\n\nHuman: ... \n\nAssistant: ... \n\nHuman: ... \n\nAssistant: ..."
-    parts = text.split("\n\n")
-    messages = []
-    last_assistant = None
-    for part in parts:
-        part = part.strip()
-        if not part:
-            continue
-        if part.startswith("Human:"):
-            messages.append({"role": "user", "content": part[len("Human:"):].strip()})
-        elif part.startswith("Assistant:"):
-            content = part[len("Assistant:"):].strip()
-            messages.append({"role": "assistant", "content": content})
-            last_assistant = content
-
-    if not messages or messages[-1]["role"] != "assistant":
-        return None, None
-
-    # Strip the final assistant turn — that's our reference answer.
-    prompt_messages = messages[:-1]
-    return prompt_messages, last_assistant

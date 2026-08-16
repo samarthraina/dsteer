@@ -1,0 +1,1928 @@
+{
+  "dataset": {
+    "data_dir": "harmless-base",
+    "repository": "Anthropic/hh-rlhf",
+    "revision": "09be8c5bbc57cb3887f3a9732ad6aa7ec602a1fa",
+    "split": "test"
+  },
+  "duplicate_excluded_count": 2,
+  "duplicate_exclusions": [
+    {
+      "excluded_source_id": "hh-harmless-test-1452",
+      "excluded_source_index": 1452,
+      "prompt_hash": "94e79118138ac904ec7413fd627e896d7d628cc132828971d2d9268fdee55ccf",
+      "retained_source_id": "hh-harmless-test-1262",
+      "retained_source_index": 1262
+    },
+    {
+      "excluded_source_id": "hh-harmless-test-1483",
+      "excluded_source_index": 1483,
+      "prompt_hash": "edb42e223975ece42cbcde2cf3fdb3977b6dace628018005d78c7a728d1e61de",
+      "retained_source_id": "hh-harmless-test-250",
+      "retained_source_index": 250
+    }
+  ],
+  "eligible_record_count": 2297,
+  "manifest_hash": "44f93ff71f229e11c1ac41db6a4bb3b07625ad53270594d0f207e14d76c6068b",
+  "parse_excluded_by_reason": {
+    "chosen_malformed": 12,
+    "rejected_malformed": 1
+  },
+  "parse_excluded_count": 13,
+  "parse_exclusions": [
+    {
+      "detail": "transcript does not end with an Assistant turn",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-86",
+      "source_index": 86
+    },
+    {
+      "detail": "transcript does not end with an Assistant turn",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-516",
+      "source_index": 516
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-667",
+      "source_index": 667
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-763",
+      "source_index": 763
+    },
+    {
+      "detail": "transcript does not end with an Assistant turn",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-925",
+      "source_index": 925
+    },
+    {
+      "detail": "transcript does not end with an Assistant turn",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-1103",
+      "source_index": 1103
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-1254",
+      "source_index": 1254
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-1319",
+      "source_index": 1319
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-1688",
+      "source_index": 1688
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-1849",
+      "source_index": 1849
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "rejected_malformed",
+      "source_id": "hh-harmless-test-1950",
+      "source_index": 1950
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-1952",
+      "source_index": 1952
+    },
+    {
+      "detail": "turns are not strictly alternating starting with Human (found 'Assistant' where 'Human' was expected)",
+      "reason": "chosen_malformed",
+      "source_id": "hh-harmless-test-2036",
+      "source_index": 2036
+    }
+  ],
+  "permutation": {
+    "algorithm": "sha256(seed:source_id)-sort-source_id-tiebreak-v1",
+    "seed": 20260815
+  },
+  "raw_record_count": 2312,
+  "records": [
+    {
+      "chosen_hash": "1488ab740389808e25a59c2064eb43bfab297c4cb0fb62dbd7c5227b027a6f18",
+      "partition": "evaluation",
+      "permuted_position": 197,
+      "prompt_hash": "ac00533b59489f202c689494fec189cdd3e1e210f9df257b60417902d9af9d5c",
+      "rejected_hash": "3690be14820c085fdd613ffaf72d44ed4c7a8d2ea9ca0b46d55319c5c3bb9b26",
+      "source_id": "hh-harmless-test-1007",
+      "source_index": 1007
+    },
+    {
+      "chosen_hash": "1c84958cf0f4d90e593752878c7cdfa6678209d810c17f9615ae552f84344aad",
+      "partition": "evaluation",
+      "permuted_position": 39,
+      "prompt_hash": "a8bf6e4506e19c67366cffa1c3fb19413615a558360f376d6e861abf3bc319be",
+      "rejected_hash": "f5707045580a88b66cab658fe1508d2109f4f44c0ab3f025d1e737dc47e60446",
+      "source_id": "hh-harmless-test-1009",
+      "source_index": 1009
+    },
+    {
+      "chosen_hash": "1dc1fe3abb2e12f80a411991b52fbc53edeaa39049c959342329b5fa8e0cf2dc",
+      "partition": "evaluation",
+      "permuted_position": 149,
+      "prompt_hash": "913fecf5ae2d250e056cc98caa14171800fa4add2c57769b46f753de5796b9ad",
+      "rejected_hash": "90cc5aa5a23692117b2ff6cd867324240c594ddaa2dcf0944ea669b74543777e",
+      "source_id": "hh-harmless-test-1015",
+      "source_index": 1015
+    },
+    {
+      "chosen_hash": "55a3d82b9ed4a0cdc72f78962330e13b0dac821cac5bc889b77548b8f0085d69",
+      "partition": "evaluation",
+      "permuted_position": 106,
+      "prompt_hash": "14e668fc1d1f3f9d30854e4722d08bb6b5cd226adcf63084d88961a211515ec9",
+      "rejected_hash": "816298c1ed49a34438bf5ee61fdd2d89ebd89c0ad3730a5019eb0b113452ca76",
+      "source_id": "hh-harmless-test-1019",
+      "source_index": 1019
+    },
+    {
+      "chosen_hash": "93bba8102407e912feebee78742640c9aa8904e2bc7070ff8934b4cec276d6ad",
+      "partition": "evaluation",
+      "permuted_position": 163,
+      "prompt_hash": "9d3917b7307cdb8b32e53542a472ccc6297c5bbcd6234a234e2ed1ee3b48fba5",
+      "rejected_hash": "4f3051f931beb93eb66fb580c1137f7af15962c1ffac176fcd92bf3817b7fad0",
+      "source_id": "hh-harmless-test-1020",
+      "source_index": 1020
+    },
+    {
+      "chosen_hash": "42cb37b2b07624bb6fd9c301670e323f40456180d2bb3e294d9ea7a90fa11f5f",
+      "partition": "evaluation",
+      "permuted_position": 102,
+      "prompt_hash": "510a5145d4c3758d658fa4c8af74b9cd3ebfcdab08ef8eb0f9ac39899ffb02c6",
+      "rejected_hash": "ee6896597403fb82cfe3e3e1e6bad0fe183762ab152e3d9c5b9f7955a956490c",
+      "source_id": "hh-harmless-test-1028",
+      "source_index": 1028
+    },
+    {
+      "chosen_hash": "a81cb8fdc9656f2d850dbf7668807b994dac249e2533e3e8ad4d72674c8e40ad",
+      "partition": "evaluation",
+      "permuted_position": 76,
+      "prompt_hash": "739f14aa35d5dd2927f276dd5afb78f3e7a8da5f05585aba5800cc0c4e206fdb",
+      "rejected_hash": "3fbc452881767ea5fcea5c3ca8cd1c6be1fc2afde61bfe7a1881ff9b62978280",
+      "source_id": "hh-harmless-test-1035",
+      "source_index": 1035
+    },
+    {
+      "chosen_hash": "5da69dc8ca1cea21f568cfeeaf6b19f87e3e0f86b6d63a070f139a82ecba55ba",
+      "partition": "evaluation",
+      "permuted_position": 4,
+      "prompt_hash": "66de7c5fe5ba320bc7149fec1808c3ee44dbcf521c356ad2f1e9ecbd141780bb",
+      "rejected_hash": "a293a14892dda85f5368aebd2157babcfb06c9c5a07fd314769187243b31beb0",
+      "source_id": "hh-harmless-test-1066",
+      "source_index": 1066
+    },
+    {
+      "chosen_hash": "1a18307741fae46ffcc16bbe31c9fd45db2ac9b7aa83ab5cff62b5317792f788",
+      "partition": "evaluation",
+      "permuted_position": 88,
+      "prompt_hash": "0d85c95c2cb979ceb9be835f2ceccd0ad5690a97cdba03103d569215495297f7",
+      "rejected_hash": "ce6a1f735496b797cc61a1da46917bff3ca7e4285947d9c92b2a885438423bf4",
+      "source_id": "hh-harmless-test-1071",
+      "source_index": 1071
+    },
+    {
+      "chosen_hash": "91b6d87680a0f039497e1946d11b9b8c8b4b11c219b5adba29ab82981e4e82d7",
+      "partition": "evaluation",
+      "permuted_position": 15,
+      "prompt_hash": "e47ddcff01023b0aeae441f1d2a0240401c9f23bcbba1adaaeddbb65247d6398",
+      "rejected_hash": "8bb9eda9ade056650f38807b17c6fa11fc90b6df8820ef1b3ea78fb33015f2e1",
+      "source_id": "hh-harmless-test-1072",
+      "source_index": 1072
+    },
+    {
+      "chosen_hash": "0dd87c36ef3e3371201814d3604f55c1e94d1a1ab713322c2af9d51103e61636",
+      "partition": "evaluation",
+      "permuted_position": 148,
+      "prompt_hash": "50f9d9a4d7a7c806a3881b0be71e16fcce45411a5ba0232347ab6bfa721f0f17",
+      "rejected_hash": "fa6bb507275539764d28626ec38495b292f2c405017ac0dc77e3a1336c41355a",
+      "source_id": "hh-harmless-test-1076",
+      "source_index": 1076
+    },
+    {
+      "chosen_hash": "f6bf600d2716e3403824a1cb26ae8e01d43dd1aa8a4be6f4da54933adbffa573",
+      "partition": "evaluation",
+      "permuted_position": 29,
+      "prompt_hash": "3f73f067bf547b039bdadc8238c62823f8f4c57b9b4c9603dfbacfe4eab4b6c2",
+      "rejected_hash": "d34bd8375c4b08ebc4b6f6bfc3a7fae1d867d9034ead3b7fd7a573656dd1eb74",
+      "source_id": "hh-harmless-test-1078",
+      "source_index": 1078
+    },
+    {
+      "chosen_hash": "c05b5319b84a589c63c352ed51d7faf04795adf895ce03f749f643b5e709aae1",
+      "partition": "evaluation",
+      "permuted_position": 27,
+      "prompt_hash": "7c79b45b09cb5e9240b459a3851c402d69dac30b255ccea4fc7e75e3967b1785",
+      "rejected_hash": "649f4e3bf6cff2c3cda841e9cc5af0004ab5ea4d364ae445bb6173a43dfc1e9e",
+      "source_id": "hh-harmless-test-108",
+      "source_index": 108
+    },
+    {
+      "chosen_hash": "ffd184187b6fe3a499f08fd359d2f374fc811bf4e6704719be9935e87bebe463",
+      "partition": "evaluation",
+      "permuted_position": 5,
+      "prompt_hash": "d093b54d84151f313b85d6fa32dd881ff769ddbf1c2ba2df501ff626ea95cb18",
+      "rejected_hash": "416a7fb06908aeca31e824d549ef4a399b2766cbe864cb6f6a7e3e31f26295b6",
+      "source_id": "hh-harmless-test-1093",
+      "source_index": 1093
+    },
+    {
+      "chosen_hash": "3422813fa892331ad40556b59e610dd5a37d6a42b2a3737961f6ea009255d437",
+      "partition": "evaluation",
+      "permuted_position": 51,
+      "prompt_hash": "27c02d0bcb9d13225bb97b1858532a3a5db805bed68d2d2c9fb89ed1a30902e5",
+      "rejected_hash": "8d4d00b5567d656354a681ddc5a72dd0749a2d51f72f208b2b6c33b908931391",
+      "source_id": "hh-harmless-test-1095",
+      "source_index": 1095
+    },
+    {
+      "chosen_hash": "cd34dd96327ab0c2bae64357aa3c9402ffca37db75190af7bff666375a3aaff8",
+      "partition": "evaluation",
+      "permuted_position": 141,
+      "prompt_hash": "ecc404c1d3cb94d4fbd9fa542126f7bb85a8993ed42bc41d60570b5f874e9ea2",
+      "rejected_hash": "75d6695ce4a766e3af6f1494acd58f4b07fb066a3b29ac1fbd62d9a8f4895874",
+      "source_id": "hh-harmless-test-110",
+      "source_index": 110
+    },
+    {
+      "chosen_hash": "94f4b9c107d29c4b29b1baa8d7164be7dbcee119269c01a61763d4f58d6b6bb9",
+      "partition": "evaluation",
+      "permuted_position": 153,
+      "prompt_hash": "25241698161bbb73f12256096867df399f57464bc0a44eb075cdee5bbacfb147",
+      "rejected_hash": "1b23d1370592bcaed7c7ad244d8c2dd75ba1f8e2dae248a38d0d53957d53dae6",
+      "source_id": "hh-harmless-test-1101",
+      "source_index": 1101
+    },
+    {
+      "chosen_hash": "f237965190f7cde16afd84fed516d93acac6abb5b3f0431cfe91df34f3963169",
+      "partition": "evaluation",
+      "permuted_position": 151,
+      "prompt_hash": "51fc80fdc5f9605aa8153a8afb728168ac8b622f5ae389883cb887dc3d2586cf",
+      "rejected_hash": "a2796045300e7da09bd9132ddef858ab6062729750f628274056f42c34913a54",
+      "source_id": "hh-harmless-test-1112",
+      "source_index": 1112
+    },
+    {
+      "chosen_hash": "8df5cdf2c834007dc68b789d426647ace03e51332aa9d9a2f982101fc28d398f",
+      "partition": "evaluation",
+      "permuted_position": 3,
+      "prompt_hash": "25ad0d2a1e4fa6a9045a708eafb0b295ded4f22ac4c12e95dbc2a1b13563cf47",
+      "rejected_hash": "debfed6fbb1ddfce064051da6deaa243458eeccbc54c783c626982dbd5affe9f",
+      "source_id": "hh-harmless-test-1122",
+      "source_index": 1122
+    },
+    {
+      "chosen_hash": "49a40675f130a481e20a50bfeab526668543effc0aafa295c784e90371e5ed42",
+      "partition": "evaluation",
+      "permuted_position": 71,
+      "prompt_hash": "b36ca6cffa58e6d4f811c176e0a9e0db7e3898c212874404e4b3975e5e2e0177",
+      "rejected_hash": "46c15927b261693dd24f273d34b0b20b605e0193b86895749b98ef8b09405445",
+      "source_id": "hh-harmless-test-1165",
+      "source_index": 1165
+    },
+    {
+      "chosen_hash": "73a9d9384f18c83ce78e2469196629dcca4812b9ec57259e7d5d3b3d53f3fcea",
+      "partition": "evaluation",
+      "permuted_position": 75,
+      "prompt_hash": "ad583ab4c844a10093d28c7a629a34e9029c71e5d2dcfc2a947a40cf1293a98f",
+      "rejected_hash": "3e8e48e31152c6b6b535a8952e78976e1858504978c3ebe81e871f3ff9c1e2dc",
+      "source_id": "hh-harmless-test-1168",
+      "source_index": 1168
+    },
+    {
+      "chosen_hash": "1aa1ec5a5b8aa3d27cf51c31c002ec9e4ef81077d253a824ab66975dfd133f17",
+      "partition": "evaluation",
+      "permuted_position": 50,
+      "prompt_hash": "7cca0e7dbfb4efc05966a746a8ab4f2e3f6b54858429f0d3c30042df188ef383",
+      "rejected_hash": "947a6be4625e824aed4f9706fe094b218277e78e123d733cf7e288a7b82f1849",
+      "source_id": "hh-harmless-test-1182",
+      "source_index": 1182
+    },
+    {
+      "chosen_hash": "2d04cd3630f9e16b9971c45a4f440d79eb3b132fcebe0c875858b54928c5cde7",
+      "partition": "evaluation",
+      "permuted_position": 55,
+      "prompt_hash": "4d95e13863bacef4ae57b8dfd21c80af7c6ccf3a9c5018f16c983afe4b32113d",
+      "rejected_hash": "e242042abaaf501ca77f3b2fa39e490d8e8093f8633ce6c8044d5d8b115ceb3b",
+      "source_id": "hh-harmless-test-1183",
+      "source_index": 1183
+    },
+    {
+      "chosen_hash": "d500f8233cc401ef6ea3d709fb79983681a8ee6e82ab0739e0fab42e75c72982",
+      "partition": "evaluation",
+      "permuted_position": 166,
+      "prompt_hash": "e9c8ea8acc8427b7123b54bf107da06a5b87c7a69d4c4d9f854cc97083321400",
+      "rejected_hash": "6c6b0c47e726146c6c499c04d6424ddc62199f7467dd0e7d1dbd5f80e9887d85",
+      "source_id": "hh-harmless-test-1186",
+      "source_index": 1186
+    },
+    {
+      "chosen_hash": "e82644b8c6bfb4cbe65b292bc44c103398eb78bcfcc6ebfd398f3ce6a63b4994",
+      "partition": "evaluation",
+      "permuted_position": 167,
+      "prompt_hash": "b4119e3a5124b39f93c701982c07d6c1dc3fd6a17e14e05c2ed83251fdc98d82",
+      "rejected_hash": "5fe5acac7686e1edd9e5e78655b9af7badf3bc1403e9ab9adee30c0ea9fe54e2",
+      "source_id": "hh-harmless-test-1198",
+      "source_index": 1198
+    },
+    {
+      "chosen_hash": "495bf8d93e09edada0dec4f000bed7402b5157da212974c2af69a91ad8da0d52",
+      "partition": "evaluation",
+      "permuted_position": 161,
+      "prompt_hash": "de0437131d968a2370e1757fc7dd903ff752e9a8337a6630359cfe8f4e5c160c",
+      "rejected_hash": "6b7949fdf2edceedec299eef7f8e3457b4410244021231864450a988db04cd5a",
+      "source_id": "hh-harmless-test-1203",
+      "source_index": 1203
+    },
+    {
+      "chosen_hash": "c2f3dfe239a97b5f3f33e51bda73c9aa912f18d2e9c07bc8f6f4c015fb020162",
+      "partition": "evaluation",
+      "permuted_position": 180,
+      "prompt_hash": "8e60f06796e963b61321d995c4c3c0c0f05869af4c16d93cd2f21c8d6fa2827c",
+      "rejected_hash": "7eff7ba6102983ad4b90c1650f7f34ecc0282c6ede8efdf73036233879effb1c",
+      "source_id": "hh-harmless-test-123",
+      "source_index": 123
+    },
+    {
+      "chosen_hash": "db501966c1e3384c0fe8f5d2617270c73847887077ecd3117a7da00b17651b4f",
+      "partition": "evaluation",
+      "permuted_position": 52,
+      "prompt_hash": "a7ca733d1426110fa264aaa61b6444e9497814e6e11bef14802f03be03a25cb6",
+      "rejected_hash": "69f1c428aaafd6aed283098d1eff7027530debaeb9ff634aed28fda2db961677",
+      "source_id": "hh-harmless-test-1245",
+      "source_index": 1245
+    },
+    {
+      "chosen_hash": "f92deb697574c1db2612140221f2b858ecc305d7ae5bc2e5dd9cb51244fb55d4",
+      "partition": "evaluation",
+      "permuted_position": 86,
+      "prompt_hash": "bec97dd8956d23411da80634d85318ce89f1f04dae73d75b31ea2893e5d2d6c0",
+      "rejected_hash": "fce2e0929f645af73ae551ca75953870d148a5c316cfd8c9f4b5cc02a35ecc4d",
+      "source_id": "hh-harmless-test-1248",
+      "source_index": 1248
+    },
+    {
+      "chosen_hash": "c6f96adff8ad0977289ea21b563c74aec69fe7092f0c103aae1e7ae9f3b1c5d5",
+      "partition": "evaluation",
+      "permuted_position": 105,
+      "prompt_hash": "0ceb43a422cf3ea628079a6cdee780c74e223039a6f19f80da4cf1b533225699",
+      "rejected_hash": "376996dafd14c199ccf6385f3dd22ddc1b9804b7d3fe5368e3cc3bd065be8f11",
+      "source_id": "hh-harmless-test-1252",
+      "source_index": 1252
+    },
+    {
+      "chosen_hash": "9dc8f67c20fcec926cea141d75fee6e0a8e4e50a9234129f1a1d7c512244b5cd",
+      "partition": "evaluation",
+      "permuted_position": 99,
+      "prompt_hash": "83f3eb48099fa783671b54b9619612e8fdd0b2d860f46a6e16cdf5e20c08568a",
+      "rejected_hash": "8c1728b4db48dbb33530b02217558d67a9be815e7f12ab2acc3bf413127ef312",
+      "source_id": "hh-harmless-test-1258",
+      "source_index": 1258
+    },
+    {
+      "chosen_hash": "86d3982d2314509cd5e690e3f40f72cf8cce00646529023f63dfc93bf2d5823d",
+      "partition": "evaluation",
+      "permuted_position": 100,
+      "prompt_hash": "f8f3d1083f9284369781417a60af1cfc3c25d8d5c0f27c3202e8556cb2e1762d",
+      "rejected_hash": "38e187bf1f258d2be8eefcf013ef012107b89fefca3d8e885dbec1e5f575df38",
+      "source_id": "hh-harmless-test-1261",
+      "source_index": 1261
+    },
+    {
+      "chosen_hash": "166910427c08569d505ccfdc8e207f1209748d2c1b2cf6cb694693753a1d86aa",
+      "partition": "evaluation",
+      "permuted_position": 69,
+      "prompt_hash": "c10706503c38b46051e9b54211c75310f0f37dc6731a53793e80ecff029c7fcb",
+      "rejected_hash": "ce95bd8fa31ba99c037ed72839045a4a5b82bbed7db6839895dd8642ed644c63",
+      "source_id": "hh-harmless-test-1271",
+      "source_index": 1271
+    },
+    {
+      "chosen_hash": "685f8b6f03fb24eeccc47cd024032c380499b13c3504f7f01819541eed8f3506",
+      "partition": "evaluation",
+      "permuted_position": 40,
+      "prompt_hash": "f42368edad2eddbe1551bd279ca3abed2009ee32aaefc35368c3536a14c02dc7",
+      "rejected_hash": "0d96c0aa48524de1c3341bae961c98ece0666206a4d5f5b2d6a7cdee0ebc2079",
+      "source_id": "hh-harmless-test-1272",
+      "source_index": 1272
+    },
+    {
+      "chosen_hash": "13af4835accdf3e13a83ce09761e546ee8419ebf3efbbbb9f7fe6a6399f8ee46",
+      "partition": "evaluation",
+      "permuted_position": 128,
+      "prompt_hash": "b835e84d4c172cb556a53adf92e883732b0d9e6bbd32c6c36246bb9d44181d4b",
+      "rejected_hash": "1108918bccc82b8bdf81be49a4e7fcfa7e2f072c44d062d0fd9eeed9a0f21869",
+      "source_id": "hh-harmless-test-1276",
+      "source_index": 1276
+    },
+    {
+      "chosen_hash": "dc845ad74d5e05092a05ee6f905ed7fd5877e0166ba009df9b1d99faa56844b0",
+      "partition": "evaluation",
+      "permuted_position": 44,
+      "prompt_hash": "787d4c99a951a021d51b69e7a83061f708579b6b678f6bc2394bdb68173d2e5a",
+      "rejected_hash": "b8898b1d24fd78c6cfe6e6c3aeecd5f4f1ed3f9dc4d033b7d8a030428b226c0a",
+      "source_id": "hh-harmless-test-1279",
+      "source_index": 1279
+    },
+    {
+      "chosen_hash": "b43e96d1f9bf1c90505313e1b9eadf5a9fea6508d6b226cbf6fe48808ea3095b",
+      "partition": "evaluation",
+      "permuted_position": 101,
+      "prompt_hash": "5247baddf7772bc7f64995091dd59dd903b93aab50b63fb90ab12fb19a1cddce",
+      "rejected_hash": "5f9a2b795615ba6a3d5455fd5624d773fbca5bcd16249c421fd37411dc9837da",
+      "source_id": "hh-harmless-test-1287",
+      "source_index": 1287
+    },
+    {
+      "chosen_hash": "df5db14e5f4ae0ff8f7beace1c3167258c6cf48865c3eb83ee11130238325a65",
+      "partition": "evaluation",
+      "permuted_position": 90,
+      "prompt_hash": "165b7cf570ea2ab923c532d7c8937ba5f6cdf30f1b47de10ab710986c6e9a919",
+      "rejected_hash": "9c3d047bb2c08cf909ff6e5e3f43daa2818b7881b3d0b0e196fc7c2b08fe7e53",
+      "source_id": "hh-harmless-test-1297",
+      "source_index": 1297
+    },
+    {
+      "chosen_hash": "b84361fa46eb17aec8fd40554e4e781c9dfb078c91e533d24f05807ecdc9db21",
+      "partition": "evaluation",
+      "permuted_position": 119,
+      "prompt_hash": "8c9a562fee2b5aa9eba0f82809f3d0c24b40937833c98410305fe79d33369ac1",
+      "rejected_hash": "dd724a9022a9afcbdcc5fcc51508a357ce033b6a88543b7ee69880609582906d",
+      "source_id": "hh-harmless-test-1298",
+      "source_index": 1298
+    },
+    {
+      "chosen_hash": "548248b77b19bdd2a4bca5d5c3a8b8faa0dc93c4f4d4ec478a48eaa7887a9b7d",
+      "partition": "evaluation",
+      "permuted_position": 160,
+      "prompt_hash": "58c95db175e3f2a6afe08f925a4dabb2860e9e49f886f3ddc60f3d1b3273652b",
+      "rejected_hash": "c099e988ddbcbeabaf51c6ae5251597911a3474283492a51abbaa2713615397c",
+      "source_id": "hh-harmless-test-1310",
+      "source_index": 1310
+    },
+    {
+      "chosen_hash": "1af0b69fd2ac01c6881d2ae32a820e7f774d4e8de54d5f6d48b15c2e4f107ee4",
+      "partition": "evaluation",
+      "permuted_position": 157,
+      "prompt_hash": "1c19eac3ac16b96a3cb00d7d2dbcc6b6793e65e4440fd0caf8b993dc03cadbf4",
+      "rejected_hash": "83dfcaeb5c26e9a9b568d5c51aa0d3c0b8334e84151cbfc16882e4604835788c",
+      "source_id": "hh-harmless-test-1325",
+      "source_index": 1325
+    },
+    {
+      "chosen_hash": "efe6dd1d4b586be8f619ae040b9159e55c1cb429396fd127cefe35de153fbacd",
+      "partition": "evaluation",
+      "permuted_position": 72,
+      "prompt_hash": "9a3cdd37f53a75a1a9dd69e08dddbbc09f736850a06bbfb638f4ae94fcd26b13",
+      "rejected_hash": "2415d370bc1d0a27aacd5b35afb98cd9d2f6d2aa6dddabfd6aca70a42b8065b5",
+      "source_id": "hh-harmless-test-1337",
+      "source_index": 1337
+    },
+    {
+      "chosen_hash": "6206bdb09407480703c1f57662823bab092fefe8fc0c6e68601381613e1111ee",
+      "partition": "evaluation",
+      "permuted_position": 104,
+      "prompt_hash": "a708c1cdd8f4cba5f9c2591f47679d5c316b8fd85bd5951e35f98cadcfdc7799",
+      "rejected_hash": "ea50b2f75179dbffe00b263839764dcac996703f18cfe2d9d19f9917f605414a",
+      "source_id": "hh-harmless-test-1350",
+      "source_index": 1350
+    },
+    {
+      "chosen_hash": "6bfbf0040c724fded3b847b37739ba5a8ec5f2d3c5e166d8a28f73c6279ed1cd",
+      "partition": "evaluation",
+      "permuted_position": 25,
+      "prompt_hash": "dc85735c91ac352650b9e61c80f6ff3e4ef2ffc8476d070cfdb197d877645c7d",
+      "rejected_hash": "ed2d91d5a13adc0a7ae6a50963cd1f4307bd2bcaf6afa50ec43f8f4a3a0bcc58",
+      "source_id": "hh-harmless-test-1378",
+      "source_index": 1378
+    },
+    {
+      "chosen_hash": "4ba0cdc738669bcb518570eaf6becf867fdf6ba9d15046be7d2890ccd21742c2",
+      "partition": "evaluation",
+      "permuted_position": 96,
+      "prompt_hash": "9b8590f155fd0893c43afcc02ff1527d9c52dd1046fea59ffbeadd79fec76eee",
+      "rejected_hash": "0c5c2a0670d928d738f4f7dab8f556a53171d2c487a8f7823e268d6557fae53a",
+      "source_id": "hh-harmless-test-1379",
+      "source_index": 1379
+    },
+    {
+      "chosen_hash": "e6d44d36dd499f79539337690ab0e63b8a37fa284700f217add27795f25a0e1c",
+      "partition": "evaluation",
+      "permuted_position": 13,
+      "prompt_hash": "0fed721323e4c1f15bcf01ea1da09cf9726c1f00d44c51570b528e0b35e3540a",
+      "rejected_hash": "daac5c2970ce05412990c9def5fb656163cdbfafd563049379cb7588ecb50295",
+      "source_id": "hh-harmless-test-1386",
+      "source_index": 1386
+    },
+    {
+      "chosen_hash": "b5d1019e3a9eff78a1dab2131af33b074bf0d41e1505cfeae618710683c31a6a",
+      "partition": "evaluation",
+      "permuted_position": 74,
+      "prompt_hash": "aae0d07222a6b808f9877ba875b8acca785183b3770087688aae7578d0bb450b",
+      "rejected_hash": "50ee5cec0eaba2cc69ca19ebd30b0e6048ce580cd5cc466274b6a26795942961",
+      "source_id": "hh-harmless-test-1393",
+      "source_index": 1393
+    },
+    {
+      "chosen_hash": "1175fae6dc9d2b78b9c48b669e1dd612f30048975bbc3b93688f5834a2652dec",
+      "partition": "evaluation",
+      "permuted_position": 45,
+      "prompt_hash": "f96f709c92853bb5c946a9009f2db785274bbf6f1a54b1f5128b47f4092791d3",
+      "rejected_hash": "0af3364cacf4d3afe75fbb2724c31864063b6e5c6987e7a21b9daaf050c2e996",
+      "source_id": "hh-harmless-test-140",
+      "source_index": 140
+    },
+    {
+      "chosen_hash": "a06601461218411dc5881989d481244af2057aaf51ad15f7d191d961ff4acf93",
+      "partition": "evaluation",
+      "permuted_position": 98,
+      "prompt_hash": "31aaff2611dd139c8e1fe968a9b8b3ccb07b3e67976a66dcde50e6e66f53d224",
+      "rejected_hash": "cc662541a4618a9ed8cb5c23aa06cc0862ea1b0221f8e2dce095a98ed303d1b2",
+      "source_id": "hh-harmless-test-1430",
+      "source_index": 1430
+    },
+    {
+      "chosen_hash": "3170b89d6ff34c6d5bf32dac002b2e59509518e99a660cc48b10ec37aa147854",
+      "partition": "evaluation",
+      "permuted_position": 117,
+      "prompt_hash": "4a59af05504d877bb2e1a794d6781012f54cc308bbd89399fbd0861d5b336183",
+      "rejected_hash": "2ccc8aa78d7c994e7ee0d20443e72e37b88ad74839af3eea91de4d06dd6d9c5c",
+      "source_id": "hh-harmless-test-1442",
+      "source_index": 1442
+    },
+    {
+      "chosen_hash": "56d0925b05fadfc89cf3c7c9b608ffdf476962dc7df693fdf015cdcc506e5197",
+      "partition": "evaluation",
+      "permuted_position": 191,
+      "prompt_hash": "4be8b251be8c973bc299536c4d3c45924cd22dfd6c0d6ae4edd0a344f0636f76",
+      "rejected_hash": "7ce37db943724fb1bdff2fa8d337d67661f73bb585c95e0c53d2104c576661c8",
+      "source_id": "hh-harmless-test-1469",
+      "source_index": 1469
+    },
+    {
+      "chosen_hash": "2d48ba52a052827f3dfdf83a03c1d00cee09eda38d827564c24e38ddca2bf483",
+      "partition": "evaluation",
+      "permuted_position": 94,
+      "prompt_hash": "17cc0e4170ef17cf7101fb047760a656916ff8f65b479998d25e53baff7f24f7",
+      "rejected_hash": "779930215495ccd474bb3be38de9501d3d8d1880a9ec60c552747f3bbb6f5922",
+      "source_id": "hh-harmless-test-1470",
+      "source_index": 1470
+    },
+    {
+      "chosen_hash": "84e1d078f132624a77f81a4eed782b2cd1f8c8897bebf01709fd001d276e2f91",
+      "partition": "evaluation",
+      "permuted_position": 92,
+      "prompt_hash": "a7fa59e33d879f538ad5535c28b699bc7d342b71455c1a721f813f668a029c49",
+      "rejected_hash": "99c900496d77c044808dd8362d31d30fb2d70d38c64f1b0644ba7060dec6eac8",
+      "source_id": "hh-harmless-test-1471",
+      "source_index": 1471
+    },
+    {
+      "chosen_hash": "e2100366a2e82da93a691da263f5a2a38fadc6ed4aaa716d83c97e9cff330342",
+      "partition": "evaluation",
+      "permuted_position": 110,
+      "prompt_hash": "92e285a07b722c1b37dd8d56953c88e03c6f7c99cc58e5513fadf06f9b3f8e49",
+      "rejected_hash": "0ef6b7e72435f7b26cde1172824b2d90d304fe4970873145b2ede860d13fb942",
+      "source_id": "hh-harmless-test-1504",
+      "source_index": 1504
+    },
+    {
+      "chosen_hash": "790d804857c3b6f7d3be223c603a26985bebf4b7ee8b2e3771e5d3681cac07b2",
+      "partition": "evaluation",
+      "permuted_position": 63,
+      "prompt_hash": "7667b11ae87fcfb39e0e637bf176fa89f0276dbb3f640fd77bde313615bcfb47",
+      "rejected_hash": "d2aec1e179f90fd97b7cd5f8ec5ab65d73b8251b1a330e80451674b8670af696",
+      "source_id": "hh-harmless-test-1510",
+      "source_index": 1510
+    },
+    {
+      "chosen_hash": "740d0c619ea0e41e0836dbce12b782fb6af92fdc8cd7aeae646f9f9849c3e4dd",
+      "partition": "evaluation",
+      "permuted_position": 194,
+      "prompt_hash": "3c38f572c8fbfc5123dee2ab474a4f333f3459cb3bdb3040c0623193eeaee574",
+      "rejected_hash": "bc57320af8ee883395f2cc12cb466b6db0080a19077b9f5546c7d3d57383f762",
+      "source_id": "hh-harmless-test-1516",
+      "source_index": 1516
+    },
+    {
+      "chosen_hash": "aefc3ffdc0e25d063da74d0aada65f29b27d146c2767ac0ab1f2fa1cadd08ef6",
+      "partition": "evaluation",
+      "permuted_position": 35,
+      "prompt_hash": "f73cd7ecdc6a9c3f852c636e0bf87b06e37c5e9146a3dd705714463111ffd780",
+      "rejected_hash": "79e0cf1a042e642ae000244352c0a3b5d09a7750d66503019f53e7fd9e87f720",
+      "source_id": "hh-harmless-test-1531",
+      "source_index": 1531
+    },
+    {
+      "chosen_hash": "3b5f7fd5bede70c8c1eda7cbfaa0e6b821d638d3df85e4d886544720ef1e3554",
+      "partition": "evaluation",
+      "permuted_position": 178,
+      "prompt_hash": "c9f5d00a93cc138859f60927ae4e72619811ddf1a772ad29dd4ba3904ab8dcc3",
+      "rejected_hash": "be972d719e9f41319a2ee0ac64eca2651a72c23df6ec229a2be0edd51383157c",
+      "source_id": "hh-harmless-test-154",
+      "source_index": 154
+    },
+    {
+      "chosen_hash": "68eb7cf45ecc307cd0706adda60247a0e0041eb3d4a85db199e153775f920ff4",
+      "partition": "evaluation",
+      "permuted_position": 31,
+      "prompt_hash": "ecebab52b0f318270e396fb718e3c4cd1e3328e1fb38b46c280c3a5070a9f5cd",
+      "rejected_hash": "f39a901f213c0bb2376c45000b13cf8983ff0ef9ff0306251947e7cc89115770",
+      "source_id": "hh-harmless-test-1550",
+      "source_index": 1550
+    },
+    {
+      "chosen_hash": "a59118c9b24ddd243014a9b28425aa540decc814bb75113b38843085a9458a39",
+      "partition": "evaluation",
+      "permuted_position": 143,
+      "prompt_hash": "66e4116e035f078411ad6a48777899797b3f5c03e609b7854bbd4298b499f93c",
+      "rejected_hash": "37908f8811641ad8d3f5d9a7c458f333af68a690375b3105727104dc5c5bc5d2",
+      "source_id": "hh-harmless-test-1556",
+      "source_index": 1556
+    },
+    {
+      "chosen_hash": "8baea14a365376ed4a89900a65d0e142f75de770fc4a3967579e719808a257f4",
+      "partition": "evaluation",
+      "permuted_position": 41,
+      "prompt_hash": "aaea66139fcc965b9181b393a4756bb0b0d8f2da3d3725f7438cd78501fe8eb0",
+      "rejected_hash": "35e902ec71f205338f5876d6db31a44d9ec3d072ab8a9dfb5b2bc377003d95d3",
+      "source_id": "hh-harmless-test-1557",
+      "source_index": 1557
+    },
+    {
+      "chosen_hash": "562e895952823b885dc88e317a3d03980d04e3f5e7f44ab09dd93df3b676a714",
+      "partition": "evaluation",
+      "permuted_position": 144,
+      "prompt_hash": "fad9766bfe3ab215602f0750296892a96f2f19e6d0937eb1ec183089f5062e85",
+      "rejected_hash": "0a8105e9194080f2f35404a1a6af6829a5f6d9ff7ddb6265668dfc24153fad48",
+      "source_id": "hh-harmless-test-1558",
+      "source_index": 1558
+    },
+    {
+      "chosen_hash": "8b143310d25ab7dd0f3464ff8d2c48d1b664040bbef26df7d736b99078b9b5ab",
+      "partition": "evaluation",
+      "permuted_position": 20,
+      "prompt_hash": "182c54a12c8c8c8ccd56438951c3e0a118a45120e7e3854e051f922e6ede1dc5",
+      "rejected_hash": "1910344bbddc0b594ec71581fbe03b3caf3b3607ecff5690480c80a64053f614",
+      "source_id": "hh-harmless-test-1577",
+      "source_index": 1577
+    },
+    {
+      "chosen_hash": "6b70e4c124e9ba8da7130d44cf66cb2a279657f3a50e0f90ac614d52f3df3732",
+      "partition": "evaluation",
+      "permuted_position": 142,
+      "prompt_hash": "876cfdca11d306b0b2a6b7e4e010b39c00dcc8b6babbd129bbca67d0f7bd85d6",
+      "rejected_hash": "9be437d04efcb587512f405665c63db6740049f5004dea4067bba36b50c5b9f5",
+      "source_id": "hh-harmless-test-1579",
+      "source_index": 1579
+    },
+    {
+      "chosen_hash": "ca48b8f71ff8e6826efc6552292e65eb24c4a61ba15b20c63b023060be4f7a82",
+      "partition": "evaluation",
+      "permuted_position": 83,
+      "prompt_hash": "a456cc77b4f7908f2a98d3df54eee0ae1ed73400ff3081985a30d7026ea779cf",
+      "rejected_hash": "8319bb4d6213e6c0c5dc0ac3784513cf63ab6707cf91ca19926b95bbcc8d8276",
+      "source_id": "hh-harmless-test-1587",
+      "source_index": 1587
+    },
+    {
+      "chosen_hash": "bac7a10072d9549bdf0312e4739c90601d6de88962a6dbb588e92e4945131ee4",
+      "partition": "evaluation",
+      "permuted_position": 12,
+      "prompt_hash": "7a3ef01594b26186bab45ebf798ad347c57acce48a5967e8538bdee7b6af6ac8",
+      "rejected_hash": "32fd1059f4deddd03655100859b521f2a9b1ed71b88f23c7e1b99f46ad498593",
+      "source_id": "hh-harmless-test-1606",
+      "source_index": 1606
+    },
+    {
+      "chosen_hash": "0d3fdf76802eb7c55d1e40a7162780f288892d4cc117074473475fe423be7bbe",
+      "partition": "evaluation",
+      "permuted_position": 84,
+      "prompt_hash": "f0328e3e4bfac92e596a3133c2e9e4f19ad132701e97d52dbcffe3d88a8232e0",
+      "rejected_hash": "13d9d919357564fa4b0737e4729883da69054b207af5620e3f3a2f10db71a31b",
+      "source_id": "hh-harmless-test-1627",
+      "source_index": 1627
+    },
+    {
+      "chosen_hash": "e812d2a19a26d68cfb837480ed0ced54ea30b6b577f37758b0a7df2a6a427f24",
+      "partition": "evaluation",
+      "permuted_position": 9,
+      "prompt_hash": "f0ca163422b2535ae3df07dbde704bb47f69ef1018f88a81d7e3260e531cff45",
+      "rejected_hash": "21db0f779a978e54fe42247bc20a21872d3cce07109acbb1ed648ed7b24f9685",
+      "source_id": "hh-harmless-test-1634",
+      "source_index": 1634
+    },
+    {
+      "chosen_hash": "352a54843bcd5369f7eb479fc5b082ec797861041e220530f73c7d8f020ff609",
+      "partition": "evaluation",
+      "permuted_position": 17,
+      "prompt_hash": "7c657bd423f7e28e72578050c9637cf3060712a03ef59b26d843b6fe77c23a82",
+      "rejected_hash": "d0ba2bb69e2910e9fadf2250cac2668e635d905385d15d796ae5aa73157814ad",
+      "source_id": "hh-harmless-test-1663",
+      "source_index": 1663
+    },
+    {
+      "chosen_hash": "5f73949b9626cfbb19b4962a096bcf0a12afb4c1f4ec894721d0a5765e312fb3",
+      "partition": "evaluation",
+      "permuted_position": 36,
+      "prompt_hash": "febb7360cf25aac967def7992d2c6cd1114206ae5fbca93beb53cc66b143fa24",
+      "rejected_hash": "a52abba860110f6f211333e8b682850f788512be788a2618219933a23b70b127",
+      "source_id": "hh-harmless-test-1680",
+      "source_index": 1680
+    },
+    {
+      "chosen_hash": "6e911343437ab7439c6f7d5bf52e12cd515f70a2995ac4d547df51d653278229",
+      "partition": "evaluation",
+      "permuted_position": 171,
+      "prompt_hash": "8802d8fe1bd6de21a0dc7daabbfe9445e8216c23684fc0cd19bb6814f9722b46",
+      "rejected_hash": "224c9b8007707a313381b783d4080ffc82e11775adbbb983266ba65c7096a81e",
+      "source_id": "hh-harmless-test-1683",
+      "source_index": 1683
+    },
+    {
+      "chosen_hash": "e63fd6017a4d86ec3826b79b45b84df1273b7c438d271a0c7780fd961cc40f84",
+      "partition": "evaluation",
+      "permuted_position": 97,
+      "prompt_hash": "71b3db5b65d7d780db318ee5a2073b10dbcfbd936f5cc6136311f08820e63bb5",
+      "rejected_hash": "447e4a6094ed583576779b4bea9d5b92b699c8ad359ba0ebf19cfc27659205a6",
+      "source_id": "hh-harmless-test-1690",
+      "source_index": 1690
+    },
+    {
+      "chosen_hash": "80601eafeabe9dda5c9967440fec3fcb5ae56bafe43d8c219994c991c0bd5d5f",
+      "partition": "evaluation",
+      "permuted_position": 190,
+      "prompt_hash": "0a2230b5e6431ed3acc8c257e239aca1e8afc2d0e4a47ce81909cd4e9c21976e",
+      "rejected_hash": "2b03f97a489925917eeeb5be03414916e99b4afdd79aa8a01ebe27ed56b1cb02",
+      "source_id": "hh-harmless-test-1725",
+      "source_index": 1725
+    },
+    {
+      "chosen_hash": "822f05527bf2f22e537d691cb3d92919a38c9fec62cf57a636e711eece9a9f7d",
+      "partition": "evaluation",
+      "permuted_position": 137,
+      "prompt_hash": "1c68aeb9b9da6028a24b034c7a5614b92bc1eab80301c5bcae2d12b2c9c1d7a2",
+      "rejected_hash": "d935dad8d6915bc1e6f5dcb65f5ce70e1a20fbe530bc86e004af65be047128a5",
+      "source_id": "hh-harmless-test-1729",
+      "source_index": 1729
+    },
+    {
+      "chosen_hash": "08305bb001b3324f40b784ced7e14c74c389a85633a7542f02d21b0865c4bc81",
+      "partition": "evaluation",
+      "permuted_position": 46,
+      "prompt_hash": "b34a0e35ef889309848d34fe3f3b820e1fc1959d46cfcfba79c785f92f3cb821",
+      "rejected_hash": "e79007ce56ef5b24aae5f8adebaf07349cf010a75cfc0da6758f84233d9d90f5",
+      "source_id": "hh-harmless-test-1738",
+      "source_index": 1738
+    },
+    {
+      "chosen_hash": "7a797721d3ea358e0af46c746b784b70199e40f2e5544207893258b94ddf6a32",
+      "partition": "evaluation",
+      "permuted_position": 114,
+      "prompt_hash": "f9fbcf803759be8d6e3c504df738df33ca8ebb46bd127ba48e69404bf29f73dc",
+      "rejected_hash": "68c7906ee6385c52de1b5859ad89cfc16b287afc0aa1c883512bb0581daea0d2",
+      "source_id": "hh-harmless-test-1739",
+      "source_index": 1739
+    },
+    {
+      "chosen_hash": "8281ea9c728ac4f79e620061d06446e6750a666e9ad70b686f247c5b28ffa76f",
+      "partition": "evaluation",
+      "permuted_position": 47,
+      "prompt_hash": "c3d86e639110564eac29100cd5c40f5a867fe968177ef1acc89cdbc0d4c99097",
+      "rejected_hash": "690a8d2efa7dbf8c64e30340c3ac14b8b174a3d6bedb6f7131807fff8239e467",
+      "source_id": "hh-harmless-test-1784",
+      "source_index": 1784
+    },
+    {
+      "chosen_hash": "1ea38e808a11cbdbedcc9a2a5010392518dd29beaf7a80e88ed061a64308d0d4",
+      "partition": "evaluation",
+      "permuted_position": 85,
+      "prompt_hash": "5cd28e00233d3b58164509c2a3b73d2c4e3c55a078299b8fc09ad02a4274053c",
+      "rejected_hash": "8b60ca9f32d8ed162e05626f48bdde097b9fd102dfb30fed2bbb508525dfef2b",
+      "source_id": "hh-harmless-test-1789",
+      "source_index": 1789
+    },
+    {
+      "chosen_hash": "810216d86ed879346d7248a01ae3dcec4440bf8feb701ccc69af4a0557f01e03",
+      "partition": "evaluation",
+      "permuted_position": 189,
+      "prompt_hash": "845f6359a817d85ea793d0cbbe3f7586846c133eabbce27880b72f35307641f9",
+      "rejected_hash": "eddf31e92be447bcb23f9a0b2d611694b5455c634d0fd3ac7098796a0209656c",
+      "source_id": "hh-harmless-test-18",
+      "source_index": 18
+    },
+    {
+      "chosen_hash": "0eb931468bba3ff10d98c2c4ce896c0b41ffdf212d88dd7b257086ec0625c786",
+      "partition": "evaluation",
+      "permuted_position": 89,
+      "prompt_hash": "666e2c002a093a9a05eed0386916757938f568fa34e0803d967d92bd335b3a39",
+      "rejected_hash": "685ff0023ba9e0b78c6f05414a6a8e8066c4277823a31a3432144051721fe99a",
+      "source_id": "hh-harmless-test-1801",
+      "source_index": 1801
+    },
+    {
+      "chosen_hash": "c4ab664e162cc457e13d831f8eebf7335ee027987cb94b774373c221ed625235",
+      "partition": "evaluation",
+      "permuted_position": 120,
+      "prompt_hash": "326673a9a09c0404707bd6a8b82486579c9659f2e33a0fdbcfb426ef73c23d03",
+      "rejected_hash": "650bd2e84521508d0ae9219c5ab2cddfa99b95762b9c8760ca54a7b12414a98b",
+      "source_id": "hh-harmless-test-1807",
+      "source_index": 1807
+    },
+    {
+      "chosen_hash": "474524e13157d8dcade46dd5a1e3ddfeec22dbe1e7c354a5612017a3a62f97d6",
+      "partition": "evaluation",
+      "permuted_position": 176,
+      "prompt_hash": "a3ac89522367ac134dadd6f4fffbd91fb19bd62800271b96831042e150e6b2c9",
+      "rejected_hash": "5171348151c8182f6d80a1911cb7a08e9f715f19916a83b5acbfd8d45f8a7398",
+      "source_id": "hh-harmless-test-1829",
+      "source_index": 1829
+    },
+    {
+      "chosen_hash": "f34357b54d71370756f4589dda57c7f4fe8a43ffef790f0a442146a1f744a381",
+      "partition": "evaluation",
+      "permuted_position": 62,
+      "prompt_hash": "d0dd64bd1fa9433b5d1984f5aa01790d699bd6bec420231bbe413c23ec3d26bf",
+      "rejected_hash": "5446c1c315c0d76b6c1b54507aa8a362c4f500e40430dfe587cd0e7172338817",
+      "source_id": "hh-harmless-test-1833",
+      "source_index": 1833
+    },
+    {
+      "chosen_hash": "481074076fc0580dff3f80f12cf1bff456a473524523d4213ff896a3397c06b9",
+      "partition": "evaluation",
+      "permuted_position": 147,
+      "prompt_hash": "bcbe2a18597dfd9c1320e58d7a71a8b9d598315886da57018c26c96a3cd01d3a",
+      "rejected_hash": "b2d2a5409e41fd5bc9e704885a7ee2ae03b287623222c16e233da19830e1c5d4",
+      "source_id": "hh-harmless-test-1848",
+      "source_index": 1848
+    },
+    {
+      "chosen_hash": "f3eae2a03fd336019a947a40385348151efc816fd989ab68b9d7d88b6a8a4b63",
+      "partition": "evaluation",
+      "permuted_position": 53,
+      "prompt_hash": "14fe64e793a5e4ed777aef46671be040d504cd95fa74aa923b78ba993ed7aa71",
+      "rejected_hash": "a6962129d719d43698722ea4675465d9ac7885f26faa8d2dfd64d45cd84c8aec",
+      "source_id": "hh-harmless-test-185",
+      "source_index": 185
+    },
+    {
+      "chosen_hash": "72740e6ee19cfd72efa8573f4738fb9f856f5ee72dccb7a7f9d5e5b0f8a4958c",
+      "partition": "evaluation",
+      "permuted_position": 10,
+      "prompt_hash": "9fb0b53ef2f95bab1b272020618661ae9bae59e86471ac279ab6ea57bff17924",
+      "rejected_hash": "c3303a6c143410b4d7cc5023bc50b2ecac3e52a7531ea9af379e8c2c4ebb2db4",
+      "source_id": "hh-harmless-test-1850",
+      "source_index": 1850
+    },
+    {
+      "chosen_hash": "eba2a935f6368f98583161dd58ae08f0e46c95e31556676e97d9a021297eb933",
+      "partition": "evaluation",
+      "permuted_position": 170,
+      "prompt_hash": "24667664456f2c9d83e54e5c65505045d843313d27530ceb83cab12f5285a196",
+      "rejected_hash": "90f80f998bd0b9d4ac2b31b6ac7777566060bfc94ee79a70b40b4acb11ae0cbf",
+      "source_id": "hh-harmless-test-187",
+      "source_index": 187
+    },
+    {
+      "chosen_hash": "b9c3119c13be17cf8925de43f22415abca1e6fee2d23af093cb709c4ec02fa9a",
+      "partition": "evaluation",
+      "permuted_position": 19,
+      "prompt_hash": "00e0bffcaf1becc58aafa0bc2f04017f029f7e69514b4ee0d86f527f32d5f488",
+      "rejected_hash": "def25e653f9130074135f7a0a190544ac24ba03144d8d74a26dd556bd8a0db15",
+      "source_id": "hh-harmless-test-1894",
+      "source_index": 1894
+    },
+    {
+      "chosen_hash": "dfe5d7e74ed588b1cc7e2ea79086cb7692add8b368c6ff73863e862c45f79e45",
+      "partition": "evaluation",
+      "permuted_position": 91,
+      "prompt_hash": "df4f24ca7915f72337a9cd1836ace381c8f8f4e2c16257ce229a070068331253",
+      "rejected_hash": "934c2961a1465b570d7509793cbe450047677c239850b40bfcb4284bd8a25043",
+      "source_id": "hh-harmless-test-1903",
+      "source_index": 1903
+    },
+    {
+      "chosen_hash": "1bb2984dab7d8d1a7969467aaf09dd64ece34561ef8deace98a2c84c8f3e207b",
+      "partition": "evaluation",
+      "permuted_position": 28,
+      "prompt_hash": "e3bc3d2d8e02baf8cd76de967ec025bcd5b2f38b6ffca309eef2c28e42b71b88",
+      "rejected_hash": "a181f6c1788976eec6edc5d952fefc3689f218ef422a0a3d36f3cf6dc577c3ce",
+      "source_id": "hh-harmless-test-1909",
+      "source_index": 1909
+    },
+    {
+      "chosen_hash": "ef6bd146ae904f55484606c1fd9c322ad7d409dc85c9ad8528658536440f302c",
+      "partition": "evaluation",
+      "permuted_position": 129,
+      "prompt_hash": "b4de6283ade6a41ee42612f04ee529731b062645dcc6a67b85c325dbac976826",
+      "rejected_hash": "969962f606754d64ca761eec46cc076162c9260f8825bd1a25d7db6ad011caf7",
+      "source_id": "hh-harmless-test-1920",
+      "source_index": 1920
+    },
+    {
+      "chosen_hash": "1808e0c4315977b92e08fe28c63bdb67c032c77689ec473a25ea5fe67542e9dc",
+      "partition": "evaluation",
+      "permuted_position": 146,
+      "prompt_hash": "023733a7c284b5e452cc2543eb233c649283b6bc9433b4aa1c3868e1a5af1b65",
+      "rejected_hash": "e2226f03e1ffa216a70fab4f8e2014c7913dc93509d58c8647e5b5c7092f765c",
+      "source_id": "hh-harmless-test-1929",
+      "source_index": 1929
+    },
+    {
+      "chosen_hash": "4b0961c43a7df1bc16f3399a2122d7502281891315025d184395f901b98c6893",
+      "partition": "evaluation",
+      "permuted_position": 196,
+      "prompt_hash": "a7dce3fe332ca4c23479767e95c7e7ba21381dccbda5003fbc7099a54b4219fe",
+      "rejected_hash": "cd9565decf4caf17fa1bc15836f0fa1d464247d8d5816b2dc5fd3b4924215f29",
+      "source_id": "hh-harmless-test-1935",
+      "source_index": 1935
+    },
+    {
+      "chosen_hash": "77d02df22fa718f5481e7b754b5813992effdfb77b95afb809282fdaca54b20d",
+      "partition": "evaluation",
+      "permuted_position": 123,
+      "prompt_hash": "59108ab3fd482575989271e7861bf94b02fc4c530a71e53480a11dfdc8fbc615",
+      "rejected_hash": "bb0f3a6c47c26dc45a8e1ec7c6372c23d51095f59574ec67a4cbfd94537eadbb",
+      "source_id": "hh-harmless-test-1942",
+      "source_index": 1942
+    },
+    {
+      "chosen_hash": "853f792b81d00adab66c2faba82a490546232b8bd349b65cc1c8f627d3648d20",
+      "partition": "evaluation",
+      "permuted_position": 159,
+      "prompt_hash": "d6adbf762d1120555559083894e549acbd82efea01eda8c5cc8258f332e3be77",
+      "rejected_hash": "0348805a141bbeb5cd250f71fd104887e44eb012d6e6818cf32b6f15b076eba0",
+      "source_id": "hh-harmless-test-1944",
+      "source_index": 1944
+    },
+    {
+      "chosen_hash": "22bbaa4933d8e99b9684f6d3f057c35bc793222fae0d77e4ae93322f6f6d7348",
+      "partition": "evaluation",
+      "permuted_position": 109,
+      "prompt_hash": "d272dfef45fd28d96a10db19a60a36663b936a2e66c2bba2a74aedc762ab0254",
+      "rejected_hash": "5c0580bf560d7b2bc917ba79b5526e43a59a1ccd85a4351db9b4d43aa775caaf",
+      "source_id": "hh-harmless-test-1965",
+      "source_index": 1965
+    },
+    {
+      "chosen_hash": "15a7297de31c5c908280f5990f40c0bf6b694088a17010947b17e99743edc8dd",
+      "partition": "evaluation",
+      "permuted_position": 68,
+      "prompt_hash": "49419d32b2beaf6aaf6a4cb945af6dc2079666f6c4fc4619d250c8cc891d10ea",
+      "rejected_hash": "5914824862a90872025a202decb91cb30083921a386501130071e793a4375660",
+      "source_id": "hh-harmless-test-1969",
+      "source_index": 1969
+    },
+    {
+      "chosen_hash": "fbb1683c185c7dd3bb565dd3b366cec95e5bf0f6cfe1968578ae202338504eaf",
+      "partition": "evaluation",
+      "permuted_position": 132,
+      "prompt_hash": "ef7640e7cdb9032005fa50167f2f47c02e49b964f2592cf75a8dd6f8f55d1061",
+      "rejected_hash": "9573a8511067647a99eab1ece0e3fcd8e3711b24282a847c411c0d7d528f121b",
+      "source_id": "hh-harmless-test-1974",
+      "source_index": 1974
+    },
+    {
+      "chosen_hash": "5c9cbde3cc2365db56630b9eb4bc012c6c680d9373c942fe3f1956c92cc82852",
+      "partition": "evaluation",
+      "permuted_position": 54,
+      "prompt_hash": "3b8dc4fab2d71fc07bb85d6e99a429e78be933f8716b4dc89fc88e6ac327fa0f",
+      "rejected_hash": "b38973a94cc10f5e5051b90c390f1cbddad2de45cd3b917522d34f359c66040e",
+      "source_id": "hh-harmless-test-1985",
+      "source_index": 1985
+    },
+    {
+      "chosen_hash": "37f335d97c53a1f2ea0b4042e09dd9e032dcf285fdd5e1978cf0dd6fa5cb8334",
+      "partition": "evaluation",
+      "permuted_position": 175,
+      "prompt_hash": "7d57eaf08e01f047fc3f162a22c6ae98824b0ca3e1f54d02b34282f95be69d87",
+      "rejected_hash": "e4a6443f6df700a26467a9fd9bf80d817fae4f4dddb481c8395cdb5974ff81bc",
+      "source_id": "hh-harmless-test-199",
+      "source_index": 199
+    },
+    {
+      "chosen_hash": "800bcb438e67e86341dfa416621ccbfc228804d560a6bfbb318e64aa7c68d88d",
+      "partition": "evaluation",
+      "permuted_position": 103,
+      "prompt_hash": "204ce6f0c4fbcf7b0ff331a057f7be5485312f91f47ada9e7b8ada69d76c7a27",
+      "rejected_hash": "f74d19861f5fba346115d61ba5253291b15c1c59727f539dbcef5ec85bab9e57",
+      "source_id": "hh-harmless-test-2009",
+      "source_index": 2009
+    },
+    {
+      "chosen_hash": "979f8dbd71af91d3d45bf5b701edaaca24c4e0f17f7077313cb2d6ccb7c28c76",
+      "partition": "evaluation",
+      "permuted_position": 34,
+      "prompt_hash": "b750d0917903c0d0195eae9c9e78ea6c76e62a6a6004614b1a21bebe49b1e84a",
+      "rejected_hash": "e628cb530ce41f2c60ddda53d1324f2d2442690ce6cfcc787f6fcd2cb9a93301",
+      "source_id": "hh-harmless-test-2066",
+      "source_index": 2066
+    },
+    {
+      "chosen_hash": "620692e912f258e51938150e427c9759660ce521a1ef5e64109204a7a0b2cc91",
+      "partition": "evaluation",
+      "permuted_position": 164,
+      "prompt_hash": "c9971fdea7bc938b9131a52c39680ef400c84300358dbe170728bf470c48ec5b",
+      "rejected_hash": "eabcc4e7f556b5df08adc8e2323183e6e1a695af70f0b1af452a3ca889cf2f4c",
+      "source_id": "hh-harmless-test-207",
+      "source_index": 207
+    },
+    {
+      "chosen_hash": "e8ddf770e15dd4c186c1f27d644e96e115155678f6a306ee1e0b57536b0a4441",
+      "partition": "evaluation",
+      "permuted_position": 65,
+      "prompt_hash": "66919b5ed18a22a2814e5f54fae23c7fe491e2907b809849e02d994d7b242acd",
+      "rejected_hash": "f799feaa8b92ab79ef4df250155a000d1aafb01e406a6eca907f9245d399d147",
+      "source_id": "hh-harmless-test-208",
+      "source_index": 208
+    },
+    {
+      "chosen_hash": "4956c0d9176b0ed29ac1235f2a8733fa9c2b9aa286fc7d0d325d91be17474f58",
+      "partition": "evaluation",
+      "permuted_position": 124,
+      "prompt_hash": "72affa927a444a12fa0f2aee93c5dccc3362092cb64e35cdffe2aa748bc60126",
+      "rejected_hash": "b0595c2cf8736a2cf38cb9aa3948c3c6c0811213ad7381b0a22902b9ed25a550",
+      "source_id": "hh-harmless-test-2089",
+      "source_index": 2089
+    },
+    {
+      "chosen_hash": "1e30c699b4c4c216b9f7f189a1ef37d253b884b7c19230ee5ec9d4b3c4953011",
+      "partition": "evaluation",
+      "permuted_position": 177,
+      "prompt_hash": "83b95f3dda2ba9b98092cb4e2e65fc0fa92ff9ff40926058101d53f7da1a2eb4",
+      "rejected_hash": "599f572993b4248d0cd0a5e49ca67079db35e50c9a600b5a19589420ffd7fd3f",
+      "source_id": "hh-harmless-test-2105",
+      "source_index": 2105
+    },
+    {
+      "chosen_hash": "55123973a4a79c6b3d3dbada08d58d3a5b90eba9db92387a917f7de8fc51ab25",
+      "partition": "evaluation",
+      "permuted_position": 107,
+      "prompt_hash": "ed0db3d6a9781a08eaa2b7fdf913dbe0b8cdbd2b7e477e79208672a141cd09b1",
+      "rejected_hash": "19aa9302b4f5a3bb1cdfd503b6eaa1fd0dffe3d1ec0f222d3327a95840819e0a",
+      "source_id": "hh-harmless-test-2126",
+      "source_index": 2126
+    },
+    {
+      "chosen_hash": "40f67dcad80d848740f6a79e62c8c91bfdb1a454ba55efaaa84ce4c06ee830ae",
+      "partition": "evaluation",
+      "permuted_position": 30,
+      "prompt_hash": "a5969efece15033e86035734608383dfe4171fa715b8c9ccf93661bd9560a3ac",
+      "rejected_hash": "33eb0c022f6c57cc97195773950c1c30ea03086cd0b18178f05fcb0ef5bdd057",
+      "source_id": "hh-harmless-test-2148",
+      "source_index": 2148
+    },
+    {
+      "chosen_hash": "5db88762178563f40d88e9c7de1e93c4390ec4066cb2713e5e33e99f6c544027",
+      "partition": "evaluation",
+      "permuted_position": 0,
+      "prompt_hash": "5112db79d4e165d50aaa23778d9f5eb375327b8f9179c7f25ab899a7330963d1",
+      "rejected_hash": "0cb50b0934314445cd468739f04660416887226f9705c6e7e969e97a47fba151",
+      "source_id": "hh-harmless-test-2157",
+      "source_index": 2157
+    },
+    {
+      "chosen_hash": "bfc903fb720488d8728a9ea17491abcd4cff31ea4060171b19c18b9f43471b5d",
+      "partition": "evaluation",
+      "permuted_position": 6,
+      "prompt_hash": "ff75a09b4e03273d12cdfd01141579ac94f9b2aed437512f7184526226de70ae",
+      "rejected_hash": "2c86683ac4ef35792b3d524421e5ffcb049ce7fbe83cb34cf20fd06854e4a277",
+      "source_id": "hh-harmless-test-2185",
+      "source_index": 2185
+    },
+    {
+      "chosen_hash": "facc7513d3eed76e4e1f9f3ec1c8dec3725940ef36ed535b5d81be067d5a7925",
+      "partition": "evaluation",
+      "permuted_position": 162,
+      "prompt_hash": "9afae7f4bfab54b3dd2b9d4dfee169a820459dd6308f213ee4f9e9920dfbdb23",
+      "rejected_hash": "46302304181aea7a7d87a8b587ccd31d809c78b9b8f09cc87c080000f343f43e",
+      "source_id": "hh-harmless-test-2187",
+      "source_index": 2187
+    },
+    {
+      "chosen_hash": "c10c037156053bfe962132f8eb70e273899bcbf44d3db5e8d88a465a07e84d9e",
+      "partition": "evaluation",
+      "permuted_position": 57,
+      "prompt_hash": "97aac5056f5662ca7bb82183ad683fa8f5bb50dbc32875ec371e984ce820fe71",
+      "rejected_hash": "5179dad09edbbe176af499524ea56a17b9f173415ba495ec6b1d1086f04f0eb5",
+      "source_id": "hh-harmless-test-2202",
+      "source_index": 2202
+    },
+    {
+      "chosen_hash": "4f429eaa8ac99f90bbb106ecaf8d7b935b04228d802109b510f8487bc6e5a429",
+      "partition": "evaluation",
+      "permuted_position": 81,
+      "prompt_hash": "05e90c28027e931c2e2a088aa349a97c196fb4b77c495e85cead7af8c6bc56f5",
+      "rejected_hash": "e4572e2966444831ea5c6bb5d48266e1acd4690c7cf8d7582631ebc792e11095",
+      "source_id": "hh-harmless-test-2204",
+      "source_index": 2204
+    },
+    {
+      "chosen_hash": "90c6428a741ff94586ec1cfcfc633959d3f1f7c6ecf0491ceb8819e89efa86be",
+      "partition": "evaluation",
+      "permuted_position": 60,
+      "prompt_hash": "abe9723db6601a9342c1c1732389cfa3d12bb861670912313256b6430458279a",
+      "rejected_hash": "2e15b6089c5c8a03537ce7825d6d81b2afd8054ffb40485e6711727997dd696d",
+      "source_id": "hh-harmless-test-2209",
+      "source_index": 2209
+    },
+    {
+      "chosen_hash": "ba86e5a29ea3446e061dde76852f376263256b5643e45c0f4aad93a67e753d17",
+      "partition": "evaluation",
+      "permuted_position": 140,
+      "prompt_hash": "bd744cca7ddd6797adacdb46fb61ef67d7f982f729e09a913c0ccd4d13b78888",
+      "rejected_hash": "7a66034d36f3c0b489ba4bf50f6ca58d31925ca1f8dee545f9e598ee9605b80f",
+      "source_id": "hh-harmless-test-2220",
+      "source_index": 2220
+    },
+    {
+      "chosen_hash": "5724642dc329b2cb6ef41053a4395bb443f7ec10645123d7d762e3ac3321869b",
+      "partition": "evaluation",
+      "permuted_position": 121,
+      "prompt_hash": "b31f8d462db791f2d37651e9903aeb8651227aaed02209c7092e6f4eba63399f",
+      "rejected_hash": "ec9b549dda9c7f5bf0e3a40b723993cc538cc96ae4abe689d14e99097a3e82eb",
+      "source_id": "hh-harmless-test-2233",
+      "source_index": 2233
+    },
+    {
+      "chosen_hash": "c32cfbe6e832ab6fb7e8f03379e9fb8d480cfe5b1788c9dfdf282238c81d6840",
+      "partition": "evaluation",
+      "permuted_position": 125,
+      "prompt_hash": "729b2f336e8c75db7d4597baa9f28b55604eec5191b7bae3a3ec689667f62603",
+      "rejected_hash": "d9590e9d6c7a63872b4ac540c8d36c4c768c3b3125a8544a13c01b3e5b2e93e7",
+      "source_id": "hh-harmless-test-2261",
+      "source_index": 2261
+    },
+    {
+      "chosen_hash": "af8cee9f3d20a2e3e95624482a77d81991dfc6f679a1a049bdc72dd09f8d024c",
+      "partition": "evaluation",
+      "permuted_position": 56,
+      "prompt_hash": "db08feb683cc157d0b11e6eed03c3ebae34f8423105ef805b200dcf18edd22df",
+      "rejected_hash": "e68441d22bd77c673483336dea38d01b2232f2bcd1f18b495dc1fb6e1cc6d6b3",
+      "source_id": "hh-harmless-test-2278",
+      "source_index": 2278
+    },
+    {
+      "chosen_hash": "786bb58b337d8eaf7ee012b84c4880119d3acbd012fda4a1f704553e2a4d7f71",
+      "partition": "evaluation",
+      "permuted_position": 172,
+      "prompt_hash": "8d32b7f9cca5f42e66161355e6ab4c73b960e9880ca4a51094f339e0eaddea2f",
+      "rejected_hash": "575966d199f1322a8d90c6f0c973c347537fa5263abba43f7b2dd1401cc26f4b",
+      "source_id": "hh-harmless-test-239",
+      "source_index": 239
+    },
+    {
+      "chosen_hash": "7d74d742248ca1d009c83f12572890b8714d1573c12c3796977741bea229fe9a",
+      "partition": "evaluation",
+      "permuted_position": 130,
+      "prompt_hash": "124a659758e325909a11eb2e174876b053db3336e507c7677cacdc9e00f9ea0c",
+      "rejected_hash": "0f96dfd5057cab9adcfea1a022f2f873f8f9cfb000208e68ad84f0815ee020d6",
+      "source_id": "hh-harmless-test-248",
+      "source_index": 248
+    },
+    {
+      "chosen_hash": "d57f59e6f282a42579163fdc6523c942b00d118a4e0940cf0070b1b6ead247ec",
+      "partition": "evaluation",
+      "permuted_position": 133,
+      "prompt_hash": "3c9082bd7fefaa0a8e57a41f9d9a25538820b7d8858e8ac60def8f8c5407285d",
+      "rejected_hash": "822ca9bad60d29cde3ef3da25fa4231bd94248e49d8a3689f9fb9add59463a9b",
+      "source_id": "hh-harmless-test-262",
+      "source_index": 262
+    },
+    {
+      "chosen_hash": "6cf2ee9d4f3afce60ebf957bb4cc944436338fedc765357f113c1ebbed054da2",
+      "partition": "evaluation",
+      "permuted_position": 183,
+      "prompt_hash": "b95acb5dbb3c00bf7c856afb75cf084336ef18b892bfef7b2514668d13d42e80",
+      "rejected_hash": "39afbc667a551f96b1fdce33d5cdd5745334821f81dbea2ca937b4fc8518c747",
+      "source_id": "hh-harmless-test-264",
+      "source_index": 264
+    },
+    {
+      "chosen_hash": "0c0f310df5e776745dd692cce7989fdce7eb754f62765eb09abe0f97b542afcd",
+      "partition": "evaluation",
+      "permuted_position": 73,
+      "prompt_hash": "5a019082fc293e7a06773d1ea9fa8d940db980f492d6aaf802dac8a27b1fb279",
+      "rejected_hash": "536b1b89067ec35b5d5a3f94fdf8aea8d85da34eb35aa76e30df2332e00dcd2b",
+      "source_id": "hh-harmless-test-297",
+      "source_index": 297
+    },
+    {
+      "chosen_hash": "dad7fcfb134fab487c7093833d3c14715537c4541bb80adcff667cd7f6af4192",
+      "partition": "evaluation",
+      "permuted_position": 150,
+      "prompt_hash": "077a7099c36d63cf7ded73fa3b930661d6cef6a736cf49658388fca1216d47c8",
+      "rejected_hash": "ba2a91e180fa4f0022da742ffe8a0cd3eacd927d3bfbb355fb9094a21ff67774",
+      "source_id": "hh-harmless-test-328",
+      "source_index": 328
+    },
+    {
+      "chosen_hash": "d0dee13cfa1c8161921c0544d237b6b9404a51a7d7f599c884fa32330107d3d3",
+      "partition": "evaluation",
+      "permuted_position": 70,
+      "prompt_hash": "28f6f5ded711d9a74fdaaf4c90665223dc035a91d351f94690a461a4aab37328",
+      "rejected_hash": "71bd4722ef3372076b32cb6cb8f50ec3424691894e160b5a4cf882ab16eace8b",
+      "source_id": "hh-harmless-test-332",
+      "source_index": 332
+    },
+    {
+      "chosen_hash": "13eea1374e5f1812ae791b62a3725c3f1996f4721a94da5d77d6d469497600d7",
+      "partition": "evaluation",
+      "permuted_position": 108,
+      "prompt_hash": "a5ffd227eb163fc54687687cc859c51ce491955625ea4de526520bae2123a4b2",
+      "rejected_hash": "df451ebce6a73d0dbe0d7c2f6bca354ce4427a13c21076900c5e420d4530e8d4",
+      "source_id": "hh-harmless-test-348",
+      "source_index": 348
+    },
+    {
+      "chosen_hash": "9bce6e74a444bffca07cd961d0715a3a5d787046eb9b756f39a76784790a2f54",
+      "partition": "evaluation",
+      "permuted_position": 188,
+      "prompt_hash": "b5dbc5fa431e2d6b96f219249de3fb9dfbb624feb3238ff750d00daae6435e83",
+      "rejected_hash": "e4e1c22d0bbacc22e9b2b6d4ab0eab6f45147425e28ade6238cc89793fa756b0",
+      "source_id": "hh-harmless-test-351",
+      "source_index": 351
+    },
+    {
+      "chosen_hash": "5563cd65d01474f48ee9cf3d0d3d81adc8bf1e765600d5aa868b519f8b8148f3",
+      "partition": "evaluation",
+      "permuted_position": 42,
+      "prompt_hash": "2e78e02a0c14a480883867f4061ea67f4314a0adca0d730e0e1fc251a41630f0",
+      "rejected_hash": "fabf95fa127f2795abea5b6d3f97afecc01bd5bafb6d1d39499ffb7ee7ff7e31",
+      "source_id": "hh-harmless-test-355",
+      "source_index": 355
+    },
+    {
+      "chosen_hash": "aa7bc64b671ab0988658ab4c29a78286dadb9639ac47e903ec64fea3142bc9f0",
+      "partition": "evaluation",
+      "permuted_position": 48,
+      "prompt_hash": "5ae09cefcb91da1e5635bcf4ccdf04045bd64ca3c202a205e80f32f4445135d9",
+      "rejected_hash": "4795e318c860a4e313bc2dcc8723f5f23bfe43a55502199e95c8b31d378cf7e4",
+      "source_id": "hh-harmless-test-361",
+      "source_index": 361
+    },
+    {
+      "chosen_hash": "0ea5977074d19b323a93e0a94cb9a5d4abeb75418234455cf38e6293403fe236",
+      "partition": "evaluation",
+      "permuted_position": 18,
+      "prompt_hash": "57fb7ec4872ac6975281411fe3819e03d72a168b64f3fed8e99a4f93d43d3d07",
+      "rejected_hash": "185eee8e9a1e042890c18e70003bb914590141b1b2da1c90d0ad59c7c5609a08",
+      "source_id": "hh-harmless-test-362",
+      "source_index": 362
+    },
+    {
+      "chosen_hash": "0413b690b795f263a564c176be3f857456573b08ff5e46982b1f8697e350762c",
+      "partition": "evaluation",
+      "permuted_position": 14,
+      "prompt_hash": "ea54daa4a221aa5c48ea29724b404f909d00c0490921da61a9d34e500b00a8e3",
+      "rejected_hash": "9629bd6bd55e470a3d58cf6775a3801dbb3d5ec2585a67dce4285fb488aa9530",
+      "source_id": "hh-harmless-test-375",
+      "source_index": 375
+    },
+    {
+      "chosen_hash": "5dee957dc77c55519cef3cabcb77c26c75501cba0c529899d15140a09507679b",
+      "partition": "evaluation",
+      "permuted_position": 49,
+      "prompt_hash": "6d6a7d5773fcfcb5f97c6e3461bcff675344dd4bab395b2f95776659623842ad",
+      "rejected_hash": "512b3ca49f6ddc69afe8550fdbe8f5b9dbdc1f29eb822dfbfdcae21772ceed87",
+      "source_id": "hh-harmless-test-384",
+      "source_index": 384
+    },
+    {
+      "chosen_hash": "41f988c14b8d1503752d377dec63aa8d9edf2d4504de3ec8c5161e6baeccc69c",
+      "partition": "evaluation",
+      "permuted_position": 66,
+      "prompt_hash": "9a7d0957decef8f414acb6f89a6197ddc64fcc8b57c1900ad04065c72a631d51",
+      "rejected_hash": "9b6acf15e0cefe1bec392a0c2f19c5ac89ce11e079f7f3f9c966fb842dde90ae",
+      "source_id": "hh-harmless-test-386",
+      "source_index": 386
+    },
+    {
+      "chosen_hash": "3dc82715a8b4fba153b213d7a8baabccfd454869c18edf7c60d005619edb4107",
+      "partition": "evaluation",
+      "permuted_position": 7,
+      "prompt_hash": "4803162d462f177ee784982923eeca5ec01240ae2bb9b9db7ad611e96fdec694",
+      "rejected_hash": "b4a839bdaeb6af448a8323ddc21ff51bb0e3972e6d32c6781d61ba623000fd25",
+      "source_id": "hh-harmless-test-400",
+      "source_index": 400
+    },
+    {
+      "chosen_hash": "f9b7575acdbf3f340aa103e7f7a04b22cefaaa779a72d78d760b43c04402c269",
+      "partition": "evaluation",
+      "permuted_position": 179,
+      "prompt_hash": "83eb0ea9b1e95d78ab58c37d5f7e0acbbd00ec0f7ea0cd7c106bed554a393857",
+      "rejected_hash": "3021fd94de37c3920bb73bb0ba555d5893b65407ece15098724ee9d07f337550",
+      "source_id": "hh-harmless-test-402",
+      "source_index": 402
+    },
+    {
+      "chosen_hash": "c8ac7dce03b1b9b73d09f9d628650393280722336ab394f0fe830107d597c867",
+      "partition": "evaluation",
+      "permuted_position": 136,
+      "prompt_hash": "ea03237a2b09323f0f4e65944f9c2353a9f555fb485a34c89ceacd9db70e8bc9",
+      "rejected_hash": "acbd9e778e1d60cadf87ce9e2e97ffbd3bca2bd5e390f137d5d721bf0ddeef89",
+      "source_id": "hh-harmless-test-403",
+      "source_index": 403
+    },
+    {
+      "chosen_hash": "3621afe29deb31f5f6ad8cc4e87c9a459d6f6e464d10c944d72e7b7f786c21dc",
+      "partition": "evaluation",
+      "permuted_position": 8,
+      "prompt_hash": "a43cfc5aebec26fc91f580a1bd134edb1796b918747b804a1a7edace52d592c3",
+      "rejected_hash": "5648bdcdcea3f199b0461f20a31cac01f58b0f652b35982c362a29d7476a71b5",
+      "source_id": "hh-harmless-test-409",
+      "source_index": 409
+    },
+    {
+      "chosen_hash": "70fdd386a7531cdd2eca14f493d550bd502a1be8f511027bcbb7ebc7ee6bdebf",
+      "partition": "evaluation",
+      "permuted_position": 23,
+      "prompt_hash": "468dacc7c45250d62111380326162f28ab6bbe6759cd3ae23f1a8624b41899fa",
+      "rejected_hash": "9f00c0b338be1f37055df9350fd3cd3231ff01c5c58a21fdad077657fa486cdc",
+      "source_id": "hh-harmless-test-440",
+      "source_index": 440
+    },
+    {
+      "chosen_hash": "5f77c834bbc4adf629e0554080cb01fe9ee6e3e99754fd45e362ba702967e470",
+      "partition": "evaluation",
+      "permuted_position": 139,
+      "prompt_hash": "38d717eb9a628e22867d3e7ce29d5faa72e95c8cd3b07fd0b01e719ec26b4369",
+      "rejected_hash": "841e25cfd5721e2b3699661116302d68820ac54e3e14d81ba7cabb744ced6920",
+      "source_id": "hh-harmless-test-449",
+      "source_index": 449
+    },
+    {
+      "chosen_hash": "c6c4bd9a37b2b1074c68fb82c680465d47c5ab9446c24ba6f8d7a4ecd6f4936b",
+      "partition": "evaluation",
+      "permuted_position": 168,
+      "prompt_hash": "9999b35e7807209f4998306c57d556160bbc559c9168e53267bbb6da4744c551",
+      "rejected_hash": "db8deea20c6642b1279d06e364bece45d694ba11a95d3ea93d42220bb8ba67cf",
+      "source_id": "hh-harmless-test-452",
+      "source_index": 452
+    },
+    {
+      "chosen_hash": "21d6f7b7d95beb423190b4ea92a826397d7c9a795ba99c5e632334d451e63948",
+      "partition": "evaluation",
+      "permuted_position": 198,
+      "prompt_hash": "41e82de21190a6e850282ef2f78d3101bd428acd7f59a404c133562603fe0608",
+      "rejected_hash": "a36323d9817dde5d6d5b9925aeb074bd84f490e641c5916e783f2d8a42286fb9",
+      "source_id": "hh-harmless-test-454",
+      "source_index": 454
+    },
+    {
+      "chosen_hash": "a6bd247705d0286184207f6789a171196387030230269935af586b1df3c97927",
+      "partition": "evaluation",
+      "permuted_position": 58,
+      "prompt_hash": "88dbf6e608049c69e38e8a0b992e20ae92c4e9d157b0a67fab330de264490864",
+      "rejected_hash": "6868a3d373b05676812505747bb2b7d2ae92d6dfd5097d0ef061ed8090db1fc1",
+      "source_id": "hh-harmless-test-458",
+      "source_index": 458
+    },
+    {
+      "chosen_hash": "3694ec596eb7ac64994879999afd40cadaac8aece5f2e38e9ed95f09d13cd692",
+      "partition": "evaluation",
+      "permuted_position": 181,
+      "prompt_hash": "c48516d3b3d62a4e8ecf19add84fa616251b100ed007f8e916213ffb1cff4168",
+      "rejected_hash": "2385fd1cb3bf55de6f69906e0335e13a82b936e97f4fe4fc658698a0770528b4",
+      "source_id": "hh-harmless-test-46",
+      "source_index": 46
+    },
+    {
+      "chosen_hash": "e0cfde5662e92d7b955499faafa11f1bcff0691b3263fb522f759730190fe5c5",
+      "partition": "evaluation",
+      "permuted_position": 182,
+      "prompt_hash": "5338c67d88ef4733942bfbddee5af1acdbec99823ad8d9be28bfea7143db6c1e",
+      "rejected_hash": "b443c45e404b789a30be094a0b4719dc9b2bca9fe1c921a4ddb3ada26edc1945",
+      "source_id": "hh-harmless-test-466",
+      "source_index": 466
+    },
+    {
+      "chosen_hash": "223e4f94abcc6d82fa0d2d094b07a72f9c394961b767a128ea8ce812c69e4a6f",
+      "partition": "evaluation",
+      "permuted_position": 113,
+      "prompt_hash": "39a1c2d88fbb7d18edbb5080ac45da2e2cfcf415047a30c0cbe83477b5e12d23",
+      "rejected_hash": "60c4dfdc3c30ad21c687c3d7696aceda76fb88b697e29a4c5ec99ebacdbe2480",
+      "source_id": "hh-harmless-test-467",
+      "source_index": 467
+    },
+    {
+      "chosen_hash": "f3e333e6afc96e6c051ab7ac494dda3ae19cb6643480d6bbd1a9158a76d1c1e0",
+      "partition": "evaluation",
+      "permuted_position": 1,
+      "prompt_hash": "9f2dfe1ae984a20273cf449022994f26d3ef91f27b1992f8f75a291dc95c9995",
+      "rejected_hash": "7916a849ff4d507c5c6edccb63ebd86fcdf9102513b74758023d10b0ce2da464",
+      "source_id": "hh-harmless-test-474",
+      "source_index": 474
+    },
+    {
+      "chosen_hash": "dd4720fc46f45cde443cfff522c9c88cbf34b980dbc45cf3ba3cb3864186133b",
+      "partition": "evaluation",
+      "permuted_position": 158,
+      "prompt_hash": "82336c1995351b9f827b95b1245eab59cbcc1bfb7cd19a8bdeaf4162c71f24d2",
+      "rejected_hash": "5814f6a6f144efeec1452db2557f565420167ce827dd25e635cb7425250f37fe",
+      "source_id": "hh-harmless-test-485",
+      "source_index": 485
+    },
+    {
+      "chosen_hash": "c2e28d54551a23dc7639bf81dd57784d277339f1a6fec07f33244ede1156ec03",
+      "partition": "evaluation",
+      "permuted_position": 127,
+      "prompt_hash": "c57e81b22117686266c246f1c72595597b83cda4c2c4635e862070f3788de886",
+      "rejected_hash": "67b8ac050ce8580cb58c70ffb562d7d5ea899767378f6c42723d72e01a1cd07b",
+      "source_id": "hh-harmless-test-486",
+      "source_index": 486
+    },
+    {
+      "chosen_hash": "decd54aa2c91dfe125e758b6d67cde12f5138f22bf0269718c90c95ada57c6d1",
+      "partition": "evaluation",
+      "permuted_position": 154,
+      "prompt_hash": "721016d1f200babd84c7f18c6b0f68a26d6a8359f036c23e3cb5d74aecc52232",
+      "rejected_hash": "db77d95f6eba491ff50d18be0e09bdd023a12e53fadd5ef4ff2331389d6cf15f",
+      "source_id": "hh-harmless-test-50",
+      "source_index": 50
+    },
+    {
+      "chosen_hash": "3fb61e36df5b578d7b6e133194b79d8cc41811c1b18592f47478a9e1cbb97077",
+      "partition": "evaluation",
+      "permuted_position": 80,
+      "prompt_hash": "121b8d1aeadab6e378280085693ae804bd56bff3f150942d414f3b55b698e7f4",
+      "rejected_hash": "2999a942d3d4ead1ad8bf3e87d77d1f7c61cd7060d6384ed7fbbe5fe34ab2e4d",
+      "source_id": "hh-harmless-test-502",
+      "source_index": 502
+    },
+    {
+      "chosen_hash": "06bd652e1e91b0940a42031221294e2ff447241f2515682d7ad467bf258390a5",
+      "partition": "evaluation",
+      "permuted_position": 32,
+      "prompt_hash": "92c4b645913355201efcc8a3db009efea699f1733b3c1a141f941377608c5fee",
+      "rejected_hash": "22a5b8d7e4cbfac53dafb6cd93f8c5f69e129fdaeb0ddb737829b9fc27f67341",
+      "source_id": "hh-harmless-test-506",
+      "source_index": 506
+    },
+    {
+      "chosen_hash": "223508ed4be27cd8efb740ba24476313069540663be2a2a822ecce6d19d8dd36",
+      "partition": "evaluation",
+      "permuted_position": 135,
+      "prompt_hash": "e9a44f3d69ee20d12349662baba6681196eba5910231a9dac2eb44fb31bf3214",
+      "rejected_hash": "955db6beb822435821332cd97abd9d3a55f376228399ba79584f205cf03aee46",
+      "source_id": "hh-harmless-test-514",
+      "source_index": 514
+    },
+    {
+      "chosen_hash": "0fd975ad42c0d9f2a9cbe6d7b58691b98509dc8b943813f3bc082487590acadc",
+      "partition": "evaluation",
+      "permuted_position": 156,
+      "prompt_hash": "6346a302f4e312704532aba368120353907a0ecfb08f53e29b6ad2a3d143440f",
+      "rejected_hash": "97256f5569c5ebfce6dc8f2c4548123ed28af13ecf21024590519f1467bc6b06",
+      "source_id": "hh-harmless-test-52",
+      "source_index": 52
+    },
+    {
+      "chosen_hash": "9d3bbdee0333091a4474fcc3ea80caee7cb5bc768d2c78f59d6e5fc129685e26",
+      "partition": "evaluation",
+      "permuted_position": 93,
+      "prompt_hash": "7373e2d2ca1e6fb51e5f437e183767d7eea7e67c07ed3dfd35582a919101b667",
+      "rejected_hash": "5d5138b92757f54780354ecc48ba815a01ec45c1b882da81a9a4e4d28183b71f",
+      "source_id": "hh-harmless-test-521",
+      "source_index": 521
+    },
+    {
+      "chosen_hash": "f28662ed9606b3d9f6c6cc55f4dcebca6e502b43cc67f0bd9111141ded83bad9",
+      "partition": "evaluation",
+      "permuted_position": 134,
+      "prompt_hash": "2c8231b28839f8955714bbda0352eebae64c561352593f631a412ece5e938eff",
+      "rejected_hash": "9dce4283185e83f6e3c0dd9145d8401ea75f9bd4dc7645b5e6d03cb8122e4ec1",
+      "source_id": "hh-harmless-test-526",
+      "source_index": 526
+    },
+    {
+      "chosen_hash": "a49b57c1a6d2dd267f9edaa229f5afc7cb378d804d3385cd6ae96abd727288f9",
+      "partition": "evaluation",
+      "permuted_position": 11,
+      "prompt_hash": "98361595a1477234a601acd0549c8786b5eccb26d5ae57d0a133721b51cbd782",
+      "rejected_hash": "c5b84448d534cd267615212d0c91688b86ae26b302be004a2b3922189d2728e4",
+      "source_id": "hh-harmless-test-529",
+      "source_index": 529
+    },
+    {
+      "chosen_hash": "ea3ac0a701e2e2be06c1acb3ef99f8a9979aaba961f3fb746dd6937dca78cbab",
+      "partition": "evaluation",
+      "permuted_position": 152,
+      "prompt_hash": "43c4e9dbd96df1ff236614a148f81bda107333036012c34dfcc6afbc96acd991",
+      "rejected_hash": "5115c3eecce4d740f70d6de9d0a8c5421e78de51204b9a1c121e31475dc6a924",
+      "source_id": "hh-harmless-test-53",
+      "source_index": 53
+    },
+    {
+      "chosen_hash": "72cd70fe159a484d5004ad37a946d9e7b69e1475f2b1cba1870cbfe4b7846c8e",
+      "partition": "evaluation",
+      "permuted_position": 169,
+      "prompt_hash": "1b8f9db8c76682bdb517baa7930bea84eb193ffd431c714080f5eca09e1796b8",
+      "rejected_hash": "104a04fc1ecf961202f513f1a84c3549443d4623904f01970d9b784f6ac017e6",
+      "source_id": "hh-harmless-test-540",
+      "source_index": 540
+    },
+    {
+      "chosen_hash": "fa7499d7fe93e1a7956a73c0c879b7596a44b2003e1920a8a2ef4c198d1b7a6a",
+      "partition": "evaluation",
+      "permuted_position": 2,
+      "prompt_hash": "b47cf9b4f0490446c92d98ef26563100e7dff5ce45b02336da8b8b9056075568",
+      "rejected_hash": "a9fa7a3cffdde9b724f49245629e007b271499fa70d3fe109fbc0ac58a0a58e4",
+      "source_id": "hh-harmless-test-555",
+      "source_index": 555
+    },
+    {
+      "chosen_hash": "07893e7669fa7755b9c71f19eefc242acb223a93dd95606910cc8d8ad1c58f06",
+      "partition": "evaluation",
+      "permuted_position": 184,
+      "prompt_hash": "538f14bb7c5aef6d18598c03fb777f903084ef5b06b5d30246b70c3b9a13fcbe",
+      "rejected_hash": "271a2262efcbb0b5726c09f7546ec6a751fbf1afa630c45e1cf9f370c5ceedd4",
+      "source_id": "hh-harmless-test-563",
+      "source_index": 563
+    },
+    {
+      "chosen_hash": "39e4f6ea64cb9aee234d50fc35f47e89eac0b87059737595e25464816534adc8",
+      "partition": "evaluation",
+      "permuted_position": 155,
+      "prompt_hash": "566c1408ac739dcc3a8dd2abb4cbe40d26f3342fe012feae29421988cd3b5ecb",
+      "rejected_hash": "c06c1c1dfba87245487475499d4559d3e6917cacb806de8da7b1370ac3a598c0",
+      "source_id": "hh-harmless-test-600",
+      "source_index": 600
+    },
+    {
+      "chosen_hash": "eac09fb6a0e37c4ebbda0201ef8ccd3a5c3da7eb73c699caa2008e1075988d4c",
+      "partition": "evaluation",
+      "permuted_position": 87,
+      "prompt_hash": "2f39acad6f4061051295755d410bf18fb5db4e908dd8346dcd09bfcf6fd379d1",
+      "rejected_hash": "4660c408621cda0b66d443fa35b3e9a30e01f05013eeeefb16c28d51e0e00db1",
+      "source_id": "hh-harmless-test-644",
+      "source_index": 644
+    },
+    {
+      "chosen_hash": "ade807781f29fea14a0782fa5921518a90015cba6962afc998a26b41e4a10bc5",
+      "partition": "evaluation",
+      "permuted_position": 138,
+      "prompt_hash": "8adc91bca3c7400f28a0e7bdeb0ece6b999e46a7c89ffdac0975030617beed05",
+      "rejected_hash": "544046a1a57985aeed0e9be9aada8a6def2731ed5d7fe911c8482c3267a980b1",
+      "source_id": "hh-harmless-test-645",
+      "source_index": 645
+    },
+    {
+      "chosen_hash": "ab6411bb1c586bc98cc0fd4e34e18e334c4ef8b8c3c59f9a1aa38b0cd05846de",
+      "partition": "evaluation",
+      "permuted_position": 116,
+      "prompt_hash": "9af260e3e8fed20aca06b7f2e705cbea55b693629da2aae0a4df0e66c4d78b68",
+      "rejected_hash": "7338c00faa3ce4f70862ef400b0f7c044f2c0acf9d4f297fcfcbaa73e4e333b7",
+      "source_id": "hh-harmless-test-649",
+      "source_index": 649
+    },
+    {
+      "chosen_hash": "9b3d87d50cbf3763134089bea5e55920a9bc41745c1ee85e61d7ab5d9d7c8c43",
+      "partition": "evaluation",
+      "permuted_position": 24,
+      "prompt_hash": "ff42b794dd70dee89fcd98007470443de630a1b3aca8b6bbeb4a816bc74fe3b4",
+      "rejected_hash": "1999f86a80faa955ab9ac7bd9b14c99420158cac7d26740e52512b48090b8a5c",
+      "source_id": "hh-harmless-test-683",
+      "source_index": 683
+    },
+    {
+      "chosen_hash": "4b035f72cbb130776044e15d30512aacd1f4c1c09eda7bfdf57de5f081f83322",
+      "partition": "evaluation",
+      "permuted_position": 199,
+      "prompt_hash": "5a29da41ffc1644942e1f66e366a558e510493ac1be3c957512d72a308f579ce",
+      "rejected_hash": "53e89c54b210a1c454f2f8e6ddb47eabd06766f66874a8ad2a9afd0e7f3f8823",
+      "source_id": "hh-harmless-test-70",
+      "source_index": 70
+    },
+    {
+      "chosen_hash": "71d2282f21c3cebd536e7f0ba73184c8c0d376d3d8f151f623801b879c45d63e",
+      "partition": "evaluation",
+      "permuted_position": 95,
+      "prompt_hash": "f57c6f8c7a02a969424af841c77ed66a61c3a9ccc81b4c180552734095961f25",
+      "rejected_hash": "721d0f5434434e4c90e54986a6d3195d5a407c352b5456880b5309fae9eb9e72",
+      "source_id": "hh-harmless-test-702",
+      "source_index": 702
+    },
+    {
+      "chosen_hash": "96b1c0ee82d5d8c1ca1ad32f384a7bf9507fa6dc25a45eefb8f4730ee82ce73e",
+      "partition": "evaluation",
+      "permuted_position": 111,
+      "prompt_hash": "e0796763c24173b3e43ebc9fddfffca30aa171a49315d14c4d2ae1aba52bde77",
+      "rejected_hash": "5d948e6034036907464a0163926ca15ae5732013a0698b496ecc9c0a083d056a",
+      "source_id": "hh-harmless-test-723",
+      "source_index": 723
+    },
+    {
+      "chosen_hash": "715d0e68961360028cf1faae91198afe9ad2bf8f0c3fbb025ad8c952d428a12d",
+      "partition": "evaluation",
+      "permuted_position": 195,
+      "prompt_hash": "2b79ca2fbd62bb979541d723f9fb3020ea22b485418694a1b6ec3003ce535ff0",
+      "rejected_hash": "fe76f0a16cb4ce7fce9ae2ef203f8eda36aa67dcd6bd4c32462dd069f2179550",
+      "source_id": "hh-harmless-test-732",
+      "source_index": 732
+    },
+    {
+      "chosen_hash": "d504a8d80825104bc33e1ff17c5649c980485db674eb26f83cb28c50a41910b0",
+      "partition": "evaluation",
+      "permuted_position": 185,
+      "prompt_hash": "e32eb4ebbf684f4f2bc0ef5fc84ce2250e6a38a738cf695554f41ee2a133de7c",
+      "rejected_hash": "af0ee5946023e9801de8b9d4a0dc346e3083e8ee524737999252687ad72aec45",
+      "source_id": "hh-harmless-test-759",
+      "source_index": 759
+    },
+    {
+      "chosen_hash": "66321d54cca72998c991704e785464d05e09a6e81d8c265dc3d10ad614bb8149",
+      "partition": "evaluation",
+      "permuted_position": 16,
+      "prompt_hash": "de25e9d3e65d64327354429ab3fe6b4f58c0f8874760f028d00cd4e12fda15a4",
+      "rejected_hash": "14e2b06794fd7134496aec98d27e23b1c8d44211f7670b5a4c877ea0c2ef6805",
+      "source_id": "hh-harmless-test-772",
+      "source_index": 772
+    },
+    {
+      "chosen_hash": "e103c545e658cacfaa67cea43eeaa7c0450b12b50bac56d6c6d4e1ebfc8174ec",
+      "partition": "evaluation",
+      "permuted_position": 115,
+      "prompt_hash": "d79d568d1eeb05c3d7361d084498de21ddc3ebbc38ceb607503e693284711e69",
+      "rejected_hash": "9473846c21c64f03e9134b37353b8a697580d195bf5240041b2a21651eae157c",
+      "source_id": "hh-harmless-test-796",
+      "source_index": 796
+    },
+    {
+      "chosen_hash": "79a28e0cfeea248cf693feebfb567b755c9eaf4e1ac7937a9df2f3e0df968674",
+      "partition": "evaluation",
+      "permuted_position": 22,
+      "prompt_hash": "127f6f14d655cbf2ce06e955e5a5e6f91dc8e88971be7581280394c45b343c6c",
+      "rejected_hash": "74c9133ea45c8bbab75478cf990c6a8c71f7465057cffd4f760c02fde29de507",
+      "source_id": "hh-harmless-test-798",
+      "source_index": 798
+    },
+    {
+      "chosen_hash": "cb622ed5fc000d083f5e882852d913e5f2bd8e8c419386e96fdbac9cdfd480b9",
+      "partition": "evaluation",
+      "permuted_position": 118,
+      "prompt_hash": "f72dd4fadaf42f8135a50b6e9cf2aa468706c1d7448afcd84383169967c087b9",
+      "rejected_hash": "76f6c461ca3426d216df2291a2fae62b7576c020ba299b31ba0791fc0368678d",
+      "source_id": "hh-harmless-test-819",
+      "source_index": 819
+    },
+    {
+      "chosen_hash": "ec46d01f901435b1a79cf95865f7d65a001ab2c4c516d6c36f16b278aa209376",
+      "partition": "evaluation",
+      "permuted_position": 173,
+      "prompt_hash": "6932054df23af0a3316a76c233372ebe388eb44386aeb327267a48e1ecb57a4a",
+      "rejected_hash": "c3e53aa7054ba940b38668c1f217b27f155dddc8bd8f1608dbe02b19e58d731d",
+      "source_id": "hh-harmless-test-844",
+      "source_index": 844
+    },
+    {
+      "chosen_hash": "dfc059fad22751796f7989bf22b14eaf90e1f8906630b6ed9615c4fd142f52e7",
+      "partition": "evaluation",
+      "permuted_position": 79,
+      "prompt_hash": "1101488178bb58fc78c05bc45d10b187337db412bf7bf605268f4ba2527303f1",
+      "rejected_hash": "c2378a5deb2ec1e224fe94eb8247a6057824eb9745c1ffad9e0a009e48891d14",
+      "source_id": "hh-harmless-test-860",
+      "source_index": 860
+    },
+    {
+      "chosen_hash": "10e63572b783fb26d5e58189cc2bccb567b888f301fc8f35d87561ee5e446b6b",
+      "partition": "evaluation",
+      "permuted_position": 67,
+      "prompt_hash": "467417b946da97c7da12a76306203d4303b7ad558f0808a7d938de2afe01a1c7",
+      "rejected_hash": "e6fba5556979260ff929b0e2cd99e6be61d79ffdb6abde7b293a6a57bf5d4e55",
+      "source_id": "hh-harmless-test-878",
+      "source_index": 878
+    },
+    {
+      "chosen_hash": "ee0b9058ed700a0b4f9ecdb407b1c1461f884d99ea78d4ba22ace20c40c0425e",
+      "partition": "evaluation",
+      "permuted_position": 26,
+      "prompt_hash": "598cf55823a41396c1e2ada569b623084bc866877c202709ee16d7af601a1b76",
+      "rejected_hash": "c35992e6471ad8a51033da6f6d5d4c37694c26ef37d35fb28974deb940fad994",
+      "source_id": "hh-harmless-test-881",
+      "source_index": 881
+    },
+    {
+      "chosen_hash": "3d888961e8660cea6bfb5785f017c22184f4b4edcdb601bcdffc1d4f3ecbecfa",
+      "partition": "evaluation",
+      "permuted_position": 112,
+      "prompt_hash": "ff8a70db62f3841df3db74e2cff94b2d77068fd4fdd56e663ace40a53bfe8fc4",
+      "rejected_hash": "3a8afceec792e7b376698299344f62961047c306b599041ec85d9b35685e27f4",
+      "source_id": "hh-harmless-test-882",
+      "source_index": 882
+    },
+    {
+      "chosen_hash": "2fdad25cc2eabef1c8e85c72c1ee4a2a42f0a2008360728a141cbc59b5342874",
+      "partition": "evaluation",
+      "permuted_position": 82,
+      "prompt_hash": "778b134bf7dc191b7ea86f2a504e1127842d30919bc362a7df51ccd1e3071165",
+      "rejected_hash": "6c03978a2b100cf9f1126a646a9818d00263cfafa193defc9dd32c6db30df608",
+      "source_id": "hh-harmless-test-889",
+      "source_index": 889
+    },
+    {
+      "chosen_hash": "baa12167fdebdb5f81187133a32ba55874f4c680889098a598abbe6d3690d802",
+      "partition": "evaluation",
+      "permuted_position": 187,
+      "prompt_hash": "0220d415fe474288ebc849536fd77dca5c42d6ba08283b07f4863eb135241501",
+      "rejected_hash": "765f5fd0987ca69eea44ad0e561f4e5884d3eab15970a7f4efb93a98e55b440d",
+      "source_id": "hh-harmless-test-892",
+      "source_index": 892
+    },
+    {
+      "chosen_hash": "a366f464305351a55aec61c2e9a1f74badbb1f3254f4f1b76d0bfdad9f69c8bb",
+      "partition": "evaluation",
+      "permuted_position": 78,
+      "prompt_hash": "078726c1f690238444eb518fe62b5b55a90236fdb4fa578939cae5ee8a63c242",
+      "rejected_hash": "b90b05ff9efad1f760b726713dade9b6bdffde120a733a7a2b06f0405edb74ec",
+      "source_id": "hh-harmless-test-894",
+      "source_index": 894
+    },
+    {
+      "chosen_hash": "809c01450ee213f833b0bb1ee92228cd25fc7fb4a45e1772259cc980f5b8258b",
+      "partition": "evaluation",
+      "permuted_position": 21,
+      "prompt_hash": "8a4d8ee3949facddb287eced6ef4e3d4671c11dca7a387f16ec6a65d2725e035",
+      "rejected_hash": "01c83d7e8c4d009d9db8a9dc4d88a153420cbd1036e0749df2522508f89e8553",
+      "source_id": "hh-harmless-test-906",
+      "source_index": 906
+    },
+    {
+      "chosen_hash": "da209245f1a08c59e926ff32681d2382c4e3880bcbc78b4b71e56d4d64047bbd",
+      "partition": "evaluation",
+      "permuted_position": 43,
+      "prompt_hash": "ab00983e75478a1d920517a8a911ce9b4d9d0197d6941c3dc0e9b90bab4b38ef",
+      "rejected_hash": "a77d94a59c06f82594a4fa7c1b05c8c9bcc153e43f575dcc5c89dc310279c431",
+      "source_id": "hh-harmless-test-908",
+      "source_index": 908
+    },
+    {
+      "chosen_hash": "bca5ac8bbb2ca996471c19190447a4d1fb010bd2c4ff8ddcac0b0a1b64df9af2",
+      "partition": "evaluation",
+      "permuted_position": 193,
+      "prompt_hash": "f4cdf8fae1ab6ab9ddc8cf44a545527fd21e63c44607d45045797fb1063843d0",
+      "rejected_hash": "ea89bc67b420818f40d148253a169e834ed0239eb3e2e4a1695071963ee43553",
+      "source_id": "hh-harmless-test-919",
+      "source_index": 919
+    },
+    {
+      "chosen_hash": "a49560249ae0f0c53135ef61189784fc0686dd9a12d0e2693131d1b57fb74b5c",
+      "partition": "evaluation",
+      "permuted_position": 145,
+      "prompt_hash": "7bad85f86fe5f3a4124b72ba2ec4ab399018bb906b90daecddb8b4f3a9e6df42",
+      "rejected_hash": "9eec9eced58a4f3cda6d5ab4621a2fdda838e89ea7652d6328a7e1fbe9d9b307",
+      "source_id": "hh-harmless-test-921",
+      "source_index": 921
+    },
+    {
+      "chosen_hash": "5e7c521be976af148e277f6b1e3dbb4434c7d3b2abdb8510b65560cd96ecd41d",
+      "partition": "evaluation",
+      "permuted_position": 174,
+      "prompt_hash": "950723fe9b39ff28df1d3edd9a12cf6d7aa8865af17abb085a3b85d3b3fd69e7",
+      "rejected_hash": "c0d18916672ddc1a7e67b69f297a07588e18fe7a7b1b43f336840baf982bcc19",
+      "source_id": "hh-harmless-test-931",
+      "source_index": 931
+    },
+    {
+      "chosen_hash": "bf32962ca2d5a23589674e8822bf7729a67da6f64dd43c72c100862b4e9598ed",
+      "partition": "evaluation",
+      "permuted_position": 33,
+      "prompt_hash": "91e9be714e5666d7f3e2f30a8b58ba4968485f24900318168c8f49d51c02fddc",
+      "rejected_hash": "0ad9bb033f353624fa04157b7a0c3c269d9ab0c2b8165f06f174ec5f72517cba",
+      "source_id": "hh-harmless-test-935",
+      "source_index": 935
+    },
+    {
+      "chosen_hash": "b0de0cf98ba60754eef3aaddc315967fc920ad1c61c109f2863606ed76061ec9",
+      "partition": "evaluation",
+      "permuted_position": 38,
+      "prompt_hash": "1f80f573d9fd36aedd0a45375fd4a72473e45c2099e50b5c0b6c1a3feace6ac0",
+      "rejected_hash": "21ed51f47d7e3fb87ab7fa4facb1ab47c12ca3121cc4934e56cfcb54a0517f74",
+      "source_id": "hh-harmless-test-938",
+      "source_index": 938
+    },
+    {
+      "chosen_hash": "28b4f715c4add881f22efc46d73ebc1a7254c179bc2ba6c1f9edffbf542a3ab9",
+      "partition": "evaluation",
+      "permuted_position": 61,
+      "prompt_hash": "b793c2ed8d76957fcae9eaea44d70c07ab5f09320d8f291b7f693e0fcb918050",
+      "rejected_hash": "87c3d0b13a713c1bd6487771baca609be656be355dad3c18a607edebf6546962",
+      "source_id": "hh-harmless-test-946",
+      "source_index": 946
+    },
+    {
+      "chosen_hash": "6598bd49f0a287c017ca8689dee5f000455bbc7374308f4f4acf5af4425b9b4d",
+      "partition": "evaluation",
+      "permuted_position": 186,
+      "prompt_hash": "5d86178175c2d5a7c3bbf96de22657312dd81cb20b54de41c5957d91578248bf",
+      "rejected_hash": "3a6e7126b090e4ae75f5f62c1632b3042ad2733be0e4a06159a4dd5cb580c0bb",
+      "source_id": "hh-harmless-test-951",
+      "source_index": 951
+    },
+    {
+      "chosen_hash": "6863cd507be38cbfe399eee9ba71c622191401149b4e7ffffeb8ad982675c6f5",
+      "partition": "evaluation",
+      "permuted_position": 192,
+      "prompt_hash": "d41de4b53be29e831463c021056bb6bfd0d7f6e8d5683d1b31f041f179d7461a",
+      "rejected_hash": "d0f7d1e23d15f226ecd8c79b7adb84885693340c9f6d71edfc79f3e48b9ef4bd",
+      "source_id": "hh-harmless-test-957",
+      "source_index": 957
+    },
+    {
+      "chosen_hash": "324f1572c072ccf01dd1deee0d50dd13e77834c40a2c46253b988e7f97a19784",
+      "partition": "evaluation",
+      "permuted_position": 122,
+      "prompt_hash": "b4e6c553aae6dd43ae25175560c80301c2c6496ed9c6be123eced9c36b256e92",
+      "rejected_hash": "bdbc40b62927023d55f110ab0fafb3b1d89893bd6c734751b1028a018960f562",
+      "source_id": "hh-harmless-test-958",
+      "source_index": 958
+    },
+    {
+      "chosen_hash": "149d3d83421b95fc88494a8da1b5b5b5f07f9dac3195bafb4cdfad7ae499263c",
+      "partition": "evaluation",
+      "permuted_position": 126,
+      "prompt_hash": "6ee1f3d178e7ba04feee91c92e086f2ff190934c8dfa860680cd2315f0a2f30a",
+      "rejected_hash": "cfb42188b7fbafd43945c6f16e49766ae7a1603bc94858923ea82b58ca37613b",
+      "source_id": "hh-harmless-test-96",
+      "source_index": 96
+    },
+    {
+      "chosen_hash": "a4949e2c96de26681c9519749e57bfb362bbac2a8f40c89b24c35d1de111336d",
+      "partition": "evaluation",
+      "permuted_position": 131,
+      "prompt_hash": "1255582a03479c52ff2129c654d945a3d3ee3b1ad1d1ca31ef8b8c201e35fa9f",
+      "rejected_hash": "fb8e9f077a5bdd638332f1d0f76911a91f28aa6a6a85147530854fb3add5f43c",
+      "source_id": "hh-harmless-test-964",
+      "source_index": 964
+    },
+    {
+      "chosen_hash": "ad2898c3ec3c36b0ad9d95cc15de4ae137564d2c8bbcd1159d0a95622bba2212",
+      "partition": "evaluation",
+      "permuted_position": 64,
+      "prompt_hash": "7126c2e555eaf71e3b72046b56ee39b82f1c3c34e0c7864f75e22211ea651708",
+      "rejected_hash": "c12a7b5d970e0f917333048a9866a88929bf78fa91de2e5c6fb6b139422eeb9a",
+      "source_id": "hh-harmless-test-965",
+      "source_index": 965
+    },
+    {
+      "chosen_hash": "04daaeb53f7649518bfa48b884c9df3a12a8de652849f0c3fd1657e10d373feb",
+      "partition": "evaluation",
+      "permuted_position": 37,
+      "prompt_hash": "40f38e07e79caf60dee5f73805f179eebb8b4f403a9ef60e863ad9a7a9d34eb9",
+      "rejected_hash": "898c77dbfde69c994dcf097c040cc28d25600d5c737560373255ce5f08828ff1",
+      "source_id": "hh-harmless-test-969",
+      "source_index": 969
+    },
+    {
+      "chosen_hash": "51348db551893976728e9cdfc8ff00194cb0fc220ae58cd0aa323b841b7f4294",
+      "partition": "evaluation",
+      "permuted_position": 59,
+      "prompt_hash": "7a004927b9eff5fff635b811bcd0e0d342ef96e4ab07b19ae8790c796df24ff8",
+      "rejected_hash": "4f6c222065b7b04132934c2bd4c638e6c0da4e995e08acbbc5ae3e69f78deb5e",
+      "source_id": "hh-harmless-test-973",
+      "source_index": 973
+    },
+    {
+      "chosen_hash": "b349b2ff3cb98cc2ddae612e7d17c2316dd5b993f7434f10e4c50500dfe66004",
+      "partition": "evaluation",
+      "permuted_position": 77,
+      "prompt_hash": "fab4e325354615524d3b77792805eae358e7a2ff3213028cba8c704bb5427345",
+      "rejected_hash": "ea670103b97bdc4a78f5227599648a362b0287e1c50102613240320aefe6b0fb",
+      "source_id": "hh-harmless-test-98",
+      "source_index": 98
+    },
+    {
+      "chosen_hash": "ce30a07da134bd368292f9edd8905af598f5291ebe6aebb21e806190744efc3a",
+      "partition": "evaluation",
+      "permuted_position": 165,
+      "prompt_hash": "d440e4f7c7ca0ff16ea1a3433e248909d28bbe6ca4d320b626b13d6a3fa87453",
+      "rejected_hash": "e520a8ae93940014acdb2364cf16423a0eac958c874985dc24563c866122451e",
+      "source_id": "hh-harmless-test-985",
+      "source_index": 985
+    }
+  ],
+  "schema_version": 1,
+  "selected_record_count": 200,
+  "source_file": {
+    "canonical_sha256": "14d765196c9f18d84f9bb3a78bac608c8f2915110ebcbd74ec95db7b7198b008",
+    "canonical_size_bytes": 3280164,
+    "compressed_sha256": "ebfaaed21162a4de120ae85366075b34425e2a6303fac59b99555002f7016f03",
+    "compressed_size_bytes": 742801,
+    "path": "harmless-base/test.jsonl.gz"
+  }
+}

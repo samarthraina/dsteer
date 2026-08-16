@@ -285,3 +285,66 @@ def test_default_harmfulqa_manifest_path_is_independent_of_cwd(tmp_path, monkeyp
     assert path.parent.name == "manifests"
     assert str(tmp_path) not in str(path)
     assert path.is_absolute()
+
+
+# load_hh_rlhf_test (Task 017: corrected parser, stable pre-shuffle IDs)
+
+
+def _hh_row(human, chosen_reply, rejected_reply=None):
+    rejected_reply = rejected_reply if rejected_reply is not None else chosen_reply + " (rejected)"
+    return {
+        "chosen": f"\n\nHuman: {human}\n\nAssistant: {chosen_reply}",
+        "rejected": f"\n\nHuman: {human}\n\nAssistant: {rejected_reply}",
+    }
+
+
+def test_load_hh_rlhf_test_no_longer_truncates_multi_paragraph_turns(monkeypatch):
+    """The bug this pins: the old `_split_hh_conversation` split on every blank line and
+    silently dropped any paragraph not starting with a role marker."""
+    multi_paragraph = "first paragraph of the answer.\n\nsecond paragraph, previously dropped."
+    rows = [_hh_row("question text", multi_paragraph)]
+    monkeypatch.setattr(data_module, "load_dataset", lambda *a, **k: rows)
+
+    records = data_module.load_hh_rlhf_test()
+
+    assert len(records) == 1
+    assert records[0]["chosen"] == multi_paragraph
+    assert records[0]["prompt"] == [{"role": "user", "content": "question text"}]
+
+
+def test_load_hh_rlhf_test_ids_are_stable_across_seeds_and_sample_sizes(monkeypatch):
+    """The bug this pins: `load_hh_rlhf_test` used to shuffle/select the underlying
+    dataset before enumerating IDs, so a row's `id` depended on `n`/`seed`. IDs must now
+    come from the row's fixed position in the unshuffled source."""
+    rows = [_hh_row(f"question {i}", f"answer {i}") for i in range(20)]
+    monkeypatch.setattr(data_module, "load_dataset", lambda *a, **k: rows)
+
+    full = data_module.load_hh_rlhf_test()
+    assert len(full) == 20
+    for i, rec in enumerate(full):
+        assert rec["id"] == f"hh-{i}"
+
+    full_by_id = {r["id"]: r for r in full}
+    for seed in (1, 7):
+        sampled = data_module.load_hh_rlhf_test(n=5, seed=seed)
+        assert len(sampled) == 5
+        for rec in sampled:
+            match = full_by_id[rec["id"]]
+            assert match["prompt"] == rec["prompt"]
+            assert match["chosen"] == rec["chosen"]
+            assert match["rejected"] == rec["rejected"]
+
+
+def test_load_hh_rlhf_test_skips_malformed_and_history_mismatched_rows(monkeypatch):
+    rows = [
+        _hh_row("good question", "good answer"),
+        {"chosen": "no role markers here", "rejected": "\n\nHuman: q\n\nAssistant: a"},
+        _hh_row("chosen q", "answer", rejected_reply="irrelevant"),
+    ]
+    rows[2]["rejected"] = "\n\nHuman: a different rejected question\n\nAssistant: irrelevant"
+    monkeypatch.setattr(data_module, "load_dataset", lambda *a, **k: rows)
+
+    records = data_module.load_hh_rlhf_test()
+
+    assert len(records) == 1
+    assert records[0]["id"] == "hh-0"
