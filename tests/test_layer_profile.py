@@ -15,6 +15,7 @@ CPU-only, network-free: the frozen partition loader and HH-RLHF loader are mocke
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -827,6 +828,12 @@ def test_endpoint_backed_run_passes_the_safe_loading_policy_to_tokenizer_and_act
     fake_endpoint_meta = {"mode": "endpoint", "pair": "A"}
     monkeypatch.setattr(layer_profile, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
     monkeypatch.setattr(layer_profile, "verify_construction_prompt_identity", lambda *a, **k: None)
+    # This test's synthetic records/manifest_hash ("manifest-abc") don't match the real
+    # committed frozen manifest -- irrelevant to what this test actually checks (the
+    # loading policy reaching tokenizer/extraction), so the frozen-manifest identity
+    # check publish_activation_artifact now runs is stubbed out here too, exactly like
+    # verify_construction_prompt_identity already is above.
+    monkeypatch.setattr(layer_profile.activation_artifact, "validate_construction_identity", lambda *a, **k: None)
 
     n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
     fake_records = [
@@ -865,6 +872,108 @@ def test_endpoint_backed_run_passes_the_safe_loading_policy_to_tokenizer_and_act
         {"local_files_only": True, "trust_remote_code": False},
         {"local_files_only": True, "trust_remote_code": False},
     ]
+
+    # Task 016: an endpoint-backed primary_v1 extraction publishes a sidecar binding
+    # the exact saved activations.pt to the exact run_meta.json, and no partial
+    # checkpoint is left behind once it has.
+    output_root = tmp_path / "out" / "endpoint-A-abc123" / "construction"
+    assert (output_root / "activations.pt").exists()
+    assert not (output_root / "it.partial.pt").exists()
+    assert not (output_root / "dpo.partial.pt").exists()
+    sidecar_path = output_root / "activations_manifest_v1.json"
+    assert sidecar_path.exists()
+    sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    run_meta = json.loads((output_root / "run_meta.json").read_text(encoding="utf-8"))
+    assert sidecar["schema_version"] == 1
+    assert sidecar["artifact_kind"] == "dsteer_construction_activations"
+    assert sidecar["activation_file"] == "activations.pt"
+    assert sidecar["run_meta_file"] == "run_meta.json"
+    assert sidecar["run_identity_hash"] == run_meta["run_identity_hash"]
+    assert sidecar["protocol_profile"] == "primary_v1"
+    assert sidecar["endpoint_backed"] is True
+    assert sidecar["activation_sha256"] == layer_profile.activation_artifact._stream_sha256(output_root / "activations.pt")
+    assert sidecar["activation_size_bytes"] == (output_root / "activations.pt").stat().st_size
+    assert sidecar["manifest_hash"] == layer_profile.activation_artifact._compute_sidecar_hash(sidecar)
+
+
+def test_legacy_endpoint_backed_extraction_publishes_no_sidecar_and_is_never_falsely_primary_v1(tmp_path, monkeypatch):
+    """A non-endpoint-backed (legacy) extraction retains its exact existing behavior:
+    direct torch.save, immediate partial deletion, and -- since only an endpoint-backed
+    primary_v1 run is ever bound this way -- no sidecar at all."""
+    model_yaml, eval_yaml = _setup_hh_rlhf_run(tmp_path, monkeypatch)
+    monkeypatch.setattr(sys, "argv", ["layer_profile.py", "--model-config", str(model_yaml), "--eval-config", str(eval_yaml)])
+
+    def fake_extract_activations(model_path, subfolder, tokenizer, prompts, cfg, checkpoint_path=None, loading_policy=None):
+        return torch.zeros(2, len(prompts), 2)
+
+    monkeypatch.setattr(layer_profile, "extract_activations", fake_extract_activations)
+    monkeypatch.setattr(layer_profile, "load_tokenizer", lambda *a, **k: object())
+
+    calls = []
+    _spy_write_run_metadata(monkeypatch, calls, raise_sentinel=False)
+
+    layer_profile.main()
+
+    assert calls[0]["kwargs"]["extra"]["protocol_profile"] == "legacy_nonconfirmatory"
+    output_root = tmp_path / "out" / "tinytest"
+    assert (output_root / "activations.pt").exists()
+    assert not (output_root / "activations_manifest_v1.json").exists()
+    assert not (output_root / "it.partial.pt").exists()
+    assert not (output_root / "dpo.partial.pt").exists()
+
+
+def test_sidecar_publication_failure_preserves_partial_checkpoints_and_leaves_activations_unbound(tmp_path, monkeypatch):
+    """If sidecar publication fails after activations.pt has already been saved, the
+    run must fail loudly (not swallow the error), the partial checkpoints must survive
+    (never deleted), and no sidecar must exist -- so no consumer can accept the
+    now-unbound activations.pt (Task 016)."""
+    fake_model_cfg = layer_profile.ModelConfig(**_model_cfg_dict(name="endpoint-A-abc123"))
+    fake_endpoint_meta = {"mode": "endpoint", "pair": "A"}
+    monkeypatch.setattr(layer_profile, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+    monkeypatch.setattr(layer_profile, "verify_construction_prompt_identity", lambda *a, **k: None)
+
+    n = layer_profile.PRIMARY_CONSTRUCTION_RECORD_COUNT
+    fake_records = [
+        {"prompt": f"p{i}", "chosen": None, "source_id": f"harmfulqa-{i}", "prompt_hash": f"hash{i}",
+         "partition": "construction", "permuted_position": i, "manifest_hash": "manifest-abc"}
+        for i in range(n)
+    ]
+    monkeypatch.setattr(layer_profile, "load_harmfulqa_partition", lambda partition: fake_records)
+    monkeypatch.setattr(layer_profile, "load_tokenizer", lambda *a, **k: object())
+
+    output_root = tmp_path / "out" / "endpoint-A-abc123" / "construction"
+
+    def fake_extract_activations(model_path, subfolder, tokenizer, prompts, cfg, checkpoint_path=None, loading_policy=None):
+        # A real extraction leaves a partial checkpoint behind as it goes -- simulated
+        # here so the test can prove it survives a downstream publication failure.
+        if checkpoint_path is not None:
+            checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            checkpoint_path.write_bytes(b"partial-checkpoint")
+        return torch.zeros(2, len(prompts), 2)
+
+    monkeypatch.setattr(layer_profile, "extract_activations", fake_extract_activations)
+
+    def boom_publish(construction_dir):
+        raise RuntimeError("simulated sidecar-publication failure")
+
+    monkeypatch.setattr(layer_profile.activation_artifact, "publish_activation_artifact", boom_publish)
+
+    eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
+        "prompt_source": "harmfulqa", "prompt_partition": "construction",
+        "token_position": "prompt_last", "output_dir": str(tmp_path / "out"),
+    })
+    monkeypatch.setattr(sys, "argv", [
+        "layer_profile.py", "--endpoint-manifest", "m.json", "--endpoint-bundle-root", "b",
+        "--pair", "A", "--endpoint-source", "pair_a_sft=/x", "--eval-config", str(eval_yaml),
+    ])
+
+    with pytest.raises(RuntimeError, match="simulated sidecar-publication failure"):
+        layer_profile.main()
+
+    assert (output_root / "activations.pt").exists()  # saved, but...
+    assert not (output_root / "activations_manifest_v1.json").exists()  # ...never bound
+    assert (output_root / "it.partial.pt").exists()  # partials preserved, not deleted
+    assert (output_root / "dpo.partial.pt").exists()
 
 
 def test_legacy_run_passes_the_historical_permissive_policy_to_tokenizer_and_activation_extraction(tmp_path, monkeypatch):

@@ -31,6 +31,7 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from steering import activation_artifact
 from steering.artifacts import GpuMonitor, sync_to_hub, write_run_metadata
 from steering.config import ModelConfig
 from steering.data import VALID_HARMFULQA_PARTITIONS, load_advbench, load_harmfulqa_partition, load_hh_rlhf_test
@@ -346,6 +347,33 @@ def _model_loading_policy(endpoint_backed: bool) -> Dict[str, bool]:
     return {"local_files_only": False, "trust_remote_code": True}
 
 
+def _construction_dir(cfg: "SteerSweepConfig", model_cfg: ModelConfig) -> Path:
+    return Path(cfg.activations_dir) / model_cfg.name / "construction"
+
+
+def validate_activation_artifact_for_run(
+    cfg: "SteerSweepConfig", model_cfg: ModelConfig, endpoint_meta: Optional[Dict[str, Any]],
+) -> activation_artifact.ActivationArtifact:
+    """The verified, sidecar-bound construction-activation artifact (Task 016) for the
+    endpoint pair resolved for *this* run -- required for every endpoint-backed,
+    non-external-vectors run, before set_all_seeds (CUDA), output creation, metadata
+    writing, logging, or any tokenizer/model/GPU access. An activations.pt from another
+    pair placed beside a valid run_meta.json is rejected here even though the two files
+    remain individually self-consistent, because the sidecar's endpoint fields are
+    checked against the endpoint identity *this run itself resolved* -- not merely
+    against what the files claim about each other.
+    """
+    endpoint_meta = endpoint_meta or {}
+    roles = endpoint_meta.get("roles") or {}
+    return activation_artifact.load_and_validate_activation_artifact(
+        _construction_dir(cfg, model_cfg),
+        expected_pair=endpoint_meta.get("pair"),
+        expected_candidate_manifest_hash=endpoint_meta.get("candidate_manifest_hash"),
+        expected_source_manifest_hash=endpoint_meta.get("source_manifest_hash"),
+        expected_it_role=roles.get("it"), expected_dpo_role=roles.get("dpo"),
+    )
+
+
 LOADERS = {
     "advbench": load_advbench,
     "hh_rlhf": load_hh_rlhf_test,
@@ -424,61 +452,13 @@ def validate_construction_activations(blob: Dict, manifest_path: Optional[Union[
     artifact -- checked against the frozen manifest itself, not just internal
     self-consistency.
 
-    `layer_profile`'s manifest-backed construction path always writes `source_ids`,
-    `prompt_hashes`, `partition`, and `manifest_hash` alongside `it`/`dpo`. A tensor
-    missing them is a pre-manifest (Task 002/003) artifact or came from a different
-    partition. Beyond that, this loads and hash-verifies the committed manifest,
-    validates its frozen identity, and requires the tensor's ordered source_ids and
-    prompt_hashes to exactly match the construction partition's records -- matching
-    lengths and a correct top-level manifest_hash alone would still let a corrupted,
-    reordered, or drifted artifact through.
+    Delegates to `steering.activation_artifact.validate_construction_identity` (Task
+    016), the single canonical implementation of this check -- reused rather than
+    duplicated, since `activation_artifact`'s central sidecar validator runs the exact
+    same check. Kept as a thin wrapper (name, signature, and `ValueError`-raising
+    behavior all unchanged) so existing callers and tests are unaffected.
     """
-    required = ("source_ids", "prompt_hashes", "partition", "manifest_hash")
-    missing = [k for k in required if k not in blob]
-    if missing:
-        raise ValueError(
-            f"activations.pt is missing {missing} -- looks like a legacy (pre-manifest) "
-            "tensor with only 'it'/'dpo'; rerun layer_profile with the manifest-backed "
-            "construction config"
-        )
-    if blob["partition"] != "construction":
-        raise ValueError(f"activations.pt partition is {blob['partition']!r}, expected 'construction'")
-
-    path = Path(manifest_path) if manifest_path is not None else _default_harmfulqa_manifest_path()
-    manifest = load_manifest(path)
-    validate_manifest_identity(manifest)
-
-    if blob["manifest_hash"] != manifest["manifest_hash"]:
-        raise ValueError(
-            f"activations.pt manifest_hash {blob['manifest_hash']!r} does not match the "
-            f"frozen manifest {manifest['manifest_hash']!r}"
-        )
-
-    construction = _construction_records(manifest)
-    expected_source_ids = [e["source_id"] for e in construction]
-    expected_prompt_hashes = [e["prompt_hash"] for e in construction]
-
-    if blob["source_ids"] != expected_source_ids:
-        raise ValueError(
-            "activations.pt source_ids do not exactly match the construction partition's "
-            "ordered source IDs -- altered, reordered, or drifted provenance"
-        )
-    if blob["prompt_hashes"] != expected_prompt_hashes:
-        raise ValueError(
-            "activations.pt prompt_hashes do not exactly match the construction partition's "
-            "ordered prompt hashes -- altered, reordered, or drifted provenance"
-        )
-
-    it_shape, dpo_shape = tuple(blob["it"].shape), tuple(blob["dpo"].shape)
-    if it_shape != dpo_shape:
-        raise ValueError(f"activations.pt it/dpo tensor shapes differ: {it_shape} vs {dpo_shape}")
-
-    n_prompts = it_shape[1]
-    if n_prompts != len(construction):
-        raise ValueError(
-            f"activations.pt prompt dimension is {n_prompts}, expected {len(construction)} "
-            "(the construction partition's record count)"
-        )
+    activation_artifact.validate_construction_identity(blob, manifest_path)
 
 
 def pending(path: Path, records: List[Dict]) -> List[Dict]:
@@ -700,6 +680,17 @@ def main():
     ))
     loading_policy = _model_loading_policy(endpoint_backed)
 
+    # For an endpoint-backed, non-external-vectors run, the construction-activation
+    # sidecar (Task 016) is required and validated against the endpoint pair resolved
+    # for *this* run here -- still before set_all_seeds (CUDA), output creation,
+    # metadata writing, logging, or any tokenizer/model/GPU access. (An endpoint-backed
+    # run with --vectors already raised inside classify_protocol_profile above, so
+    # endpoint_backed here implies not args.vectors; the check is kept explicit for
+    # clarity.) Vectors are only ever built, below, from this already-validated artifact.
+    activation_artifact_result = None
+    if endpoint_backed and not args.vectors:
+        activation_artifact_result = validate_activation_artifact_for_run(cfg, model_cfg, endpoint_meta)
+
     set_all_seeds(args.seed)
 
     tag = run_tag(args.side, args)
@@ -726,6 +717,14 @@ def main():
     run_meta_extra["random_control_seed"] = args.random_seed if args.random_control else None
     if endpoint_meta is not None:
         run_meta_extra["endpoint"] = endpoint_meta
+    if activation_artifact_result is not None:
+        run_meta_extra["activation_artifact"] = {
+            "path": str(activation_artifact_result.acts_path),
+            "sha256": activation_artifact_result.sha256,
+            "size_bytes": activation_artifact_result.size_bytes,
+            "run_identity_hash": activation_artifact_result.sidecar.get("run_identity_hash"),
+            "endpoint": activation_artifact_result.sidecar.get("endpoint"),
+        }
     write_run_metadata(
         out_root,
         config=build_run_config(model_cfg, cfg, args),
@@ -751,7 +750,15 @@ def main():
         vectors = {int(k): v.float() for k, v in loaded.items()}
         layers = sorted(vectors)
         log.info(f"Loaded {len(vectors)} vectors from {args.vectors}; layers {layers}")
+    elif activation_artifact_result is not None:
+        # Already required and validated (sidecar-bound, endpoint-matched) above,
+        # before set_all_seeds -- build directly from that same verified file.
+        acts = activation_artifact_result.acts_path
+        vectors = build_vectors(acts, method=cfg.vector_method, layers=layers,
+                                normalise=cfg.vector_normalise,
+                                skip_first=args.hold_out)
     else:
+        # Legacy (non-endpoint-backed): unchanged behavior -- no sidecar is involved.
         acts = Path(cfg.activations_dir) / model_cfg.name / "construction" / "activations.pt"
         if not acts.exists():
             raise FileNotFoundError(f"no activations at {acts}; run layer_profile first")

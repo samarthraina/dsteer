@@ -244,8 +244,8 @@ def _fake_construction_manifest(n: int = 1378) -> Dict[str, Any]:
 
 
 def _mock_frozen_construction_manifest(monkeypatch, n: int = 1378) -> None:
-    monkeypatch.setattr(dp.steer_sweep, "load_manifest", lambda path: _fake_construction_manifest(n))
-    monkeypatch.setattr(dp.steer_sweep, "validate_manifest_identity", lambda m: None)
+    monkeypatch.setattr(dp.activation_artifact, "load_manifest", lambda path: _fake_construction_manifest(n))
+    monkeypatch.setattr(dp.activation_artifact, "validate_manifest_identity", lambda m: None)
 
 
 def _fake_construction_blob(n: int = 1378, num_layers: int = 32, hidden: int = 8) -> Dict[str, Any]:
@@ -326,13 +326,57 @@ def write_fake_gate2_dir(
     return gate2_dir
 
 
+def _build_matching_sidecar(run_dir: Path, blob: Dict[str, Any], run_meta: Dict[str, Any]) -> Dict[str, Any]:
+    """A sidecar built to exactly match whatever `run_meta`/`blob` claim -- including a
+    deliberately "wrong" claim a fixture is testing rejection of -- so a test isolates
+    exactly the field it varies rather than tripping a different (missing-file/
+    self-hash) check first. Uses the real production hashing (streamed SHA-256, the
+    real sidecar self-hash algorithm) so the sidecar itself is genuinely well-formed
+    unless a test explicitly tampers with it afterward."""
+    acts_path = run_dir / "activations.pt"
+    endpoint = run_meta.get("endpoint") or {}
+    roles = endpoint.get("roles") or {}
+    sidecar = {
+        "schema_version": dp.activation_artifact.SCHEMA_VERSION,
+        "artifact_kind": dp.activation_artifact.ARTIFACT_KIND,
+        "activation_file": dp.activation_artifact.ACTIVATION_FILENAME,
+        "activation_sha256": dp.activation_artifact._stream_sha256(acts_path),
+        "activation_size_bytes": acts_path.stat().st_size,
+        "run_meta_file": dp.activation_artifact.RUN_META_FILENAME,
+        "run_identity_hash": run_meta.get("run_identity_hash"),
+        "protocol_profile": run_meta.get("protocol_profile"),
+        "endpoint_backed": run_meta.get("endpoint_backed"),
+        "endpoint": {
+            "pair": endpoint.get("pair"), "candidate_manifest_hash": endpoint.get("candidate_manifest_hash"),
+            "source_manifest_hash": endpoint.get("source_manifest_hash"),
+            "roles": {"it": roles.get("it"), "dpo": roles.get("dpo")},
+        },
+        "harmfulqa": {
+            "partition": run_meta.get("harmfulqa_partition"), "manifest_hash": run_meta.get("harmfulqa_manifest_hash"),
+            "record_count": run_meta.get("harmfulqa_record_count"),
+        },
+        "tensors": {
+            "it_shape": list(blob["it"].shape), "dpo_shape": list(blob["dpo"].shape),
+            "it_dtype": str(blob["it"].dtype), "dpo_dtype": str(blob["dpo"].dtype),
+        },
+    }
+    sidecar["manifest_hash"] = dp.activation_artifact._compute_sidecar_hash(sidecar)
+    return sidecar
+
+
+def _write_sidecar(run_dir: Path, sidecar: Dict[str, Any]) -> None:
+    (run_dir / dp.activation_artifact.SIDECAR_FILENAME).write_text(json.dumps(sidecar), encoding="utf-8")
+
+
 def write_fake_activation_run_dir(
     tmp_path: Path, name: str, pair: str, resolved, n: int = 1378,
     protocol_profile: str = "primary_v1", endpoint_backed: bool = True,
     harmfulqa_partition: str = "construction", harmfulqa_record_count: int = None,
     token_position: str = "prompt_last",
     loading_policy: Dict[str, bool] = None, endpoint_pair_override: str = None,
-    blob: Dict[str, Any] = None,
+    blob: Dict[str, Any] = None, write_sidecar: bool = True,
+    sidecar_overrides: Dict[str, Any] = None, tamper_sidecar_hash: bool = False,
+    endpoint_meta_overrides: Dict[str, Any] = None,
 ) -> Path:
     run_dir = tmp_path / name
     run_dir.mkdir(parents=True)
@@ -351,16 +395,36 @@ def write_fake_activation_run_dir(
             "roles": {"it": it_role, "dpo": dpo_role},
             "endpoints": {"it": resolved.roles[it_role].as_metadata(), "dpo": resolved.roles[dpo_role].as_metadata()},
         }
+        if endpoint_meta_overrides:
+            # Merged into run_meta's *own* endpoint block (not just the sidecar), so
+            # run_meta and its sidecar (built from it below) stay mutually consistent
+            # with each other -- isolating a mismatch against the caller's *own*
+            # resolved endpoint identity, rather than tripping the sidecar-vs-run_meta
+            # cross-check first.
+            endpoint_meta = dict(endpoint_meta, **endpoint_meta_overrides)
 
     run_meta = _signed_run_meta({
         "protocol_profile": protocol_profile, "endpoint_backed": endpoint_backed,
         "endpoint": endpoint_meta,
         "harmfulqa_partition": harmfulqa_partition,
+        # Matches the blob's own manifest_hash by default, so the fixture's run_meta
+        # genuinely describes the activations.pt it sits beside -- required now that
+        # the central validator (and publish_activation_artifact) cross-check this
+        # against the actual blob, not merely against the sidecar/run_meta pair.
+        "harmfulqa_manifest_hash": blob.get("manifest_hash"),
         "harmfulqa_record_count": harmfulqa_record_count if harmfulqa_record_count is not None else n,
         "config": {"eval": {"token_position": token_position}},
         "model_loading_policy": loading_policy if loading_policy is not None else {"local_files_only": True, "trust_remote_code": False},
     })
     (run_dir / "run_meta.json").write_text(json.dumps(run_meta), encoding="utf-8")
+
+    if write_sidecar:
+        sidecar = _build_matching_sidecar(run_dir, blob, run_meta)
+        if sidecar_overrides:
+            sidecar.update(sidecar_overrides)
+            if not tamper_sidecar_hash:
+                sidecar["manifest_hash"] = dp.activation_artifact._compute_sidecar_hash(sidecar)
+        _write_sidecar(run_dir, sidecar)
     return run_dir
 
 
@@ -661,7 +725,7 @@ def test_verify_activation_run_rejects_wrong_pair(tmp_path, monkeypatch):
     resolved = _resolved(env)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, endpoint_pair_override="B")
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -672,7 +736,7 @@ def test_verify_activation_run_rejects_candidate_manifest_hash_mismatch(tmp_path
     resolved_b = _resolved(env_b)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved_a)
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved_b)
 
 
@@ -681,7 +745,7 @@ def test_verify_activation_run_rejects_non_primary_protocol_profile(tmp_path, mo
     resolved = _resolved(env)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, protocol_profile="legacy_nonconfirmatory")
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -690,7 +754,7 @@ def test_verify_activation_run_rejects_not_endpoint_backed(tmp_path, monkeypatch
     resolved = _resolved(env)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, endpoint_backed=False)
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -699,7 +763,7 @@ def test_verify_activation_run_rejects_wrong_partition(tmp_path, monkeypatch):
     resolved = _resolved(env)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, harmfulqa_partition="calibration")
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -708,7 +772,7 @@ def test_verify_activation_run_rejects_wrong_record_count(tmp_path, monkeypatch)
     resolved = _resolved(env)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, harmfulqa_record_count=1377)
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -717,7 +781,7 @@ def test_verify_activation_run_rejects_wrong_token_position(tmp_path, monkeypatc
     resolved = _resolved(env)
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, token_position="response_last")
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -728,7 +792,7 @@ def test_verify_activation_run_rejects_an_unsafe_loading_policy(tmp_path, monkey
     run_dir = write_fake_activation_run_dir(
         tmp_path, "acts_A", "A", resolved, loading_policy={"local_files_only": False, "trust_remote_code": True},
     )
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -738,7 +802,7 @@ def test_verify_activation_run_rejects_missing_activations_file(tmp_path, monkey
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved)
     (run_dir / "activations.pt").unlink()
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -748,7 +812,7 @@ def test_verify_activation_run_rejects_missing_run_meta(tmp_path, monkeypatch):
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved)
     (run_dir / "run_meta.json").unlink()
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -775,6 +839,105 @@ def test_verify_activation_run_enforces_it_dpo_shape_agreement(tmp_path, monkeyp
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, blob=blob)
     with pytest.raises(ValueError):
         dp.verify_activation_run("A", run_dir, resolved)
+
+
+# Task 016: sidecar-bound activation-artifact provenance
+
+
+def test_verify_activation_run_rejects_a_missing_sidecar(tmp_path, monkeypatch):
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved, write_sidecar=False)
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", run_dir, resolved)
+
+
+def test_verify_activation_run_rejects_activations_pt_bytes_changed_after_publish(tmp_path, monkeypatch):
+    """The sidecar and run_meta.json are both untouched and self-consistent -- only the
+    activation file's actual bytes changed after the sidecar was published."""
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved)
+    blob = torch.load(run_dir / "activations.pt", map_location="cpu")
+    blob["it"] = blob["it"] + 1.0
+    torch.save(blob, run_dir / "activations.pt")
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", run_dir, resolved)
+
+
+def test_verify_activation_run_rejects_a_sidecar_edited_without_recomputing_its_hash(tmp_path, monkeypatch):
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved)
+    sidecar_path = run_dir / dp.activation_artifact.SIDECAR_FILENAME
+    payload = json.loads(sidecar_path.read_text(encoding="utf-8"))
+    payload["activation_size_bytes"] = payload["activation_size_bytes"] + 1  # edited, hash NOT recomputed
+    sidecar_path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", run_dir, resolved)
+
+
+def test_verify_activation_run_rejects_a_manually_rehashed_sidecar_with_the_wrong_run_identity_hash(tmp_path, monkeypatch):
+    """The sidecar's own manifest_hash is recomputed correctly (so its self-hash check
+    passes), but its run_identity_hash was set to a value that does not equal the
+    verified run_meta.json's own hash -- proving the sidecar-to-run_meta binding is a
+    real cross-file comparison, not merely "does the sidecar check out against itself"."""
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    run_dir = write_fake_activation_run_dir(
+        tmp_path, "acts_A", "A", resolved,
+        sidecar_overrides={"run_identity_hash": "0" * 64},  # rehashed (tamper_sidecar_hash=False)
+    )
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", run_dir, resolved)
+
+
+def test_verify_activation_run_rejects_wrong_roles(tmp_path, monkeypatch):
+    """run_meta.json and its sidecar agree with *each other* (roles=M0-B/M+-B, pair=A)
+    but disagree with what pair A actually requires (M0-A/M+-A) -- caught only because
+    the caller's own expected identity is checked, not merely internal consistency."""
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    run_dir = write_fake_activation_run_dir(
+        tmp_path, "acts_A", "A", resolved,
+        endpoint_meta_overrides={"roles": {"it": "M0-B", "dpo": "M+-B"}},
+    )
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", run_dir, resolved)
+
+
+def test_verify_activation_run_rejects_source_manifest_hash_mismatch_alone(tmp_path, monkeypatch):
+    """Isolates source_manifest_hash specifically (candidate_manifest_hash and pair are
+    both left correct and mutually consistent) -- a Pair A artifact resolved against a
+    different frozen source-artifact manifest must still be rejected."""
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    run_dir = write_fake_activation_run_dir(
+        tmp_path, "acts_A", "A", resolved,
+        endpoint_meta_overrides={"source_manifest_hash": "0" * 64},
+    )
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", run_dir, resolved)
+
+
+def test_verify_activation_run_rejects_pair_b_artifact_substituted_for_pair_a(tmp_path, monkeypatch):
+    """The direct Task 016 substitution scenario: a genuinely valid, sidecar-bound Pair
+    B activation run, presented as if it were Pair A's. The sidecar and run_meta.json
+    are perfectly self-consistent with each other (this really is a complete, correctly
+    published Pair B artifact) -- rejected only because the caller checks it against
+    Pair A's own resolved identity, exactly as development_pilot.py does for real."""
+    env = build_pilot_env(tmp_path)
+    resolved = _resolved(env)
+    _mock_frozen_construction_manifest(monkeypatch)
+    pair_b_dir = write_fake_activation_run_dir(tmp_path, "acts_B", "B", resolved)
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
+        dp.verify_activation_run("A", pair_b_dir, resolved)
 
 
 # ===========================================================================
@@ -1793,7 +1956,7 @@ def test_verify_activation_run_rejects_a_missing_run_identity_hash(tmp_path, mon
     payload = json.loads((run_dir / "run_meta.json").read_text(encoding="utf-8"))
     del payload["run_identity_hash"]
     (run_dir / "run_meta.json").write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -1803,7 +1966,7 @@ def test_verify_activation_run_rejects_a_field_tampered_without_recomputing_the_
     _mock_frozen_construction_manifest(monkeypatch)
     run_dir = write_fake_activation_run_dir(tmp_path, "acts_A", "A", resolved)
     _tamper_run_meta_field(run_dir / "run_meta.json", "harmfulqa_record_count", 9999)
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.verify_activation_run("A", run_dir, resolved)
 
 
@@ -1872,7 +2035,7 @@ def test_tampered_activation_run_meta_fails_before_any_side_effect(tmp_path, mon
     ])
     _patch_default_source_manifest(monkeypatch, env)
 
-    with pytest.raises(dp.DevelopmentPilotError):
+    with pytest.raises(dp.activation_artifact.ActivationArtifactError):
         dp.main()
     assert not output_dir.exists()
 

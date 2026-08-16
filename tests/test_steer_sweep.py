@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 import yaml
@@ -779,6 +780,7 @@ def test_endpoint_metadata_is_merged_into_run_meta_extra(tmp_path, monkeypatch):
         "endpoints": {"it": {"role": "M0-A"}, "dpo": {"role": "M+-A"}},
     }
     monkeypatch.setattr(steer_sweep, "resolve_model_source", lambda **kw: (fake_model_cfg, fake_endpoint_meta))
+    _stub_activation_artifact_validation(monkeypatch)
 
     eval_yaml = _write_yaml(tmp_path / "eval.yaml", {
         "prompt_source": "advbench", "n_prompts": 2, "output_dir": str(tmp_path / "out"),
@@ -1094,6 +1096,22 @@ def _mock_endpoint_backed(monkeypatch, num_layers=32, name="endpoint-A-abc123"):
     return model_cfg, endpoint_meta
 
 
+def _stub_activation_artifact_validation(monkeypatch, acts_path=None):
+    """Task 016's sidecar validation is exhaustively tested on its own in
+    tests/test_activation_artifact.py and tests/test_steer_sweep.py's own
+    "activation artifact" section below -- here it is stubbed so tests about other
+    wiring (metadata fields, loading policy, protocol-profile classification) don't
+    each need a real sidecar-bound construction directory on disk."""
+    acts_path = acts_path if acts_path is not None else Path("stub-activations.pt")
+    fake = SimpleNamespace(
+        acts_path=acts_path, sha256="stub-sha256", size_bytes=1,
+        sidecar={"run_identity_hash": "stub-run-identity-hash", "endpoint": _endpoint_meta()},
+        blob={}, run_meta={},
+    )
+    monkeypatch.setattr(steer_sweep, "validate_activation_artifact_for_run", lambda *a, **k: fake)
+    return fake
+
+
 def _primary_eval_yaml(tmp_path, **overrides):
     d = {
         "prompt_source": "harmfulqa", "prompt_partition": "calibration",
@@ -1170,6 +1188,7 @@ def test_external_vectors_on_an_endpoint_backed_run_fail_before_any_side_effect(
 
 def test_run_metadata_contains_protocol_profile_and_loading_policy(tmp_path, monkeypatch):
     _mock_endpoint_backed(monkeypatch)
+    _stub_activation_artifact_validation(monkeypatch)
     eval_yaml = _primary_eval_yaml(tmp_path)
     fake_records = [
         {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "hash-abc", "partition": "calibration"}
@@ -1194,6 +1213,7 @@ def test_run_metadata_contains_protocol_profile_and_loading_policy(tmp_path, mon
 
 def test_run_metadata_records_the_random_control_seed_when_applicable(tmp_path, monkeypatch):
     _mock_endpoint_backed(monkeypatch)
+    _stub_activation_artifact_validation(monkeypatch)
     eval_yaml = _primary_eval_yaml(tmp_path)
     fake_records = [
         {"id": f"harmfulqa-{i}", "prompt": f"p{i}", "manifest_hash": "hash-abc", "partition": "calibration"}
@@ -1330,6 +1350,8 @@ def _run_full_for_loading_policy(tmp_path, monkeypatch, endpoint_backed: bool):
     torch.save({"placeholder": True}, acts_path)
     monkeypatch.setattr(steer_sweep, "validate_construction_activations", lambda *a, **k: None)
     monkeypatch.setattr(steer_sweep, "build_vectors", lambda *a, **k: {l: torch.zeros(4) for l in steer_sweep.PRIMARY_LAYERS})
+    if endpoint_backed:
+        _stub_activation_artifact_validation(monkeypatch, acts_path=acts_path)
 
     load_calls = []
 

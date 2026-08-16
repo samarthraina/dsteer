@@ -72,12 +72,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import generation_smoke  # noqa: E402 -- reused only for select_smoke_records (Gate 2's own definition of "the first 10")
-import steer_sweep  # noqa: E402 -- reused only for validate_construction_activations
 
 # _compute_run_identity_hash is the exact canonical self-hash algorithm write_run_metadata
 # itself resumes against (Task 008) -- imported narrowly so a consumed run_meta.json is
 # re-verified against the same algorithm that produced it, not a subtly different
-# reimplementation that could disagree with it.
+# reimplementation that could disagree with it. Used directly only for Gate 2's
+# run_meta.json; Pair A/B activation run_meta.json is verified by the central
+# activation_artifact validator instead (Task 016).
+from steering import activation_artifact  # noqa: E402
 from steering.artifacts import GpuMonitor, _compute_run_identity_hash, write_run_metadata  # noqa: E402
 from steering.data import load_harmfulqa_partition  # noqa: E402
 from steering.endpoint_binding import (  # noqa: E402
@@ -381,85 +383,31 @@ def _stream_sha256(path: Path, chunk_size: int = 1 << 20) -> str:
 
 
 def verify_activation_run(pair: str, activation_run_dir: Path, resolved: ResolvedEndpointSet) -> Dict[str, Any]:
-    """A `primary_v1`, endpoint-backed, correctly-paired, manifest-verified construction
-    activation run is required for each pair before any vector is built, any output is
+    """The verified, sidecar-bound construction-activation artifact (Task 016) for
+    `pair`, required and fully validated before any vector is built, any output is
     created, or any tokenizer/model/GPU resource is touched.
 
-    Cross-checks `run_meta.json`'s own recorded facts (protocol profile, endpoint
-    binding, HarmfulQA partition/record count/anchor, loading policy) against what this
-    run independently resolved, then independently re-validates the activation tensors
-    and their ordered identities against the frozen manifest via
-    `steer_sweep.validate_construction_activations` -- never trusts the tensor file
-    just because a passing-looking `run_meta.json` sits beside it.
+    Delegates entirely to the central `activation_artifact` validator, which requires
+    and cross-checks all three sibling files -- `activations.pt`,
+    `activations_manifest_v1.json`, `run_meta.json` -- against each other and against
+    this pair's own resolved endpoint identity, so this never re-implements a second,
+    possibly-diverging provenance check. An `activations.pt` from the other pair placed
+    beside this pair's `run_meta.json` is rejected here even though the two files
+    remain individually self-consistent with each other, because the sidecar's
+    endpoint fields are checked against *this run's own* resolved identity, not merely
+    against what the files claim about themselves.
     """
-    acts_path = activation_run_dir / "activations.pt"
-    meta_path = activation_run_dir / "run_meta.json"
-    if not acts_path.exists():
-        raise DevelopmentPilotError(f"pair {pair}: activations.pt not found at {acts_path}")
-    if not meta_path.exists():
-        raise DevelopmentPilotError(f"pair {pair}: run_meta.json not found at {meta_path}")
-
-    run_meta = json.loads(meta_path.read_text(encoding="utf-8"))
-    verify_run_metadata_identity(run_meta, f"pair {pair} activation run ({meta_path})")
-
-    if run_meta.get("protocol_profile") != "primary_v1":
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run protocol_profile is {run_meta.get('protocol_profile')!r}, "
-            "expected 'primary_v1'"
-        )
-    if run_meta.get("endpoint_backed") is not True:
-        raise DevelopmentPilotError(f"pair {pair}: activation run is not endpoint_backed")
-
-    endpoint = run_meta.get("endpoint") or {}
-    if endpoint.get("pair") != pair:
-        raise DevelopmentPilotError(f"pair {pair}: activation run's endpoint.pair is {endpoint.get('pair')!r}")
-    if endpoint.get("candidate_manifest_hash") != resolved.candidate_manifest_hash:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run candidate_manifest_hash does not match the currently resolved endpoints"
-        )
-    if endpoint.get("source_manifest_hash") != resolved.source_manifest_hash:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run source_manifest_hash does not match the currently resolved endpoints"
-        )
-
     it_role, dpo_role = roles_for_pair(pair)
-    roles = endpoint.get("roles") or {}
-    if roles.get("it") != it_role or roles.get("dpo") != dpo_role:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run roles {roles!r} do not correspond to pair {pair} "
-            f"(expected it={it_role!r}, dpo={dpo_role!r})"
-        )
-
-    if run_meta.get("harmfulqa_partition") != PRIMARY_CONSTRUCTION_PARTITION:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run harmfulqa_partition is {run_meta.get('harmfulqa_partition')!r}, "
-            f"expected {PRIMARY_CONSTRUCTION_PARTITION!r}"
-        )
-    if run_meta.get("harmfulqa_record_count") != PRIMARY_CONSTRUCTION_RECORD_COUNT:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run harmfulqa_record_count is "
-            f"{run_meta.get('harmfulqa_record_count')!r}, expected {PRIMARY_CONSTRUCTION_RECORD_COUNT}"
-        )
-    token_position = ((run_meta.get("config") or {}).get("eval") or {}).get("token_position")
-    if token_position != PRIMARY_TOKEN_POSITION:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run token_position is {token_position!r}, expected {PRIMARY_TOKEN_POSITION!r}"
-        )
-    if run_meta.get("model_loading_policy") != ENDPOINT_LOADING_POLICY:
-        raise DevelopmentPilotError(
-            f"pair {pair}: activation run model_loading_policy is {run_meta.get('model_loading_policy')!r}, "
-            f"expected {ENDPOINT_LOADING_POLICY!r} (safe local loading)"
-        )
-
-    blob = torch.load(acts_path, map_location="cpu")
-    steer_sweep.validate_construction_activations(blob)  # frozen-manifest identity + it/dpo shape agreement
-
-    sha256 = _stream_sha256(acts_path)
-    size_bytes = acts_path.stat().st_size
-
+    artifact = activation_artifact.load_and_validate_activation_artifact(
+        activation_run_dir,
+        expected_pair=pair,
+        expected_candidate_manifest_hash=resolved.candidate_manifest_hash,
+        expected_source_manifest_hash=resolved.source_manifest_hash,
+        expected_it_role=it_role, expected_dpo_role=dpo_role,
+    )
     return {
-        "blob": blob, "run_meta": run_meta, "acts_path": acts_path,
-        "sha256": sha256, "size_bytes": size_bytes,
+        "blob": artifact.blob, "run_meta": artifact.run_meta, "acts_path": artifact.acts_path,
+        "sha256": artifact.sha256, "size_bytes": artifact.size_bytes,
     }
 
 

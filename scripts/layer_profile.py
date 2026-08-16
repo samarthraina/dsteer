@@ -53,6 +53,7 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 
+from steering import activation_artifact
 from steering.activations import LastTokenCapture, build_input_text
 from steering.artifacts import GpuMonitor, TensorCheckpoint, sync_to_hub, write_run_metadata
 from steering.config import ModelConfig
@@ -276,10 +277,28 @@ def main():
     activation_payload = {"it": activations_it, "dpo": activations_dpo}
     if eval_cfg.prompt_source == "harmfulqa":
         activation_payload.update(harmfulqa_provenance(prompts))
-    torch.save(activation_payload, output_root / "activations.pt")
-    log.info(f"Saved raw activations to {output_root}/activations.pt")
 
-    # Both tensors are on disk in their final form; the partials are now redundant.
+    acts_path = output_root / "activations.pt"
+    if protocol_profile == "primary_v1":
+        # Atomic save (sibling temp file + rename) and a streamed SHA-256, so the
+        # activations_manifest_v1.json sidecar published below binds the exact bytes
+        # that actually landed on disk -- never an in-memory belief about them. The
+        # sidecar is this run's completion marker: it.partial.pt/dpo.partial.pt are
+        # only removed once it has been published, so a sidecar-publication failure
+        # leaves both the resumable checkpoints and an (as yet) unbound activations.pt
+        # in place -- no consumer can accept that unbound file (Task 016).
+        activation_artifact.save_activations_atomic(activation_payload, acts_path)
+        log.info(f"Saved raw activations to {acts_path}")
+        activation_artifact.publish_activation_artifact(output_root)
+        log.info(f"Published {output_root / 'activations_manifest_v1.json'}")
+    else:
+        # Legacy (non-endpoint-backed) extraction: unchanged behavior -- no sidecar,
+        # since only an endpoint-backed primary_v1 extraction is ever bound this way.
+        torch.save(activation_payload, acts_path)
+        log.info(f"Saved raw activations to {acts_path}")
+
+    # Both tensors are on disk in their final form (and, for primary_v1, bound by a
+    # published sidecar); the partials are now redundant.
     for name in ("it.partial.pt", "dpo.partial.pt"):
         (output_root / name).unlink(missing_ok=True)
 
