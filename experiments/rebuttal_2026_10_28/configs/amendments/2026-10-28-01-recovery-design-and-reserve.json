@@ -1,0 +1,38 @@
+{
+  "amendment_id": "2026-10-28-01-recovery-design-and-reserve",
+  "written_utc": "2026-10-28T16:01:58Z",
+  "written_before_any_gpu_time": true,
+  "consumed_a100_hours_at_writing": 0.0,
+  "remaining_global_hours": 30.0,
+  "amends": "configs/protocol.json (SHA-256 3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04), which is NOT edited",
+  "changes": [
+    {
+      "what": "Experiment C design restored to RESCORING of the original responses",
+      "reason": "All 58 Task 027 response files recovered from samarthraina/dsteer-results@4f72531f and verified byte-for-byte against the frozen inventory (manifests/recovered_artifacts.json). The replication fallback (reports/REPLICATION_DESIGN.md) is not used."
+    },
+    {
+      "what": "No D-STEER direction reconstruction",
+      "reason": "Both Task 025 construction tensors recovered and verified (5c2feb3e..., c02721c6...); vectors built on CPU with the vendored build_vectors (outputs/directions/dsteer_vectors_pair_{A,B}.pt)."
+    },
+    {
+      "what": "Recovered harmful-panel arms reused, never regenerated or re-scored by the original judge",
+      "detail": "it_base, dpo_base, dsteer_install, dsteer_reverse per pair (run_panel and score_outputs refuse otherwise)."
+    },
+    {
+      "what": "Independent judge frozen",
+      "value": "microsoft/phi-4@2db69c1c3e91a05d2c64a3185acfbaf36f744e25",
+      "manifest_sha256": "548651159edd484134ac6fd19beda8cc47c4b4eb09c27fd0b400fa324efb2962"
+    },
+    {
+      "what": "Panels frozen",
+      "manifest_sha256": "5b1d1ae75339248d3b8b56cbfca1688991da6d4357e9673c067e868546e70cb6",
+      "detail": "harmless construction/selection prompts from the reference repository's Alpaca-derived splits; confounds recorded in panels_v2.json"
+    },
+    {
+      "what": "Conditional reserve reassignment (pre-registered)",
+      "rule": "If the MEASURED time of S1 or S2 would exceed its cap, up to 1.0 h (S1) and 0.5 h (S2) of the S7 shared reserve may be reassigned, each logged at the time via BudgetGuard.amend_reserve with the then-remaining global hours. The 30 h ceiling and all scheduling/export/terminate thresholds are unchanged.",
+      "reason": "The provisional plan (reports/BUDGET_ESTIMATE_V2.json) exceeds S1 by 0.81 h and S2 by 0.21 h under conservative, UNMEASURED download (50 MB/s), environment-setup and judge start-up times; the full mandatory programme is 13.19 h of 30.",
+      "s7_reserve_after_max_reassignment_h": 3.5
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "created_utc": "2026-10-29T08:13:20.993759Z",
+  "failures": 0,
+  "file_sha256": "f8dada5577a60a21c86e58c1937abd1be440a5c6b0f08f024abcfc33e595ab4c",
+  "finalised_utc": "2026-10-29T08:15:30.614770Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": true,
+    "invalid_rate": 0.0,
+    "maxlen_pass": true,
+    "maxlen_rate": 0.0,
+    "n": 250,
+    "n_invalid": 0,
+    "n_maxlen": 0,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": 0.0,
+      "direction": null,
+      "intervention": "none",
+      "layers": null,
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "it_base",
+      "note": "",
+      "pair": "B",
+      "side": "it"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "51f3a1ea50910b3d2757e0a41041fd82ecb00092069f098d5f87bf7af9171ca9",
+      "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+      "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+      "subpath": ""
+    },
+    "limit": null,
+    "pair": "B",
+    "panel": "xstest_safe",
+    "panel_digest": "d05394ca4df34f0060fa582a4bfe2c017d87f0f802d35ce3259510604521a139",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "3361a3cf57c738f6c61aa49a87ba4a749779e25449051c5a6ebc887fb40f5c12",
+  "records": 250
+}

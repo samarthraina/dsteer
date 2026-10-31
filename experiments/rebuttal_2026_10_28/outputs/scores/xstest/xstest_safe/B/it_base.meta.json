@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T08:47:06.240456Z",
+  "failures": 0,
+  "file_sha256": "eb7b78e0f196a9ffb7326bda87c81fb89247d1f916c59bcddb02bfe2a8bd2405",
+  "finalised_utc": "2026-10-29T08:47:36.019619Z",
+  "identity": {
+    "condition": "it_base",
+    "evaluator": "xstest",
+    "pair": "B",
+    "panel": "xstest_safe",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/xstest_safe/B/it_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "759d2a992a402c5e98470cb7bbdca094f658da5e55372ca08c777fb2602dee85",
+  "n_responses": 250,
+  "n_valid": 250,
+  "not_scored_invalid": [],
+  "records": 250
+}

@@ -1,0 +1,9 @@
+{
+  "selected": null,
+  "blocked": "a selection class is empty after filtering",
+  "n_harmful": 0,
+  "n_harmless": 59,
+  "pair": "A",
+  "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+  "reference_commit": "0b9c8bc56a73b42f595fd173156d4aefe9a9143c"
+}

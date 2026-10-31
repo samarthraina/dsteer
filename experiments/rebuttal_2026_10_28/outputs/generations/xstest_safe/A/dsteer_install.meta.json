@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-10-29T07:51:16.799589Z",
+  "failures": 0,
+  "file_sha256": "18d3b75128004cf50aa9ae69cfb8bd72e0828f1087f3fe8f6187217da9d18a90",
+  "finalised_utc": "2026-10-29T07:54:30.432543Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": false,
+    "invalid_rate": 0.088,
+    "maxlen_pass": false,
+    "maxlen_rate": 0.092,
+    "n": 250,
+    "n_invalid": 22,
+    "n_maxlen": 23,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": 0.05,
+      "direction": "installation",
+      "intervention": "dsteer_add",
+      "layers": [
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "dsteer_install",
+      "note": "",
+      "pair": "A",
+      "side": "it",
+      "vector_file": "outputs/directions/dsteer_vectors_pair_A.pt",
+      "vector_norms": {
+        "27": 29.18681526184082,
+        "28": 31.87507438659668,
+        "29": 35.03728485107422,
+        "30": 38.00843811035156,
+        "31": 51.155921936035156
+      },
+      "vector_sha256": "5ce75a7d7326cba04e61b57289b1ac1024cba325e06b43542c9a7da48bade4d1"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "56af296df533476af22bf63601fba0cbec3bfe085bddfde47d15bd76c1899629",
+      "repository": "sirius5005/SFT-and-DPO",
+      "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+      "subpath": "SFT_merged"
+    },
+    "limit": null,
+    "pair": "A",
+    "panel": "xstest_safe",
+    "panel_digest": "d05394ca4df34f0060fa582a4bfe2c017d87f0f802d35ce3259510604521a139",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "2623271a61d1a80ad9d69f6462d66c101971c583510f3e17e49a15bec2e1a162",
+  "records": 250
+}

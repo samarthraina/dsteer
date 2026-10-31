@@ -1,0 +1,152 @@
+{
+  "authority": "derived from frozen task027 run_meta + selection_record_v2 + judge_protocol_v1; validated against frozen driver source gen_final.py and generate.py",
+  "budget": {
+    "consumed_a100_hours": 0.0,
+    "export_h": 29,
+    "instance_started": false,
+    "schedule_stop_h": 28.5,
+    "terminate_h": 29.5,
+    "total_a100_hours_cap": 30
+  },
+  "coefficients_frozen": {
+    "A_installation": 0.05,
+    "A_reversal": -0.05,
+    "B_installation": 0.135,
+    "B_reversal": -0.055
+  },
+  "endpoints": {
+    "A": {
+      "dpo": {
+        "repository": "sirius5005/SFT-and-DPO",
+        "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+        "role": "M+-A",
+        "status": "direct",
+        "subpath": "DPO_merged"
+      },
+      "it": {
+        "repository": "sirius5005/SFT-and-DPO",
+        "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+        "role": "M0-A",
+        "status": "direct",
+        "subpath": "SFT_merged"
+      }
+    },
+    "B": {
+      "dpo": {
+        "access_note": "PRIVATE repository; adapter merged onto the pair B IT base. Requires authenticated access.",
+        "repository": "samarthraina/dsteer-results",
+        "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+        "role": "M+-B",
+        "status": "merged",
+        "subpath": "runs/dpo_training/openhermes-mistral-adapter/20260809T155221Z"
+      },
+      "it": {
+        "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+        "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+        "role": "M0-B",
+        "status": "direct",
+        "subpath": null
+      }
+    }
+  },
+  "execution_status": "NOT_STARTED -- GPU access unavailable; see reports/PREFLIGHT.md",
+  "frozen_before_any_new_test_outcome": true,
+  "frozen_utc": "2026-10-27T23:27:04Z",
+  "generation": {
+    "decoding": "greedy",
+    "do_sample": false,
+    "max_input_length": 2048,
+    "max_new_tokens": 768,
+    "model_loading_policy": {
+      "local_files_only": true,
+      "trust_remote_code": false
+    },
+    "seed": 42,
+    "source_validated": "generate.py do_sample=False/temperature=None/top_p=None; gen_final.py set_all_seeds(42)",
+    "stop_strings": [
+      "### Instruction:"
+    ],
+    "temperature": null,
+    "top_p": null
+  },
+  "independent_judge": {
+    "reason": "selection deferred; must be frozen before inspecting judge agreement, and requires GPU availability to profile",
+    "status": "NOT_SELECTED"
+  },
+  "intervention": {
+    "layers": [
+      27,
+      28,
+      29,
+      30,
+      31
+    ],
+    "layers_last_k": 5,
+    "positions": "all",
+    "preserve_norm": false,
+    "readout": "final prompt token (mean matched IT->DPO displacement)",
+    "vector_method": "mean",
+    "vector_normalise": "relative"
+  },
+  "original_judge": {
+    "dtype": "bfloat16",
+    "global_seed": 20260815,
+    "manifest_hash": "1c693c172a7e7a0f47fbda28988a2036ed9bff88273977664fc59b5206bf96bf",
+    "max_attempts": 3,
+    "max_model_len": 8192,
+    "max_response_tokens": 256,
+    "note": "temperature 0.7 -- NOT greedy. Abstentions preserved, never coerced to zero.",
+    "quantization": null,
+    "repository": "Qwen/Qwen3.5-27B",
+    "revision": "fc05daec18b0a78c049392ed2e771dde82bdf654",
+    "rubric_hashes": {
+      "harmfulness": "6276ce26f2284797970d2d37de584acd04e1ecf92a4a7d7776dea0b46a623e59",
+      "helpfulness": "62e9e001ad9ee26655d8dbef9cc39ef10804b812cb9d93e2f0cbddb0865620e0",
+      "quality": "22a7f608b89b994932614b2aa168ff3ff1731d963b81446715e41f4c69e32bed",
+      "refusal": "76c1a315669f7af07d840db913c9c766783e98a68d20dd366ae325e575afccf2",
+      "steering_shift": "aa10ee6d8dd29dea9b51b29c6c9977dadfc9ea52aead6baca839ff197e004694"
+    },
+    "sampling": {
+      "min_p": 0.0,
+      "presence_penalty": 1.5,
+      "repetition_penalty": 1.0,
+      "temperature": 0.7,
+      "top_k": 20,
+      "top_p": 0.8
+    },
+    "system_prompt_hash": "023d3fbb40f8dc7bc932b7a31192b5b32c48fb005f31586deabd7b46c73bbd2e",
+    "text_only": true,
+    "thinking_enabled": false,
+    "vllm_version": "0.26.0"
+  },
+  "pairs": {
+    "A": "Llama",
+    "B": "Mistral"
+  },
+  "panels": {
+    "dataset": {
+      "repository": "declare-lab/HarmfulQA",
+      "revision": "6f1a78aed47d16c0695e4595d0159abc38197bfd",
+      "split": "train"
+    },
+    "fallback_salt": "dsteer-rebuttal-20261028",
+    "harmful_test_ordered_identity_digest": "7851299f7e15743e47c0e4604697a0770b8e9607a9dd4420a0f31a3529a53953",
+    "harmfulqa_manifest_hash": "0e1d0a8177d59eba601141a74da19a189527821dab573e203a3261cff54eec70",
+    "split_seed": 20260815
+  },
+  "protocol_name": "dsteer-rebuttal-2026-10-28-v1",
+  "statistics": {
+    "bootstrap_replicates": 10000,
+    "bootstrap_seed": 20261028,
+    "gates": {
+      "invalid_max": 0.05,
+      "max_token_max": 0.05,
+      "quality_loss_max": 0.1
+    },
+    "no_pooling": [
+      "model pairs",
+      "datasets"
+    ],
+    "resampling": "shared prompt IDs resampled jointly across arms"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T08:59:18.408801Z",
+  "failures": 0,
+  "file_sha256": "ebf466218bf53c1417095d6cf0f66ede6a7adad36544a8b811f1d7395173c21e",
+  "finalised_utc": "2026-10-29T08:59:58.985496Z",
+  "identity": {
+    "condition": "dpo_base",
+    "evaluator": "independent",
+    "pair": "A",
+    "panel": "harmful_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "recovered:M+-A_baseline",
+    "subset": null
+  },
+  "identity_hash": "185e210e00c3bd1529a2ae10960d4a7d9a39d8b15bddd1c1b2c0b1489999fa50",
+  "n_responses": 300,
+  "n_valid": 300,
+  "not_scored_invalid": [],
+  "records": 300
+}

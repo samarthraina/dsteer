@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T08:47:36.323513Z",
+  "failures": 0,
+  "file_sha256": "c7f9406e1568938e2bd2beb2e75e5d81caa57d9b65a815e50f77ddf701994905",
+  "finalised_utc": "2026-10-29T08:48:08.240965Z",
+  "identity": {
+    "condition": "dpo_base",
+    "evaluator": "xstest",
+    "pair": "B",
+    "panel": "xstest_safe",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/xstest_safe/B/dpo_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "f2c5827895e5c6fe68ff80c49fb3a8090102468ca43ab30c57bf4dbde95ebfc7",
+  "n_responses": 250,
+  "n_valid": 250,
+  "not_scored_invalid": [],
+  "records": 250
+}

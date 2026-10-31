@@ -1,0 +1,47 @@
+{
+  "pair": "A",
+  "side": "it",
+  "matched_layers": [
+    {
+      "layer": 27,
+      "raw_norm": 10.748619697021443,
+      "target_norm": 29.186814386136636,
+      "scaled_norm": 29.18681438613664,
+      "cos_with_dsteer": 0.038730163261619974,
+      "cos_scaled_vs_raw": 0.9999999999999998
+    },
+    {
+      "layer": 28,
+      "raw_norm": 11.801521983232968,
+      "target_norm": 31.875071919070088,
+      "scaled_norm": 31.87507191907009,
+      "cos_with_dsteer": 0.04434925352147649,
+      "cos_scaled_vs_raw": 1.0000000000000004
+    },
+    {
+      "layer": 29,
+      "raw_norm": 12.932607249894929,
+      "target_norm": 35.03728314485903,
+      "scaled_norm": 35.03728314485903,
+      "cos_with_dsteer": 0.03559597597837524,
+      "cos_scaled_vs_raw": 1.0
+    },
+    {
+      "layer": 30,
+      "raw_norm": 14.478660466714366,
+      "target_norm": 38.00843862085083,
+      "scaled_norm": 38.008438620850846,
+      "cos_with_dsteer": 0.06771617479171638,
+      "cos_scaled_vs_raw": 0.9999999999999999
+    },
+    {
+      "layer": 31,
+      "raw_norm": 19.476912404008164,
+      "target_norm": 51.155919930830706,
+      "scaled_norm": 51.15591993083071,
+      "cos_with_dsteer": 0.09168768132198755,
+      "cos_scaled_vs_raw": 1.0
+    }
+  ],
+  "directions_sha256": "adf86ae9cdef7c1aa4b06cfc8d0039b01b5fd7dadd2a1338cf0ac1ef6a80fcc5"
+}

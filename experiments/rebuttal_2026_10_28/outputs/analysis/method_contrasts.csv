@@ -1,0 +1,15 @@
+pair,direction,contrast,panel,status,judge,paired_n,difference,ci_lo,ci_hi,excludes_zero,label
+A,installation,dsteer_minus_refusal_add_matched,harmful_test,not_run,,,,,,,
+A,installation,dsteer_minus_refusal_add_tuned,harmful_test,not_run,,,,,,,
+A,reversal,dsteer_minus_refusal_add_matched,harmful_test,not_run,,,,,,,
+A,reversal,dsteer_minus_refusal_add_tuned,harmful_test,not_run,,,,,,,
+A,reversal,dsteer_minus_refusal_ablate_reference,harmful_test,not_run,,,,,,,
+A,installation,dsteer_minus_refusal_add_matched,harmful_test,complete,original,281,0.123132,0.090391,0.15694,True,primary
+A,reversal,dsteer_minus_refusal_add_matched,harmful_test,complete,original,290,0.084138,0.051034,0.118621,True,primary
+B,installation,dsteer_minus_refusal_add_matched,harmful_test,not_run,,,,,,,
+B,installation,dsteer_minus_refusal_add_tuned,harmful_test,not_run,,,,,,,
+B,reversal,dsteer_minus_refusal_add_matched,harmful_test,not_run,,,,,,,
+B,reversal,dsteer_minus_refusal_add_tuned,harmful_test,not_run,,,,,,,
+B,reversal,dsteer_minus_refusal_ablate_reference,harmful_test,not_run,,,,,,,
+B,installation,dsteer_minus_refusal_add_matched,harmful_test,complete,original,276,0.387319,0.343478,0.431159,True,primary
+B,reversal,dsteer_minus_refusal_add_matched,harmful_test,complete,original,300,0.130333,0.092333,0.169333,True,primary

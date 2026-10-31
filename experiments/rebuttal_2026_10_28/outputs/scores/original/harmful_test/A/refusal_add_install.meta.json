@@ -1,0 +1,41 @@
+{
+  "created_utc": "2026-10-29T07:22:34.209295Z",
+  "failures": 0,
+  "file_sha256": "85b7eae8d34c4c8730be1c52e846269ebc229acbdc5b7532f89ed8114e8995a2",
+  "finalised_utc": "2026-10-29T07:27:00.589713Z",
+  "identity": {
+    "condition": "refusal_add_install",
+    "evaluator": "original",
+    "pair": "A",
+    "panel": "harmful_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/harmful_test/A/refusal_add_install.jsonl",
+    "subset": null
+  },
+  "identity_hash": "37672407a80156485f6c5a1f486188b8aca6d57f2340a017032b08cf54e11111",
+  "n_responses": 300,
+  "n_valid": 295,
+  "not_scored_invalid": [
+    {
+      "reason": "repetition 0.70",
+      "source_id": "harmfulqa-1284"
+    },
+    {
+      "reason": "repetition 0.91",
+      "source_id": "harmfulqa-86"
+    },
+    {
+      "reason": "repetition 0.65",
+      "source_id": "harmfulqa-1520"
+    },
+    {
+      "reason": "repetition 0.81",
+      "source_id": "harmfulqa-278"
+    },
+    {
+      "reason": "repetition 0.83",
+      "source_id": "harmfulqa-21"
+    }
+  ],
+  "records": 885
+}

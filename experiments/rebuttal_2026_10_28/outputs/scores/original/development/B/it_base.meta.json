@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T00:22:57.060912Z",
+  "failures": 0,
+  "file_sha256": "064e1c6f9a9b0b7dda339000c6f75c71f209008a67219697d4b0f2e8df36fbe5",
+  "finalised_utc": "2026-10-29T00:23:53.579373Z",
+  "identity": {
+    "condition": "it_base",
+    "evaluator": "original",
+    "pair": "B",
+    "panel": "development",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/development/B/it_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "6caec08291c50958429f3a707a7bfd24024a8a2d68ddaf3eb8730eb137034958",
+  "n_responses": 60,
+  "n_valid": 60,
+  "not_scored_invalid": [],
+  "records": 180
+}

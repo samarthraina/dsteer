@@ -1,0 +1,57 @@
+{
+  "created_utc": "2026-10-28T23:47:49.841442Z",
+  "failures": 0,
+  "file_sha256": "422914f91fb515507ac1e8dc15ab4ef77e95cfe5c5a55d2b9572735dfb844a22",
+  "finalised_utc": "2026-10-28T23:48:21.004941Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": true,
+    "invalid_rate": 0.0,
+    "maxlen_pass": true,
+    "maxlen_rate": 0.0,
+    "n": 60,
+    "n_invalid": 0,
+    "n_maxlen": 0,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": 0.0,
+      "direction": null,
+      "intervention": "none",
+      "layers": null,
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "dpo_base",
+      "note": "",
+      "pair": "A",
+      "side": "dpo"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "44082ead9f292cb1d5b7ac49bff31a3081afd7d2bbf47962c9069a5eb2f0625d",
+      "repository": "sirius5005/SFT-and-DPO",
+      "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+      "subpath": "DPO_merged"
+    },
+    "limit": null,
+    "pair": "A",
+    "panel": "development",
+    "panel_digest": "3e3c0a28d5e892f7b79a765f8b2e2f03045d50139d07c5b507ef86377c69f8ed",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "89d0a602c24c0ab9f6caacc247b03a21f07375bf7139275597b10b2b90b1f640",
+  "records": 60
+}

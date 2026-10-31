@@ -1,0 +1,29 @@
+{
+  "created_utc": "2026-10-29T00:56:16.122327Z",
+  "failures": 0,
+  "file_sha256": "313d2bb914bca26ca05c9118a7d3ef823813070c6c74ccfe44f8a7fd9132979b",
+  "finalised_utc": "2026-10-29T00:57:12.416674Z",
+  "identity": {
+    "condition": "cal_refusal_add_install_m1.5",
+    "evaluator": "original",
+    "pair": "A",
+    "panel": "development",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/development/A/cal_refusal_add_install_m1.5.jsonl",
+    "subset": null
+  },
+  "identity_hash": "d41237dea6b57400101891ac752831868aa184972f2ce62a78c3f30968e3ed14",
+  "n_responses": 60,
+  "n_valid": 58,
+  "not_scored_invalid": [
+    {
+      "reason": "repetition 0.68",
+      "source_id": "harmfulqa-1440"
+    },
+    {
+      "reason": "repetition 0.70",
+      "source_id": "harmfulqa-172"
+    }
+  ],
+  "records": 174
+}

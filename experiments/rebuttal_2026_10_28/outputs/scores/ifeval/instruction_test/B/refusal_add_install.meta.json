@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-10-29T08:50:28.021401Z",
+  "failures": 0,
+  "file_sha256": "02ac826c34b8f5f71d1f306e719c53af2d1e9bcab2691598d380b1cb4a109b3a",
+  "finalised_utc": "2026-10-29T08:50:29.645431Z",
+  "identity": {
+    "condition": "refusal_add_install",
+    "evaluator": "ifeval",
+    "pair": "B",
+    "panel": "instruction_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/instruction_test/B/refusal_add_install.jsonl",
+    "subset": null
+  },
+  "identity_hash": "c645515fe11065fc961e135b0930a18c2ba5f78c9d96daa47bd64501f06348ab",
+  "records": 64
+}

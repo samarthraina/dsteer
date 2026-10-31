@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T01:04:11.129055Z",
+  "failures": 0,
+  "file_sha256": "09429df3f604a682a98ef9e9b823a2acb733a29a2899c6097ea4979cf297922e",
+  "finalised_utc": "2026-10-29T01:05:09.807226Z",
+  "identity": {
+    "condition": "cal_refusal_add_reverse_m1.5",
+    "evaluator": "original",
+    "pair": "B",
+    "panel": "development",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/development/B/cal_refusal_add_reverse_m1.5.jsonl",
+    "subset": null
+  },
+  "identity_hash": "da1a53bb346b2652bec9c7cca9a1f5852f7a3c53f9c3b37c91430f6658f7f67d",
+  "n_responses": 60,
+  "n_valid": 60,
+  "not_scored_invalid": [],
+  "records": 180
+}

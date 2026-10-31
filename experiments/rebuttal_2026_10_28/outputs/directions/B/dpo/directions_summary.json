@@ -1,0 +1,65 @@
+{
+  "pair": "B",
+  "side": "dpo",
+  "matched_layers": [
+    {
+      "layer": 27,
+      "raw_norm": 9.000679297168404,
+      "target_norm": 18.333207077878516,
+      "scaled_norm": 18.333207077878516,
+      "cos_with_dsteer": 0.44179056656482374,
+      "cos_scaled_vs_raw": 1.0000000000000002
+    },
+    {
+      "layer": 28,
+      "raw_norm": 9.921748923163625,
+      "target_norm": 20.12920358806078,
+      "scaled_norm": 20.12920358806078,
+      "cos_with_dsteer": 0.4379368453293979,
+      "cos_scaled_vs_raw": 1.0000000000000002
+    },
+    {
+      "layer": 29,
+      "raw_norm": 11.12254843810253,
+      "target_norm": 23.124052789209774,
+      "scaled_norm": 23.124052789209767,
+      "cos_with_dsteer": 0.43551267785349024,
+      "cos_scaled_vs_raw": 1.0000000000000004
+    },
+    {
+      "layer": 30,
+      "raw_norm": 12.601558026782566,
+      "target_norm": 26.102232044197677,
+      "scaled_norm": 26.102232044197677,
+      "cos_with_dsteer": 0.4343193909165429,
+      "cos_scaled_vs_raw": 1.0000000000000004
+    },
+    {
+      "layer": 31,
+      "raw_norm": 15.539109573097157,
+      "target_norm": 30.103847909777596,
+      "scaled_norm": 30.103847909777596,
+      "cos_with_dsteer": 0.4422774093578503,
+      "cos_scaled_vs_raw": 1.0
+    }
+  ],
+  "reference_filter": {
+    "harmful_kept": 25,
+    "harmful_dropped": 231,
+    "harmless_kept": 250,
+    "harmless_dropped": 6,
+    "refusal_toks": [
+      2198,
+      28737
+    ],
+    "eoi_positions": [
+      -6,
+      -5,
+      -4,
+      -3,
+      -2,
+      -1
+    ]
+  },
+  "directions_sha256": "b3d4ee96b14f6838a9206dac07b4715710be37b09682b45594bdfb92d98f9c9a"
+}

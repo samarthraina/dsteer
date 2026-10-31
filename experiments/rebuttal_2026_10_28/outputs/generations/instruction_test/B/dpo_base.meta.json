@@ -1,0 +1,57 @@
+{
+  "created_utc": "2026-10-29T08:20:25.553591Z",
+  "failures": 0,
+  "file_sha256": "8b42066bb07800b99ada12e7fad385bb9f7aa2aa356db8d232f6b9170f200b6a",
+  "finalised_utc": "2026-10-29T08:22:15.893016Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": true,
+    "invalid_rate": 0.03,
+    "maxlen_pass": false,
+    "maxlen_rate": 0.12,
+    "n": 100,
+    "n_invalid": 3,
+    "n_maxlen": 12,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": 0.0,
+      "direction": null,
+      "intervention": "none",
+      "layers": null,
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "dpo_base",
+      "note": "",
+      "pair": "B",
+      "side": "dpo"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "d7f435a65d8dea4e65af58eeedf63ad5aae2b1d368a21a596801002815d6b40b",
+      "repository": "samarthraina/dsteer-results",
+      "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+      "subpath": "runs/dpo_training/openhermes-mistral-adapter/20260809T155221Z"
+    },
+    "limit": null,
+    "pair": "B",
+    "panel": "instruction_test",
+    "panel_digest": "7d270ff3a7f30ceb71160f62ef68953f0e66e959e14ef67ba8c70dbfc99ecf6e",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "10223f27aabc25e887c50e3f9cb5e3e8c2f2e3df42e0c4aa3464f91bfd8c2349",
+  "records": 100
+}

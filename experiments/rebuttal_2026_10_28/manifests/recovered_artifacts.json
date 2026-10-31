@@ -1,0 +1,934 @@
+{
+  "generated_utc": "2026-10-28T15:23:22Z",
+  "repository": "samarthraina/dsteer-results",
+  "repo_type": "dataset",
+  "revision": "4f72531f763eff1c43f29769a6f76d6c06b7ca5a",
+  "task027_prefix": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df",
+  "task025_prefix": "backups/aaai-safety-audit/2026-08-17-task025-primary-calibration-84b50df",
+  "credential_handling": "token read in-process; never printed or stored; stripped on cross-host redirect",
+  "files": [
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M+-A_baseline/lambda_-0.000.jsonl",
+      "relative": "steer/M+-A_baseline/lambda_-0.000.jsonl",
+      "remote_size": 726130,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "53b3e6e9bb74fb7b46fda69039bcf34049b7c1689ea11d9b3c6f6a6693828245",
+      "local_sha256": "53b3e6e9bb74fb7b46fda69039bcf34049b7c1689ea11d9b3c6f6a6693828245",
+      "local_bytes": 726130,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M+-A_reversal/lambda_-0.050.jsonl",
+      "relative": "steer/M+-A_reversal/lambda_-0.050.jsonl",
+      "remote_size": 836425,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "4b8f19ac828e46bdb4fac3024904d7912b14348678be9b2b247427b35196022b",
+      "local_sha256": "4b8f19ac828e46bdb4fac3024904d7912b14348678be9b2b247427b35196022b",
+      "local_bytes": 836425,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M+-B_baseline/lambda_-0.000.jsonl",
+      "relative": "steer/M+-B_baseline/lambda_-0.000.jsonl",
+      "remote_size": 738152,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "ee26bb91d60d614c7b3170fbd761948efbfca46df6db2d2b85d294e6eb332505",
+      "local_sha256": "ee26bb91d60d614c7b3170fbd761948efbfca46df6db2d2b85d294e6eb332505",
+      "local_bytes": 738152,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M+-B_reversal/lambda_-0.055.jsonl",
+      "relative": "steer/M+-B_reversal/lambda_-0.055.jsonl",
+      "remote_size": 773737,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "dd3d97d20b99f898d0198060c60a7f9095c3f5ef48798dc114aca6ed7caeb336",
+      "local_sha256": "dd3d97d20b99f898d0198060c60a7f9095c3f5ef48798dc114aca6ed7caeb336",
+      "local_bytes": 773737,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M--A_baseline/lambda_+0.000.jsonl",
+      "relative": "steer/M--A_baseline/lambda_+0.000.jsonl",
+      "remote_size": 829373,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "89bf97a510c178014906debb2680c2c43a75230721294fc8f82c4005f86bbca3",
+      "local_sha256": "89bf97a510c178014906debb2680c2c43a75230721294fc8f82c4005f86bbca3",
+      "local_bytes": 829373,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M0-A_baseline/lambda_+0.000.jsonl",
+      "relative": "steer/M0-A_baseline/lambda_+0.000.jsonl",
+      "remote_size": 799328,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "1c4518f3fa91e77c1be5a94442bd6f7bb0016d545222d55ec935e0d3ab3ef511",
+      "local_sha256": "1c4518f3fa91e77c1be5a94442bd6f7bb0016d545222d55ec935e0d3ab3ef511",
+      "local_bytes": 799328,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M0-A_installation/lambda_+0.050.jsonl",
+      "relative": "steer/M0-A_installation/lambda_+0.050.jsonl",
+      "remote_size": 751858,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "3510b6460658de0d4b50d785fc7b3596480e513fba15a4a1c2c02dcd1b355776",
+      "local_sha256": "3510b6460658de0d4b50d785fc7b3596480e513fba15a4a1c2c02dcd1b355776",
+      "local_bytes": 751858,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M0-B_baseline/lambda_+0.000.jsonl",
+      "relative": "steer/M0-B_baseline/lambda_+0.000.jsonl",
+      "remote_size": 770501,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "494a7debba9e14bb610dde1cd1bd464ce204aebeb2c4bc5eca0dc66086c0ae5f",
+      "local_sha256": "494a7debba9e14bb610dde1cd1bd464ce204aebeb2c4bc5eca0dc66086c0ae5f",
+      "local_bytes": 770501,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/M0-B_installation/lambda_+0.135.jsonl",
+      "relative": "steer/M0-B_installation/lambda_+0.135.jsonl",
+      "remote_size": 725983,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "633b653d8d01c0741d8e79931c57249947165aff67303dcf0cdc295438e9a3b0",
+      "local_sha256": "633b653d8d01c0741d8e79931c57249947165aff67303dcf0cdc295438e9a3b0",
+      "local_bytes": 725983,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_installation_s11/lambda_+0.050.jsonl",
+      "relative": "steer/rand_A_installation_s11/lambda_+0.050.jsonl",
+      "remote_size": 805346,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "26845172c2634f15d789a15e7ecba1352accafad5c5c6fb37e9dc7c975f94a16",
+      "local_sha256": "26845172c2634f15d789a15e7ecba1352accafad5c5c6fb37e9dc7c975f94a16",
+      "local_bytes": 805346,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_installation_s22/lambda_+0.050.jsonl",
+      "relative": "steer/rand_A_installation_s22/lambda_+0.050.jsonl",
+      "remote_size": 771347,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "cb62463556279fa25fd2a1bc3e645ad54d90f642a49b0667c4a22b6b1da70efd",
+      "local_sha256": "cb62463556279fa25fd2a1bc3e645ad54d90f642a49b0667c4a22b6b1da70efd",
+      "local_bytes": 771347,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_installation_s33/lambda_+0.050.jsonl",
+      "relative": "steer/rand_A_installation_s33/lambda_+0.050.jsonl",
+      "remote_size": 781019,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "44331bd47a134a506e5d8dcfccb5fce2d995cc419caec6365ab9d86bb0979177",
+      "local_sha256": "44331bd47a134a506e5d8dcfccb5fce2d995cc419caec6365ab9d86bb0979177",
+      "local_bytes": 781019,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_installation_s44/lambda_+0.050.jsonl",
+      "relative": "steer/rand_A_installation_s44/lambda_+0.050.jsonl",
+      "remote_size": 809627,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "6ba82ce3eeabaf603ba95cf47f444f726e98f2daa6a1f2cfff67c69911025af6",
+      "local_sha256": "6ba82ce3eeabaf603ba95cf47f444f726e98f2daa6a1f2cfff67c69911025af6",
+      "local_bytes": 809627,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_installation_s55/lambda_+0.050.jsonl",
+      "relative": "steer/rand_A_installation_s55/lambda_+0.050.jsonl",
+      "remote_size": 788561,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "a0a4194f0270bfa21bdaf1290209ab54d05791305e70718bffc6111f7d6a9b1b",
+      "local_sha256": "a0a4194f0270bfa21bdaf1290209ab54d05791305e70718bffc6111f7d6a9b1b",
+      "local_bytes": 788561,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_reversal_s11/lambda_-0.050.jsonl",
+      "relative": "steer/rand_A_reversal_s11/lambda_-0.050.jsonl",
+      "remote_size": 725941,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "304d2d5444ea53db3447e1bc4bf5f41ee4e423c10e7507d040db66c8d1f79cfd",
+      "local_sha256": "304d2d5444ea53db3447e1bc4bf5f41ee4e423c10e7507d040db66c8d1f79cfd",
+      "local_bytes": 725941,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_reversal_s22/lambda_-0.050.jsonl",
+      "relative": "steer/rand_A_reversal_s22/lambda_-0.050.jsonl",
+      "remote_size": 747406,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "2d689a36e3c05fd66d9c85e54fbedf8a7d715e2883f560edbe164def24c8dc4c",
+      "local_sha256": "2d689a36e3c05fd66d9c85e54fbedf8a7d715e2883f560edbe164def24c8dc4c",
+      "local_bytes": 747406,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_reversal_s33/lambda_-0.050.jsonl",
+      "relative": "steer/rand_A_reversal_s33/lambda_-0.050.jsonl",
+      "remote_size": 728361,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "b190f2044bb1ce06243ba1f36ce2466a6c36e10fac00a5fd045cebbbd295b4c2",
+      "local_sha256": "b190f2044bb1ce06243ba1f36ce2466a6c36e10fac00a5fd045cebbbd295b4c2",
+      "local_bytes": 728361,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_reversal_s44/lambda_-0.050.jsonl",
+      "relative": "steer/rand_A_reversal_s44/lambda_-0.050.jsonl",
+      "remote_size": 715961,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "12c6a652b9f874a93f78b18a1fe24d89a4ea574a72104e1e12ea0a8da4c4acc5",
+      "local_sha256": "12c6a652b9f874a93f78b18a1fe24d89a4ea574a72104e1e12ea0a8da4c4acc5",
+      "local_bytes": 715961,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_A_reversal_s55/lambda_-0.050.jsonl",
+      "relative": "steer/rand_A_reversal_s55/lambda_-0.050.jsonl",
+      "remote_size": 725861,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "c119677d079325755618ae53745e96e036be33eb9d85dbb2a2515350e9c721ec",
+      "local_sha256": "c119677d079325755618ae53745e96e036be33eb9d85dbb2a2515350e9c721ec",
+      "local_bytes": 725861,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_installation_s11/lambda_+0.135.jsonl",
+      "relative": "steer/rand_B_installation_s11/lambda_+0.135.jsonl",
+      "remote_size": 777865,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "0dfc0c984a152a3fdbee5beab063536ea69f8f309cba630f3f182fedd8d1b79b",
+      "local_sha256": "0dfc0c984a152a3fdbee5beab063536ea69f8f309cba630f3f182fedd8d1b79b",
+      "local_bytes": 777865,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_installation_s22/lambda_+0.135.jsonl",
+      "relative": "steer/rand_B_installation_s22/lambda_+0.135.jsonl",
+      "remote_size": 757281,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "7b29f79209ab7adee705a4291124f4a2f24fe327c989f7e49366db3cdad2a5eb",
+      "local_sha256": "7b29f79209ab7adee705a4291124f4a2f24fe327c989f7e49366db3cdad2a5eb",
+      "local_bytes": 757281,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_installation_s33/lambda_+0.135.jsonl",
+      "relative": "steer/rand_B_installation_s33/lambda_+0.135.jsonl",
+      "remote_size": 791155,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "8caae1499837b8201ff9558be18fd9d745bf83f2d0dfd5a7d824c940bc959f54",
+      "local_sha256": "8caae1499837b8201ff9558be18fd9d745bf83f2d0dfd5a7d824c940bc959f54",
+      "local_bytes": 791155,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_installation_s44/lambda_+0.135.jsonl",
+      "relative": "steer/rand_B_installation_s44/lambda_+0.135.jsonl",
+      "remote_size": 771957,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "0043ef222ce5d4a9e36a2396e5af797ea9d7d0f2c232c5696fe1dfa8f9e1cff6",
+      "local_sha256": "0043ef222ce5d4a9e36a2396e5af797ea9d7d0f2c232c5696fe1dfa8f9e1cff6",
+      "local_bytes": 771957,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_installation_s55/lambda_+0.135.jsonl",
+      "relative": "steer/rand_B_installation_s55/lambda_+0.135.jsonl",
+      "remote_size": 788074,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "a150cb7da34906a9a26b7b44f206ca5e059255a95cbd0ed29c8b53d41eb80ec1",
+      "local_sha256": "a150cb7da34906a9a26b7b44f206ca5e059255a95cbd0ed29c8b53d41eb80ec1",
+      "local_bytes": 788074,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_reversal_s11/lambda_-0.055.jsonl",
+      "relative": "steer/rand_B_reversal_s11/lambda_-0.055.jsonl",
+      "remote_size": 732594,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "519dd60caeaf086e64b981f0c4a1907fc0aa6b1ff598168a1a9bc830ec2869d7",
+      "local_sha256": "519dd60caeaf086e64b981f0c4a1907fc0aa6b1ff598168a1a9bc830ec2869d7",
+      "local_bytes": 732594,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_reversal_s22/lambda_-0.055.jsonl",
+      "relative": "steer/rand_B_reversal_s22/lambda_-0.055.jsonl",
+      "remote_size": 743746,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "de28232a237110fa052900a8917eb0547b18892efaf921b1c597614548bf35ea",
+      "local_sha256": "de28232a237110fa052900a8917eb0547b18892efaf921b1c597614548bf35ea",
+      "local_bytes": 743746,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_reversal_s33/lambda_-0.055.jsonl",
+      "relative": "steer/rand_B_reversal_s33/lambda_-0.055.jsonl",
+      "remote_size": 738289,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "ae1a5c18773914a33713632963b73ac75d71eb3d5f772d8ec7cacaa14db0f0c9",
+      "local_sha256": "ae1a5c18773914a33713632963b73ac75d71eb3d5f772d8ec7cacaa14db0f0c9",
+      "local_bytes": 738289,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_reversal_s44/lambda_-0.055.jsonl",
+      "relative": "steer/rand_B_reversal_s44/lambda_-0.055.jsonl",
+      "remote_size": 752286,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "c8d32771d438ff8ae146266fba75904590564fe514ec756ddff7dd190027b8d5",
+      "local_sha256": "c8d32771d438ff8ae146266fba75904590564fe514ec756ddff7dd190027b8d5",
+      "local_bytes": 752286,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "steer",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/steer/rand_B_reversal_s55/lambda_-0.055.jsonl",
+      "relative": "steer/rand_B_reversal_s55/lambda_-0.055.jsonl",
+      "remote_size": 728079,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "a02d4445ad7a9920c2aa42de4daa8850be9fb298f3b8ca0cbe81b58c0a09bbb2",
+      "local_sha256": "a02d4445ad7a9920c2aa42de4daa8850be9fb298f3b8ca0cbe81b58c0a09bbb2",
+      "local_bytes": 728079,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M+-A_baseline/lambda_-0.000_scored.jsonl",
+      "relative": "scored/M+-A_baseline/lambda_-0.000_scored.jsonl",
+      "remote_size": 1706022,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "b4431547087750db76e164ab28d7c7a8650321afb58993960ee5c3b9920faafa",
+      "local_sha256": "b4431547087750db76e164ab28d7c7a8650321afb58993960ee5c3b9920faafa",
+      "local_bytes": 1706022,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M+-A_reversal/lambda_-0.050_scored.jsonl",
+      "relative": "scored/M+-A_reversal/lambda_-0.050_scored.jsonl",
+      "remote_size": 1872923,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "97cdf73a1b7b0d152455fd3877a58ce478c4b1ffde0246b9e19bf661534e2aa4",
+      "local_sha256": "97cdf73a1b7b0d152455fd3877a58ce478c4b1ffde0246b9e19bf661534e2aa4",
+      "local_bytes": 1872923,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M+-B_baseline/lambda_-0.000_scored.jsonl",
+      "relative": "scored/M+-B_baseline/lambda_-0.000_scored.jsonl",
+      "remote_size": 1721315,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "aed693ed93a3b1d33f01241d8e7f8b19103c90a368809d8359008d8f0192f4e5",
+      "local_sha256": "aed693ed93a3b1d33f01241d8e7f8b19103c90a368809d8359008d8f0192f4e5",
+      "local_bytes": 1721315,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M+-B_reversal/lambda_-0.055_scored.jsonl",
+      "relative": "scored/M+-B_reversal/lambda_-0.055_scored.jsonl",
+      "remote_size": 1812580,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "4dc30c9848d651327d6132beec2207b94290f0f064cf174d334b3ec406acecf4",
+      "local_sha256": "4dc30c9848d651327d6132beec2207b94290f0f064cf174d334b3ec406acecf4",
+      "local_bytes": 1812580,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M--A_baseline/lambda_+0.000_scored.jsonl",
+      "relative": "scored/M--A_baseline/lambda_+0.000_scored.jsonl",
+      "remote_size": 1865738,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "06bc11b8611cafffd14317303e75078397fa1a1c5b6968c7964382054aacf2a6",
+      "local_sha256": "06bc11b8611cafffd14317303e75078397fa1a1c5b6968c7964382054aacf2a6",
+      "local_bytes": 1865738,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M0-A_baseline/lambda_+0.000_scored.jsonl",
+      "relative": "scored/M0-A_baseline/lambda_+0.000_scored.jsonl",
+      "remote_size": 1783724,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "e1a4b7790fcb4a298a65147557c14351284ecbdb84862de7b4903c78ba0be2a0",
+      "local_sha256": "e1a4b7790fcb4a298a65147557c14351284ecbdb84862de7b4903c78ba0be2a0",
+      "local_bytes": 1783724,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M0-A_installation/lambda_+0.050_scored.jsonl",
+      "relative": "scored/M0-A_installation/lambda_+0.050_scored.jsonl",
+      "remote_size": 1780507,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "5b9ec0edee81bb67966458f9928b237273c0781c02eaf2eb9f4d07f0ea11e925",
+      "local_sha256": "5b9ec0edee81bb67966458f9928b237273c0781c02eaf2eb9f4d07f0ea11e925",
+      "local_bytes": 1780507,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M0-B_baseline/lambda_+0.000_scored.jsonl",
+      "relative": "scored/M0-B_baseline/lambda_+0.000_scored.jsonl",
+      "remote_size": 1763254,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "e20ac13e02dc8585974b30cb566953b5b20066d41f03d8a71f9caf6bcf734ea1",
+      "local_sha256": "e20ac13e02dc8585974b30cb566953b5b20066d41f03d8a71f9caf6bcf734ea1",
+      "local_bytes": 1763254,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/M0-B_installation/lambda_+0.135_scored.jsonl",
+      "relative": "scored/M0-B_installation/lambda_+0.135_scored.jsonl",
+      "remote_size": 1742773,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "2c3103a65cf933eb4a896fca719e0d1a736da34d514b89759604cf44764db8cf",
+      "local_sha256": "2c3103a65cf933eb4a896fca719e0d1a736da34d514b89759604cf44764db8cf",
+      "local_bytes": 1742773,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_installation_s11/lambda_+0.050_scored.jsonl",
+      "relative": "scored/rand_A_installation_s11/lambda_+0.050_scored.jsonl",
+      "remote_size": 1835643,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "4edb60f4729c238f6b45d99e92792fab05a4020905537c8013409031cb63254d",
+      "local_sha256": "4edb60f4729c238f6b45d99e92792fab05a4020905537c8013409031cb63254d",
+      "local_bytes": 1835643,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_installation_s22/lambda_+0.050_scored.jsonl",
+      "relative": "scored/rand_A_installation_s22/lambda_+0.050_scored.jsonl",
+      "remote_size": 1809307,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "78d001d21da5309921d84ad409c85e967049d05ea7e72b8135e8caaf05330670",
+      "local_sha256": "78d001d21da5309921d84ad409c85e967049d05ea7e72b8135e8caaf05330670",
+      "local_bytes": 1809307,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_installation_s33/lambda_+0.050_scored.jsonl",
+      "relative": "scored/rand_A_installation_s33/lambda_+0.050_scored.jsonl",
+      "remote_size": 1821364,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "c8f4bfa775a62f9fbecc87cebf92a539ca38dd92ef683ea873bc68b9a4866d0a",
+      "local_sha256": "c8f4bfa775a62f9fbecc87cebf92a539ca38dd92ef683ea873bc68b9a4866d0a",
+      "local_bytes": 1821364,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_installation_s44/lambda_+0.050_scored.jsonl",
+      "relative": "scored/rand_A_installation_s44/lambda_+0.050_scored.jsonl",
+      "remote_size": 1849764,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "54db5384856dd8aed0c86e782890951f0541a718e9038f802b901f9fc1dceb57",
+      "local_sha256": "54db5384856dd8aed0c86e782890951f0541a718e9038f802b901f9fc1dceb57",
+      "local_bytes": 1849764,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_installation_s55/lambda_+0.050_scored.jsonl",
+      "relative": "scored/rand_A_installation_s55/lambda_+0.050_scored.jsonl",
+      "remote_size": 1820358,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "038ed6adfa6cdb7925b343414fd832487830df2d1d055aef2d05784b24b73aaa",
+      "local_sha256": "038ed6adfa6cdb7925b343414fd832487830df2d1d055aef2d05784b24b73aaa",
+      "local_bytes": 1820358,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_reversal_s11/lambda_-0.050_scored.jsonl",
+      "relative": "scored/rand_A_reversal_s11/lambda_-0.050_scored.jsonl",
+      "remote_size": 1759172,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "d82b6cec2aac931d9651fe3e3dee300a0d84d333e64e320d80884198c5d47851",
+      "local_sha256": "d82b6cec2aac931d9651fe3e3dee300a0d84d333e64e320d80884198c5d47851",
+      "local_bytes": 1759172,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_reversal_s22/lambda_-0.050_scored.jsonl",
+      "relative": "scored/rand_A_reversal_s22/lambda_-0.050_scored.jsonl",
+      "remote_size": 1785581,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "3bc13e5240c26df32eed4e8f75546c16ed0f61aadf69b3dbf8b55d67b9988b4f",
+      "local_sha256": "3bc13e5240c26df32eed4e8f75546c16ed0f61aadf69b3dbf8b55d67b9988b4f",
+      "local_bytes": 1785581,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_reversal_s33/lambda_-0.050_scored.jsonl",
+      "relative": "scored/rand_A_reversal_s33/lambda_-0.050_scored.jsonl",
+      "remote_size": 1758042,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "c74ec6472b217f38dfd3bb29de73bf4a809d8492fe2d3d2e9e4b170e16b86756",
+      "local_sha256": "c74ec6472b217f38dfd3bb29de73bf4a809d8492fe2d3d2e9e4b170e16b86756",
+      "local_bytes": 1758042,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_reversal_s44/lambda_-0.050_scored.jsonl",
+      "relative": "scored/rand_A_reversal_s44/lambda_-0.050_scored.jsonl",
+      "remote_size": 1753841,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "ef9e7c66cb416e6b358d509b5e035e9cba9f46112802578736b1ef7a186c70e1",
+      "local_sha256": "ef9e7c66cb416e6b358d509b5e035e9cba9f46112802578736b1ef7a186c70e1",
+      "local_bytes": 1753841,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_A_reversal_s55/lambda_-0.050_scored.jsonl",
+      "relative": "scored/rand_A_reversal_s55/lambda_-0.050_scored.jsonl",
+      "remote_size": 1760625,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "3c11e17df9509ad3e157a7dc4515a7ac2ba1fca5039fd427c09d920f633f0b57",
+      "local_sha256": "3c11e17df9509ad3e157a7dc4515a7ac2ba1fca5039fd427c09d920f633f0b57",
+      "local_bytes": 1760625,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_installation_s11/lambda_+0.135_scored.jsonl",
+      "relative": "scored/rand_B_installation_s11/lambda_+0.135_scored.jsonl",
+      "remote_size": 1818822,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "f506128344117659947d57bba98df3826e017705b355eff161f22a66c25654ae",
+      "local_sha256": "f506128344117659947d57bba98df3826e017705b355eff161f22a66c25654ae",
+      "local_bytes": 1818822,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_installation_s22/lambda_+0.135_scored.jsonl",
+      "relative": "scored/rand_B_installation_s22/lambda_+0.135_scored.jsonl",
+      "remote_size": 1793524,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "7230b59223da16b6bba5b909a7b1359a1ccb7f27fb08229da568ce0d74e92cca",
+      "local_sha256": "7230b59223da16b6bba5b909a7b1359a1ccb7f27fb08229da568ce0d74e92cca",
+      "local_bytes": 1793524,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_installation_s33/lambda_+0.135_scored.jsonl",
+      "relative": "scored/rand_B_installation_s33/lambda_+0.135_scored.jsonl",
+      "remote_size": 1828997,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "e1d66bba168564c39f3055defe00a5b6da6ff9ce0a1c90127462d27f98cc20d5",
+      "local_sha256": "e1d66bba168564c39f3055defe00a5b6da6ff9ce0a1c90127462d27f98cc20d5",
+      "local_bytes": 1828997,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_installation_s44/lambda_+0.135_scored.jsonl",
+      "relative": "scored/rand_B_installation_s44/lambda_+0.135_scored.jsonl",
+      "remote_size": 1807459,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "73c15f71de7b0ef5c4eec0f316ea268a0e05e7e6d7beb830eb3a8c2fde6e9878",
+      "local_sha256": "73c15f71de7b0ef5c4eec0f316ea268a0e05e7e6d7beb830eb3a8c2fde6e9878",
+      "local_bytes": 1807459,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_installation_s55/lambda_+0.135_scored.jsonl",
+      "relative": "scored/rand_B_installation_s55/lambda_+0.135_scored.jsonl",
+      "remote_size": 1828363,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "33acb7dc6c233168949951b89e6119b60d54cc0b29036bf6f3df45527899a94b",
+      "local_sha256": "33acb7dc6c233168949951b89e6119b60d54cc0b29036bf6f3df45527899a94b",
+      "local_bytes": 1828363,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_reversal_s11/lambda_-0.055_scored.jsonl",
+      "relative": "scored/rand_B_reversal_s11/lambda_-0.055_scored.jsonl",
+      "remote_size": 1757143,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "9bd6eb8d3d2a9afd504298c15701bbc99ec54896b44b00d5867d8918650997e5",
+      "local_sha256": "9bd6eb8d3d2a9afd504298c15701bbc99ec54896b44b00d5867d8918650997e5",
+      "local_bytes": 1757143,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_reversal_s22/lambda_-0.055_scored.jsonl",
+      "relative": "scored/rand_B_reversal_s22/lambda_-0.055_scored.jsonl",
+      "remote_size": 1768559,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "20edd24f4b89fb6b97a4deeeab7ec41147485a5cf1ce149b0a2d33afdcd6590d",
+      "local_sha256": "20edd24f4b89fb6b97a4deeeab7ec41147485a5cf1ce149b0a2d33afdcd6590d",
+      "local_bytes": 1768559,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_reversal_s33/lambda_-0.055_scored.jsonl",
+      "relative": "scored/rand_B_reversal_s33/lambda_-0.055_scored.jsonl",
+      "remote_size": 1764545,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "cd2904e30cee92f8b2e75d53aa699b1c636a5d85e9230ec887421b28e77ed7a7",
+      "local_sha256": "cd2904e30cee92f8b2e75d53aa699b1c636a5d85e9230ec887421b28e77ed7a7",
+      "local_bytes": 1764545,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_reversal_s44/lambda_-0.055_scored.jsonl",
+      "relative": "scored/rand_B_reversal_s44/lambda_-0.055_scored.jsonl",
+      "remote_size": 1779762,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "79d6678df1474cbb7e4a8b9c751871555730376f0dbb8f5a36106a655a0235b8",
+      "local_sha256": "79d6678df1474cbb7e4a8b9c751871555730376f0dbb8f5a36106a655a0235b8",
+      "local_bytes": 1779762,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "scored",
+      "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/scored/rand_B_reversal_s55/lambda_-0.055_scored.jsonl",
+      "relative": "scored/rand_B_reversal_s55/lambda_-0.055_scored.jsonl",
+      "remote_size": 1750512,
+      "remote_lfs_sha256": null,
+      "inventory_sha256": "608db6e472f0e9e19af27b5ae06f48e97114d096e42080036446d430bdcd211d",
+      "local_sha256": "608db6e472f0e9e19af27b5ae06f48e97114d096e42080036446d430bdcd211d",
+      "local_bytes": 1750512,
+      "verified": true,
+      "download": {
+        "status": "already_verified",
+        "attempts": 0
+      }
+    },
+    {
+      "kind": "tensor_A",
+      "remote_path": "backups/aaai-safety-audit/2026-08-17-task025-primary-calibration-84b50df/activation-artifacts/endpoint-A-3e74fd550f63/construction/activations.pt",
+      "remote_size": 1445073373,
+      "remote_lfs_sha256": "5c2feb3efd84599a8e7475931f7448545107c30246a60ff8022012f89cd7ffa1",
+      "expected_sha256": "5c2feb3efd84599a8e7475931f7448545107c30246a60ff8022012f89cd7ffa1",
+      "expected_bytes": 1445073373,
+      "local_sha256": "5c2feb3efd84599a8e7475931f7448545107c30246a60ff8022012f89cd7ffa1",
+      "local_bytes": 1445073373,
+      "verified": true,
+      "download": {
+        "status": "downloaded",
+        "attempts": 1,
+        "bytes": 1445073373
+      }
+    },
+    {
+      "kind": "tensor_B",
+      "remote_path": "backups/aaai-safety-audit/2026-08-17-task025-primary-calibration-84b50df/activation-artifacts/endpoint-B-3e74fd550f63/construction/activations.pt",
+      "remote_size": 1445073373,
+      "remote_lfs_sha256": "c02721c604964d4261b85852654276e49496a6fede78263d9330d6a5307adfc5",
+      "expected_sha256": "c02721c604964d4261b85852654276e49496a6fede78263d9330d6a5307adfc5",
+      "expected_bytes": 1445073373,
+      "local_sha256": "c02721c604964d4261b85852654276e49496a6fede78263d9330d6a5307adfc5",
+      "local_bytes": 1445073373,
+      "verified": true,
+      "download": {
+        "status": "downloaded",
+        "attempts": 1,
+        "bytes": 1445073373
+      }
+    }
+  ],
+  "inventory": {
+    "remote_path": "backups/aaai-safety-audit/2026-08-18-task027-final-harmfulqa-evaluation-84b50df/sha256_inventory.txt",
+    "download": {
+      "status": "downloaded",
+      "attempts": 1,
+      "bytes": 43707
+    },
+    "local_path": "/Users/samarthraina/Documents/Research2026/D-STEER/Code/rebuttal_2026_10_28/inputs/recovered/task027/sha256_inventory.txt",
+    "sha256_downloaded": "681217320bdee41c077d72cb64f3c52cd0690f66ea5c21015df6b339fd7796f7",
+    "sha256_local_reference": "681217320bdee41c077d72cb64f3c52cd0690f66ea5c21015df6b339fd7796f7",
+    "sha256_expected": "681217320bdee41c077d72cb64f3c52cd0690f66ea5c21015df6b339fd7796f7",
+    "downloaded_matches_reference": true,
+    "downloaded_matches_expected": true
+  },
+  "summary": {
+    "responses_listed_remote": 58,
+    "responses_verified_local": 58,
+    "responses_bytes_local": 74032462,
+    "tensors_verified_local": 2,
+    "failures": []
+  }
+}

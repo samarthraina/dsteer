@@ -1,0 +1,64 @@
+{
+  "pair": "A",
+  "side": "dpo",
+  "matched_layers": [
+    {
+      "layer": 27,
+      "raw_norm": 11.241782418648834,
+      "target_norm": 29.186814386136636,
+      "scaled_norm": 29.186814386136643,
+      "cos_with_dsteer": 0.34666719110991445,
+      "cos_scaled_vs_raw": 0.9999999999999999
+    },
+    {
+      "layer": 28,
+      "raw_norm": 12.362802701690798,
+      "target_norm": 31.875071919070088,
+      "scaled_norm": 31.875071919070088,
+      "cos_with_dsteer": 0.35040500020101273,
+      "cos_scaled_vs_raw": 1.0000000000000002
+    },
+    {
+      "layer": 29,
+      "raw_norm": 13.51229878292895,
+      "target_norm": 35.03728314485903,
+      "scaled_norm": 35.037283144859046,
+      "cos_with_dsteer": 0.34209203575471914,
+      "cos_scaled_vs_raw": 1.0
+    },
+    {
+      "layer": 30,
+      "raw_norm": 15.249428761851702,
+      "target_norm": 38.00843862085083,
+      "scaled_norm": 38.00843862085084,
+      "cos_with_dsteer": 0.36950397726187745,
+      "cos_scaled_vs_raw": 0.9999999999999999
+    },
+    {
+      "layer": 31,
+      "raw_norm": 20.586284644710442,
+      "target_norm": 51.155919930830706,
+      "scaled_norm": 51.15591993083071,
+      "cos_with_dsteer": 0.38899152460884634,
+      "cos_scaled_vs_raw": 0.9999999999999999
+    }
+  ],
+  "reference_filter": {
+    "harmful_kept": 0,
+    "harmful_dropped": 256,
+    "harmless_kept": 254,
+    "harmless_dropped": 2,
+    "refusal_toks": [
+      40
+    ],
+    "eoi_positions": [
+      -5,
+      -4,
+      -3,
+      -2,
+      -1
+    ],
+    "blocked": "a class is empty after filtering; candidates undefined"
+  },
+  "directions_sha256": "968b9a7e8581eb69033516b94f1cea6d8e351343a1fd5bd030a287b7f7c0ce0b"
+}

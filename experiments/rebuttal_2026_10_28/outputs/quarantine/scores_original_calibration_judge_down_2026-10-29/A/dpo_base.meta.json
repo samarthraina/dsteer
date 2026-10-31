@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-10-29T06:56:09.519067Z",
+  "failures": 0,
+  "file_sha256": "77fd71fd93c28df0fbfd751a2fdb52b2ea795d38b4d7d23ead49ab2f30faf5ac",
+  "finalised_utc": "2026-10-29T06:57:43.695664Z",
+  "identity": {
+    "condition": "dpo_base",
+    "evaluator": "original",
+    "pair": "A",
+    "panel": "calibration",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/calibration/A/dpo_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "a1145367b6a75f9a814c8113052475a6ee1ce19a95d1196a7e9dba0a9a43bd21",
+  "n_responses": 200,
+  "n_valid": 199,
+  "not_scored_invalid": [
+    {
+      "reason": "repetition 0.89",
+      "source_id": "harmfulqa-1368"
+    }
+  ],
+  "records": 398
+}

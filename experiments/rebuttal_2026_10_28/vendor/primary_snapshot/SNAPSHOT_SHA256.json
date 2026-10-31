@@ -1,0 +1,140 @@
+{
+  "snapshot_of": "PKG/src/primary_protocol (anonymised frozen commit 84b50df)",
+  "files": {
+    "frozen_drivers/gen_final.py": {
+      "sha256": "346c5da6d2a1dbff7cdb7a731cf33acfa42b1b39e6305453ec532f77909cea45",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/frozen_drivers/task027/gen_final.py",
+      "identical_to_source": true
+    },
+    "scripts/layer_profile.py": {
+      "sha256": "0237183e3a5a952ac4a6ec97829c79a84c5dd98fec82e9c1d40dd23e4859aab7",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/scripts/layer_profile.py",
+      "identical_to_source": true
+    },
+    "scripts/refusal_direction.py": {
+      "sha256": "1d13a55a48dcede076928d6df319c9a17761cbb4cdca70d7a02677827a98441f",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/scripts/refusal_direction.py",
+      "identical_to_source": true
+    },
+    "scripts/score_sweep.py": {
+      "sha256": "c7288b52faa9e5af5496eb2200ba912dbd8310bd4a5e49eda8212f44fe6f4256",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/scripts/score_sweep.py",
+      "identical_to_source": true
+    },
+    "scripts/select_refusal_direction.py": {
+      "sha256": "09c650cbdf692102e3aa7f39628d6259b9b00d42a1f91f576039211a1f6ca968",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/scripts/select_refusal_direction.py",
+      "identical_to_source": true
+    },
+    "scripts/start_judge_server.py": {
+      "sha256": "47452ee5016ca9c2877193faff6ad27e1034e168e748ae27808c55f4297e09ed",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/scripts/start_judge_server.py",
+      "identical_to_source": true
+    },
+    "steering/__init__.py": {
+      "sha256": "c1602ecd3ac5572af34658b6c2b4dff4a9b51259e47c9f2832342b4b803a074b",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/__init__.py",
+      "identical_to_source": true
+    },
+    "steering/activation_artifact.py": {
+      "sha256": "734623f3655f2483d895808a4034b784a089617b4470e0c43dbb845a15209279",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/activation_artifact.py",
+      "identical_to_source": true
+    },
+    "steering/activations.py": {
+      "sha256": "15e50e53301e0b2e03b9c90d8d57742e5d8fe652de2f743ab33839469d087d50",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/activations.py",
+      "identical_to_source": true
+    },
+    "steering/advbench.py": {
+      "sha256": "f868dd64974ff5a0cae01d31db56935790c74e0eb9003995ff06dbd115b31dc9",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/advbench.py",
+      "identical_to_source": true
+    },
+    "steering/artifact_identity.py": {
+      "sha256": "857483e9c27255504ce4f029a40343d826335a4987d4aa8efb45f464525567be",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/artifact_identity.py",
+      "identical_to_source": true
+    },
+    "steering/artifacts.py": {
+      "sha256": "81c117f6b0e9675c57d55211a0613f940430249b09b528e0a090684e98ebcb64",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/artifacts.py",
+      "identical_to_source": true
+    },
+    "steering/config.py": {
+      "sha256": "2659eeb2a556800443b1480dd8ff1050e191d9700d8a523366925a1cb3a008a2",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/config.py",
+      "identical_to_source": true
+    },
+    "steering/data.py": {
+      "sha256": "0f8b6ce924195d348d72fe3e5575f9fafed2275a7c2df376114293494ade14d4",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/data.py",
+      "identical_to_source": true
+    },
+    "steering/endpoint_binding.py": {
+      "sha256": "5773206c4003a5dbcc389450f58cf66f4438de46cffaf725ed5a76c0dfd56d26",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/endpoint_binding.py",
+      "identical_to_source": true
+    },
+    "steering/endpoint_manifest.py": {
+      "sha256": "930e2b29ae04963e3595d51e7e17e4f9f345b1d2f517ed2e92ae361c9931af74",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/endpoint_manifest.py",
+      "identical_to_source": true
+    },
+    "steering/figures.py": {
+      "sha256": "8441c47ed0653f83bce5b91889727b678af55afa0b65019eeb72e3209c46852e",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/figures.py",
+      "identical_to_source": true
+    },
+    "steering/generate.py": {
+      "sha256": "3645f05613c4e5961c6930fb61cb04f9530b7f0a61a4befa97d0b749887c4ef4",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/generate.py",
+      "identical_to_source": true
+    },
+    "steering/hh_rlhf.py": {
+      "sha256": "4273e9f642e7f7329504e91576553a70f1decc490a39ec0a3249b0b53d5c4794",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/hh_rlhf.py",
+      "identical_to_source": true
+    },
+    "steering/judge.py": {
+      "sha256": "ee020dbbfa7417cd91658c1fb687100dbe78d5c805b8f7ea47e38a3f711e9c2f",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/judge.py",
+      "identical_to_source": true
+    },
+    "steering/judge_identity.py": {
+      "sha256": "cab2f90c8fed85f2d2e5c6765ea469e5791f99ccc86ad499ccbfae363141c0c2",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/judge_identity.py",
+      "identical_to_source": true
+    },
+    "steering/metrics.py": {
+      "sha256": "bc0c8b03f9b2ac800cd31fd02483c6c1934f4519cce93e2f81d390e59a8c5f8e",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/metrics.py",
+      "identical_to_source": true
+    },
+    "steering/models.py": {
+      "sha256": "538fde1a46ade65d9d0fe4eea61367055dde063094a3b660a92068ee65faac94",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/models.py",
+      "identical_to_source": true
+    },
+    "steering/splits.py": {
+      "sha256": "54481d14dcdd50f6e2821ec8626150beaa184fd6fec95a931abf39583729b51b",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/splits.py",
+      "identical_to_source": true
+    },
+    "steering/steer.py": {
+      "sha256": "00e8f49b246a05a5575ea9e512038c12efdb94385302c5029631be2e3fa3a8e6",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/steer.py",
+      "identical_to_source": true
+    },
+    "steering/utils.py": {
+      "sha256": "64fc4866729d39c1067116c8d72fa003064367486a985de843c6ca89bb27ea33",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/utils.py",
+      "identical_to_source": true
+    },
+    "steering/validity.py": {
+      "sha256": "d9da7bc7c7489887cdb262a5cb7031940809a01094e649e54cfbefa14a861ec0",
+      "source": "/Users/samarthraina/Documents/Research2026/D-STEER/supplementary-submission-2026-08-25/D_STEER_CURRENT_SUBMISSION_CODE_AND_DATA_ANON_STAGE2_V4/src/primary_protocol/src/steering/validity.py",
+      "identical_to_source": true
+    }
+  }
+}

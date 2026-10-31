@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T07:04:05.339937Z",
+  "failures": 0,
+  "file_sha256": "6242518db8b3949df5109174290b160f4ef8790de9c5af57b276e0bb75be519f",
+  "finalised_utc": "2026-10-29T07:05:39.603305Z",
+  "identity": {
+    "condition": "cal_refusal_add_reverse_m1.5",
+    "evaluator": "original",
+    "pair": "B",
+    "panel": "calibration",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/calibration/B/cal_refusal_add_reverse_m1.5.jsonl",
+    "subset": null
+  },
+  "identity_hash": "2295783522e8bcf136286c7cfca1f9fe593a5d5c4382d6b091325a319008f9eb",
+  "n_responses": 200,
+  "n_valid": 200,
+  "not_scored_invalid": [],
+  "records": 400
+}

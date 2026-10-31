@@ -1,0 +1,47 @@
+{
+  "pair": "B",
+  "side": "it",
+  "matched_layers": [
+    {
+      "layer": 27,
+      "raw_norm": 8.447565443508513,
+      "target_norm": 18.333207077878516,
+      "scaled_norm": 18.33320707787852,
+      "cos_with_dsteer": 0.02639261411994901,
+      "cos_scaled_vs_raw": 1.0000000000000004
+    },
+    {
+      "layer": 28,
+      "raw_norm": 9.376459833350191,
+      "target_norm": 20.12920358806078,
+      "scaled_norm": 20.129203588060793,
+      "cos_with_dsteer": 0.01742297858545641,
+      "cos_scaled_vs_raw": 0.9999999999999998
+    },
+    {
+      "layer": 29,
+      "raw_norm": 10.5546134805022,
+      "target_norm": 23.124052789209774,
+      "scaled_norm": 23.124052789209784,
+      "cos_with_dsteer": 0.020120724371321567,
+      "cos_scaled_vs_raw": 0.9999999999999996
+    },
+    {
+      "layer": 30,
+      "raw_norm": 11.963459865139738,
+      "target_norm": 26.102232044197677,
+      "scaled_norm": 26.102232044197685,
+      "cos_with_dsteer": 0.015270869971059984,
+      "cos_scaled_vs_raw": 1.0
+    },
+    {
+      "layer": 31,
+      "raw_norm": 14.638233388806375,
+      "target_norm": 30.103847909777596,
+      "scaled_norm": 30.103847909777606,
+      "cos_with_dsteer": 0.03236572941957475,
+      "cos_scaled_vs_raw": 0.9999999999999999
+    }
+  ],
+  "directions_sha256": "d64824d5cab205fc7e5a1ecc6dc74f5a4f37944110f074889305172d834dd2d7"
+}

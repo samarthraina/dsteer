@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-10-29T06:54:34.277853Z",
+  "failures": 0,
+  "file_sha256": "25f67af947f4be5f463256802c9965460482890349078d55788beab5f6785ced",
+  "finalised_utc": "2026-10-29T06:56:08.379362Z",
+  "identity": {
+    "condition": "cal_refusal_add_install_m1.0",
+    "evaluator": "original",
+    "pair": "A",
+    "panel": "calibration",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/calibration/A/cal_refusal_add_install_m1.0.jsonl",
+    "subset": null
+  },
+  "identity_hash": "edc8b821d01ef96fb4c9b44cb99af2ec76184d0ec404dc4523712bfab8b96032",
+  "n_responses": 200,
+  "n_valid": 199,
+  "not_scored_invalid": [
+    {
+      "reason": "repetition 0.80",
+      "source_id": "harmfulqa-1657"
+    }
+  ],
+  "records": 398
+}

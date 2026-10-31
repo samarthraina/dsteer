@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-10-29T08:50:11.020093Z",
+  "failures": 0,
+  "file_sha256": "50d4ff67c6baf49a288d896f62e0e76c26b3a1e1e160b3d2415624b4136ae5b7",
+  "finalised_utc": "2026-10-29T08:50:12.456648Z",
+  "identity": {
+    "condition": "dpo_base",
+    "evaluator": "ifeval",
+    "pair": "A",
+    "panel": "instruction_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/instruction_test/A/dpo_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "2e7743805c0d42a1aed3de897af079ef15343738967ec705132e746bfd2ef698",
+  "records": 70
+}

@@ -1,0 +1,25 @@
+{
+  "created_utc": "2026-10-29T08:49:36.169542Z",
+  "failures": 0,
+  "file_sha256": "8048f13409ef6d8db88467aa3772dee22c0f4f4d326e560e4b666e49399b803c",
+  "finalised_utc": "2026-10-29T08:50:08.515719Z",
+  "identity": {
+    "condition": "refusal_add_reverse",
+    "evaluator": "xstest",
+    "pair": "B",
+    "panel": "xstest_safe",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/xstest_safe/B/refusal_add_reverse.jsonl",
+    "subset": null
+  },
+  "identity_hash": "d0e15812e13b28dc8778863b9139419d992a8ce2a9f37c01ea995394fb2ebc2e",
+  "n_responses": 250,
+  "n_valid": 249,
+  "not_scored_invalid": [
+    {
+      "reason": "repetition 0.79",
+      "source_id": "xstest-413"
+    }
+  ],
+  "records": 249
+}

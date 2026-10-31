@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-10-29T08:50:14.729029Z",
+  "failures": 0,
+  "file_sha256": "9b3400c35be4184222b6d403d9a9a42043683611d11df6309e0d4e1859ecd8b0",
+  "finalised_utc": "2026-10-29T08:50:16.266235Z",
+  "identity": {
+    "condition": "dsteer_reverse",
+    "evaluator": "ifeval",
+    "pair": "A",
+    "panel": "instruction_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/instruction_test/A/dsteer_reverse.jsonl",
+    "subset": null
+  },
+  "identity_hash": "ac4f68721fb1e16e13401a9892830096b03b936a29ec7e7e64a7f230bd985237",
+  "records": 51
+}

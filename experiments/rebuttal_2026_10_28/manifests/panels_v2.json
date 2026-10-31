@@ -1,0 +1,99 @@
+{
+  "salt": "dsteer-rebuttal-20261028",
+  "panels": {
+    "harmful_test": {
+      "n": 300,
+      "jsonl": "manifests/panels/harmful_test_text.jsonl",
+      "jsonl_sha256": "d7636a472778740373ef11c83c11b5c5c8a3a7ebb1c9ad3f261cfcad02714301",
+      "ordered_identity_digest": "7851299f7e15743e47c0e4604697a0770b8e9607a9dd4420a0f31a3529a53953"
+    },
+    "development": {
+      "n": 60,
+      "jsonl": "manifests/panels/development_text.jsonl",
+      "jsonl_sha256": "69435d93af71b2d4eaada811d5778f78867c824f4eb2bf4715d2759adc543a31",
+      "ordered_identity_digest": "3e3c0a28d5e892f7b79a765f8b2e2f03045d50139d07c5b507ef86377c69f8ed"
+    },
+    "calibration": {
+      "n": 200,
+      "jsonl": "manifests/panels/calibration_text.jsonl",
+      "jsonl_sha256": "908170a3e94098a093fc16234cfacb5a54c2aec8373f5db6bd0a8238d411ea96",
+      "ordered_identity_digest": "81fe99698400123d72e9816482aae30deb9c988ac5e515414b631f4f8fb39de9"
+    },
+    "construction_harmful": {
+      "n": 256,
+      "jsonl": "manifests/panels/construction_harmful_256.jsonl",
+      "jsonl_sha256": "ae3a6b7b8f9a864207e609b48472e6df6412f62b314872467ad0a4620e9c4a65",
+      "ordered_identity_digest": "83e74ed6ffda001e1860a8be6efe3ac76fa19cb67b28a49c65a1a71b92ff387d"
+    },
+    "construction_harmless": {
+      "n": 256,
+      "jsonl": "manifests/panels/construction_harmless_256.jsonl",
+      "jsonl_sha256": "910081be4d3a9753067c08b63e1a0aae8f5716a66fe8ea2dc06a8485fb2bd996",
+      "ordered_identity_digest": "9354657616d69fa513c7ea9dd4b998572dbe82c18bcfd9276b6eb28805008305"
+    },
+    "selection_harmless": {
+      "n": 60,
+      "jsonl": "manifests/panels/selection_harmless_60.jsonl",
+      "jsonl_sha256": "95a5232108c757e8cab9512978fb2193cd155c6d3cec93e7b2a8793725c60d97",
+      "ordered_identity_digest": "b34570ee01f294509365abc4d72f365407655a3f0ca32bc28e7e2d3a6e2dc0e1"
+    },
+    "xstest_safe": {
+      "n": 250,
+      "jsonl": "manifests/panels/xstest_safe_250.jsonl",
+      "jsonl_sha256": "da4be91e6abe439bf1dde4760ea60df49b06aa9d6d6b9331b4e65949c53f176b",
+      "ordered_identity_digest": "d05394ca4df34f0060fa582a4bfe2c017d87f0f802d35ce3259510604521a139"
+    },
+    "instruction_test": {
+      "n": 100,
+      "jsonl": "manifests/panels/instruction_test_100.jsonl",
+      "jsonl_sha256": "c18f97867c8215acac4067df9c95f4ea4070a5b51062bbd0e4b9ec8211969be6",
+      "ordered_identity_digest": "7d270ff3a7f30ceb71160f62ef68953f0e66e959e14ef67ba8c70dbfc99ecf6e"
+    },
+    "instruction_fallback50": {
+      "n": 50,
+      "jsonl": "manifests/panels/instruction_fallback50.jsonl",
+      "jsonl_sha256": "70cf8ce1b4c0592e54c4d416f5388052973629b3d55ee7e673ef939de9568ba3",
+      "ordered_identity_digest": "fd3a36ddc32345faccd9ed6f7d2b02e32b86439a87795f347fec6c01076fe4dc"
+    }
+  },
+  "exclusions": [],
+  "exclusion_counts": {},
+  "xstest_unsafe_rows_excluded_from_denominator": 200,
+  "overlap_strengths": [
+    "exact",
+    "frozen_norm (splits.prompt_hash)",
+    "aggressive (NFKC, casefold, strip punctuation, collapse whitespace)"
+  ],
+  "confounds": {
+    "harmful": {
+      "source": "HarmfulQA construction partition",
+      "words_median": 10.0,
+      "words_mean": 10.41,
+      "chars_median": 58.0,
+      "question_mark_share": 1.0,
+      "topics": {
+        "Education and Pedagogy": 30,
+        "Mathematics and Logic": 29,
+        "History and Culture": 29,
+        "Science and Technology": 28,
+        "Geography and Environmental Studies": 25,
+        "Health and Medicine": 25,
+        "Business and Economics": 25,
+        "Social Sciences": 24,
+        "Philosophy and Ethics": 21,
+        "Literature and Language": 20
+      }
+    },
+    "harmless": {
+      "source": "Alpaca-derived harmless_train (reference repository)",
+      "words_median": 9.0,
+      "words_mean": 9.63,
+      "chars_median": 53.0,
+      "question_mark_share": 0.117,
+      "categories": {
+        "null": 256
+      }
+    },
+    "interpretation": "The contrast differs in harmful intent AND in corpus, topic distribution, phrasing (HarmfulQA is almost entirely questions; Alpaca mostly imperatives) and length. The resulting direction is a harmful-vs-general prompt contrast. It is a refusal-associated direction in the sense used by the reference method, NOT an isolated refusal mechanism."
+  }
+}

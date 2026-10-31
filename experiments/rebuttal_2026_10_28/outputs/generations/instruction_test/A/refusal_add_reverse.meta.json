@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-10-29T08:11:18.910753Z",
+  "failures": 0,
+  "file_sha256": "cee4ce8eae0a5877f1ffc4977901bc669e69d0755d1475577ac0da5f9032f456",
+  "finalised_utc": "2026-10-29T08:13:12.060348Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": false,
+    "invalid_rate": 0.45,
+    "maxlen_pass": false,
+    "maxlen_rate": 0.78,
+    "n": 100,
+    "n_invalid": 45,
+    "n_maxlen": 78,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": -0.05,
+      "direction": "reversal",
+      "intervention": "refusal_add",
+      "layers": [
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "refusal_add_reverse",
+      "note": "matched additive: per-layer norm equal to D-STEER's actual perturbation",
+      "pair": "A",
+      "side": "dpo",
+      "vector_file": "outputs/directions/A/dpo/directions.pt",
+      "vector_norms": {
+        "27": 29.18681526184082,
+        "28": 31.87506866455078,
+        "29": 35.03728485107422,
+        "30": 38.00843811035156,
+        "31": 51.155921936035156
+      },
+      "vector_sha256": "968b9a7e8581eb69033516b94f1cea6d8e351343a1fd5bd030a287b7f7c0ce0b"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "44082ead9f292cb1d5b7ac49bff31a3081afd7d2bbf47962c9069a5eb2f0625d",
+      "repository": "sirius5005/SFT-and-DPO",
+      "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+      "subpath": "DPO_merged"
+    },
+    "limit": null,
+    "pair": "A",
+    "panel": "instruction_test",
+    "panel_digest": "7d270ff3a7f30ceb71160f62ef68953f0e66e959e14ef67ba8c70dbfc99ecf6e",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "6ddb975a358c7d92c6eb9d2969cd7fce214c71a4109f5f50984ae210c453d37e",
+  "records": 100
+}

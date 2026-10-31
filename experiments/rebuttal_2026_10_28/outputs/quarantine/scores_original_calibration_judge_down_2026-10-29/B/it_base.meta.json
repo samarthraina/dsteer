@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T06:59:19.527775Z",
+  "failures": 0,
+  "file_sha256": "8541317d341c7356377f6beb8c8b4e2495c7e91b89f7ffe6d46232f827f090b2",
+  "finalised_utc": "2026-10-29T07:00:53.759607Z",
+  "identity": {
+    "condition": "it_base",
+    "evaluator": "original",
+    "pair": "B",
+    "panel": "calibration",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/calibration/B/it_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "8d884e041b578de62cb36ca022be2645110676e580c7e00c36e8f03ebf7771e3",
+  "n_responses": 200,
+  "n_valid": 200,
+  "not_scored_invalid": [],
+  "records": 400
+}

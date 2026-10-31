@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-10-29T08:50:23.957716Z",
+  "failures": 0,
+  "file_sha256": "8fa5765da940bda3c7bb1a488b37e243e9f0d831243f2440a277641e4a9c1139",
+  "finalised_utc": "2026-10-29T08:50:25.633768Z",
+  "identity": {
+    "condition": "dsteer_install",
+    "evaluator": "ifeval",
+    "pair": "B",
+    "panel": "instruction_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/instruction_test/B/dsteer_install.jsonl",
+    "subset": null
+  },
+  "identity_hash": "1d9f24302941e1d66921738e0c7aaab4057b6e279e5f5536f0664515fce0fd6b",
+  "records": 86
+}

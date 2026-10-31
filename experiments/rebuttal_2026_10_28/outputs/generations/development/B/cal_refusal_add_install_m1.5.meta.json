@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-10-29T00:49:49.566956Z",
+  "failures": 0,
+  "file_sha256": "7656bfcb470016b40cebe383cdf4275a60ab405a4a7ec1db27675c9be0f55995",
+  "finalised_utc": "2026-10-29T00:50:36.290341Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": false,
+    "invalid_rate": 0.9833333333333333,
+    "maxlen_pass": false,
+    "maxlen_rate": 1.0,
+    "n": 60,
+    "n_invalid": 59,
+    "n_maxlen": 60,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": 0.2025,
+      "direction": "installation",
+      "intervention": "refusal_add",
+      "layers": [
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "mandatory": false,
+      "multiplier": 1.5,
+      "name": "cal_refusal_add_install_m1.5",
+      "note": "calibration screen, multiplier 1.5",
+      "pair": "B",
+      "side": "it",
+      "vector_file": "outputs/directions/B/it/directions.pt",
+      "vector_norms": {
+        "27": 18.333208084106445,
+        "28": 20.12920379638672,
+        "29": 23.124052047729492,
+        "30": 26.102230072021484,
+        "31": 30.103845596313477
+      },
+      "vector_sha256": "d64824d5cab205fc7e5a1ecc6dc74f5a4f37944110f074889305172d834dd2d7"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "51f3a1ea50910b3d2757e0a41041fd82ecb00092069f098d5f87bf7af9171ca9",
+      "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+      "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+      "subpath": ""
+    },
+    "limit": null,
+    "pair": "B",
+    "panel": "development",
+    "panel_digest": "3e3c0a28d5e892f7b79a765f8b2e2f03045d50139d07c5b507ef86377c69f8ed",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "6c0de081c10fd34b17f6f59072e7c34de80210282e15be3bb08fcdd0bc0c9600",
+  "records": 60
+}

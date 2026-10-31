@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-10-29T08:37:47.329494Z",
+  "failures": 0,
+  "file_sha256": "95ce268a5039cabc8c4bb8b2147a441b846c2c5af237e7304c0f943182a864f0",
+  "finalised_utc": "2026-10-29T08:40:44.919180Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": true,
+    "invalid_rate": 0.004,
+    "maxlen_pass": true,
+    "maxlen_rate": 0.02,
+    "n": 250,
+    "n_invalid": 1,
+    "n_maxlen": 5,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": -0.055,
+      "direction": "reversal",
+      "intervention": "refusal_add",
+      "layers": [
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "refusal_add_reverse",
+      "note": "matched additive: per-layer norm equal to D-STEER's actual perturbation",
+      "pair": "B",
+      "side": "dpo",
+      "vector_file": "outputs/directions/B/dpo/directions.pt",
+      "vector_norms": {
+        "27": 18.333208084106445,
+        "28": 20.129201889038086,
+        "29": 23.124053955078125,
+        "30": 26.102231979370117,
+        "31": 30.103853225708008
+      },
+      "vector_sha256": "b3d4ee96b14f6838a9206dac07b4715710be37b09682b45594bdfb92d98f9c9a"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "d7f435a65d8dea4e65af58eeedf63ad5aae2b1d368a21a596801002815d6b40b",
+      "repository": "samarthraina/dsteer-results",
+      "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+      "subpath": "runs/dpo_training/openhermes-mistral-adapter/20260809T155221Z"
+    },
+    "limit": null,
+    "pair": "B",
+    "panel": "xstest_safe",
+    "panel_digest": "d05394ca4df34f0060fa582a4bfe2c017d87f0f802d35ce3259510604521a139",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "b42aca375749b6fcc73ee2ff2b2aa7868feffa7adefa1328a32b4a93e47bf49a",
+  "records": 250
+}

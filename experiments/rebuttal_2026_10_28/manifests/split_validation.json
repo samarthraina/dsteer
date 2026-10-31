@@ -1,0 +1,118 @@
+{
+  "manifest_hash_field": "0e1d0a8177d59eba601141a74da19a189527821dab573e203a3261cff54eec70",
+  "manifest_hash_expected": "0e1d0a8177d59eba601141a74da19a189527821dab573e203a3261cff54eec70",
+  "manifest_hash_match": true,
+  "raw_record_count": 1960,
+  "retained_record_count": 1938,
+  "excluded_record_count": 22,
+  "counts_consistent": true,
+  "partition_counts": {
+    "calibration": 200,
+    "construction": 1378,
+    "development": 60,
+    "final_evaluation": 300
+  },
+  "dataset": {
+    "config": "default",
+    "repository": "declare-lab/HarmfulQA",
+    "revision": "6f1a78aed47d16c0695e4595d0159abc38197bfd",
+    "split": "train"
+  },
+  "permutation": {
+    "algorithm": "sha256(seed:source_id)-sort-source_id-tiebreak-v1",
+    "seed": 20260815
+  },
+  "harmful_test_digest_observed": "7851299f7e15743e47c0e4604697a0770b8e9607a9dd4420a0f31a3529a53953",
+  "harmful_test_digest_expected": "7851299f7e15743e47c0e4604697a0770b8e9607a9dd4420a0f31a3529a53953",
+  "harmful_test_digest_match": true,
+  "digest_formulation": "sha256('\\n'.join(f'{source_id}:{prompt_hash}') over records sorted by permuted_position)",
+  "four_partition_union_total": 1938,
+  "four_partition_union_unique_source_ids": 1938,
+  "four_partition_source_ids_unique": true,
+  "four_partition_unique_prompt_hashes": 1938,
+  "four_partition_prompt_hashes_unique": true,
+  "normalised_prompt_hash_collisions": 0,
+  "overlaps": [
+    {
+      "panel_a": "calibration",
+      "panel_b": "construction_harmful",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "calibration",
+      "panel_b": "development",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "calibration",
+      "panel_b": "harmful_test",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "calibration",
+      "panel_b": "harmful_test_fallback100",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "construction_harmful",
+      "panel_b": "development",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "construction_harmful",
+      "panel_b": "harmful_test",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "construction_harmful",
+      "panel_b": "harmful_test_fallback100",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "development",
+      "panel_b": "harmful_test",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "development",
+      "panel_b": "harmful_test_fallback100",
+      "source_id_overlap": 0,
+      "prompt_hash_overlap": 0,
+      "expected_nested": false,
+      "verdict": "OK_DISJOINT"
+    },
+    {
+      "panel_a": "harmful_test",
+      "panel_b": "harmful_test_fallback100",
+      "source_id_overlap": 100,
+      "prompt_hash_overlap": 100,
+      "expected_nested": true,
+      "verdict": "OK_NESTED"
+    }
+  ],
+  "leakage_detected": false
+}

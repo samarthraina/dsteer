@@ -1,0 +1,18 @@
+# Local CPU validation only (stock macOS Python 3.9.6, arm64). Not the GPU run environment,
+# which is pinned separately to the archived generation stack (see configs/gpu_env.md).
+torch==2.5.1
+numpy==1.26.4
+transformers==4.46.3
+safetensors==0.4.5
+# IFEval official checkers
+langdetect==1.0.9
+nltk==3.9.1
+absl-py==2.1.0
+immutabledict==4.2.0
+# imported by the vendored primary snapshot
+openai==1.55.3
+pyyaml==6.0.2
+tqdm==4.67.1
+# tiny Mistral test tokenizer (slow sentencepiece)
+sentencepiece==0.2.0
+protobuf==5.28.3

@@ -1,0 +1,92 @@
+{
+  "generated_utc": "2026-10-27T23:24:03Z",
+  "salt": "dsteer-rebuttal-20261028",
+  "built_panels": [
+    "calibration",
+    "construction_harmful",
+    "development",
+    "harmful_test",
+    "harmful_test_fallback100"
+  ],
+  "blocked_panels": [
+    "construction_harmless",
+    "instruction_test",
+    "xstest_safe"
+  ],
+  "panels": {
+    "calibration": {
+      "status": "built",
+      "source": "frozen harmfulqa_v1.json partition",
+      "partition": "calibration",
+      "n": 200,
+      "ordered_identity_digest": "81fe99698400123d72e9816482aae30deb9c988ac5e515414b631f4f8fb39de9",
+      "jsonl_relative": "manifests/panels/calibration.jsonl",
+      "jsonl_sha256": "ea55fe2effa15901b810d14ace73960ed0a8926fe58de6f35652b1e1a3a45dfe",
+      "prompt_text_present": false,
+      "prompt_text_note": "Manifest pins source_id + prompt_hash only. Prompt text must be fetched from declare-lab/HarmfulQA @ 6f1a78aed47d16c0695e4595d0159abc38197bfd and verified against prompt_hash before any generation. Requires network; not done here."
+    },
+    "construction_harmful": {
+      "status": "built",
+      "source": "frozen harmfulqa_v1.json partition",
+      "partition": "construction",
+      "n": 1378,
+      "ordered_identity_digest": "972fff81300829df0e59461136c1e808560387ca1c59329a113fcd691eaa9c5a",
+      "jsonl_relative": "manifests/panels/construction_harmful.jsonl",
+      "jsonl_sha256": "dc3b86ec8b0ca17236c2f736f7aa466a5c0d28d36c875b311a37381fe27c4e37",
+      "prompt_text_present": false,
+      "prompt_text_note": "Manifest pins source_id + prompt_hash only. Prompt text must be fetched from declare-lab/HarmfulQA @ 6f1a78aed47d16c0695e4595d0159abc38197bfd and verified against prompt_hash before any generation. Requires network; not done here."
+    },
+    "development": {
+      "status": "built",
+      "source": "frozen harmfulqa_v1.json partition",
+      "partition": "development",
+      "n": 60,
+      "ordered_identity_digest": "3e3c0a28d5e892f7b79a765f8b2e2f03045d50139d07c5b507ef86377c69f8ed",
+      "jsonl_relative": "manifests/panels/development.jsonl",
+      "jsonl_sha256": "04eb9f558c6628ef8b30041f4548331f6d82074fec907037cec5b71f6298dbf8",
+      "prompt_text_present": false,
+      "prompt_text_note": "Manifest pins source_id + prompt_hash only. Prompt text must be fetched from declare-lab/HarmfulQA @ 6f1a78aed47d16c0695e4595d0159abc38197bfd and verified against prompt_hash before any generation. Requires network; not done here."
+    },
+    "harmful_test": {
+      "status": "built",
+      "source": "frozen harmfulqa_v1.json partition",
+      "partition": "final_evaluation",
+      "n": 300,
+      "ordered_identity_digest": "7851299f7e15743e47c0e4604697a0770b8e9607a9dd4420a0f31a3529a53953",
+      "jsonl_relative": "manifests/panels/harmful_test.jsonl",
+      "jsonl_sha256": "6230b0e1c94e252fcfb10156669b2dbfde85ef0cdc8e9eb0d5c6b4a5cab7f583",
+      "prompt_text_present": false,
+      "prompt_text_note": "Manifest pins source_id + prompt_hash only. Prompt text must be fetched from declare-lab/HarmfulQA @ 6f1a78aed47d16c0695e4595d0159abc38197bfd and verified against prompt_hash before any generation. Requires network; not done here."
+    },
+    "harmful_test_fallback100": {
+      "status": "built_frozen",
+      "source": "nested subset of harmful_test",
+      "n": 100,
+      "nested_in_harmful_test": true,
+      "salt": "dsteer-rebuttal-20261028",
+      "selection_rule": "sha256('dsteer-rebuttal-20261028:'+source_id) ascending, take first 100",
+      "ordered_identity_digest": "64318ac3b05c588b6513b4671861059cc230f372931c0959478fd125fe3d973c",
+      "jsonl_relative": "manifests/panels/harmful_test_fallback100.jsonl",
+      "jsonl_sha256": "d4f03f24f4edf90af684826a230c2ba2cd9b0e95ba4206feb1d3dec962c4d5c0",
+      "note": "Same prompts for every arm and both pairs. Frozen before any test outcome exists."
+    },
+    "construction_harmless": {
+      "status": "BLOCKED_NOT_BUILT",
+      "required_source": "pinned public instruction corpus, excluding XSTest and the instruction test",
+      "blocker": "no network fetch performed in this pass; corpus not present locally",
+      "n": null
+    },
+    "xstest_safe": {
+      "status": "BLOCKED_NOT_BUILT",
+      "required_source": "250 safe prompts from a pinned snapshot of github.com/paul-rottger/xstest",
+      "blocker": "no network fetch performed in this pass; corpus not present locally",
+      "n": null
+    },
+    "instruction_test": {
+      "status": "BLOCKED_NOT_BUILT",
+      "required_source": "100 deterministically selected IFEval prompts + official checkers",
+      "blocker": "no network fetch performed in this pass; corpus not present locally",
+      "n": null
+    }
+  }
+}

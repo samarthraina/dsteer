@@ -1,0 +1,372 @@
+{
+  "A_dpo": {
+    "status": "direct",
+    "repository": "sirius5005/SFT-and-DPO",
+    "repository_type": "model",
+    "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+    "subpath": "DPO_merged",
+    "anchor_files": [
+      {
+        "path": "model.safetensors",
+        "sha256": "5eedaac41dcbc1fcab7446ba40b53b21d7c392e0ffe896da1b801c3be873b004"
+      },
+      {
+        "path": "tokenizer.json",
+        "sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda"
+      }
+    ],
+    "base": null,
+    "verified_files": [
+      {
+        "path": "chat_template.jinja",
+        "sha256": "627d3690d3c2e1456798eff55a14f72b1daf341e033f3036998753767093d31a",
+        "size_bytes": 423
+      },
+      {
+        "path": "config.json",
+        "sha256": "96ccef258bdb198cfab70c7da280ec2192e58bc664495aa67b82fa77ecb49f4f",
+        "size_bytes": 738
+      },
+      {
+        "path": "generation_config.json",
+        "sha256": "a474c6e82f063ce0654bf5855ccee1244002848ed487f669921c5d29dc468d56",
+        "size_bytes": 171
+      },
+      {
+        "path": "model.safetensors",
+        "sha256": "5eedaac41dcbc1fcab7446ba40b53b21d7c392e0ffe896da1b801c3be873b004",
+        "size_bytes": 16060572712
+      },
+      {
+        "path": "tokenizer.json",
+        "sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda",
+        "size_bytes": 17210145
+      },
+      {
+        "path": "tokenizer_config.json",
+        "sha256": "459111b6c4c347e838dcdf2a0b81e0e67719e7bedb9479323512bcb5f4ffd038",
+        "size_bytes": 351
+      }
+    ],
+    "library_versions": {
+      "torch": "2.12.0+cu126",
+      "transformers": "5.14.1"
+    },
+    "tokenizer_fingerprint": "6c6deae554d7ccbdb9b89074580df71142ea22813aad77060a2314a93476cafe",
+    "special_token_ids": {
+      "bos_token_id": 128000,
+      "cls_token_id": null,
+      "eos_token_id": 128009,
+      "mask_token_id": null,
+      "pad_token_id": 128256,
+      "sep_token_id": null,
+      "unk_token_id": null
+    },
+    "vocab_size": 128257,
+    "num_hidden_layers": 32,
+    "merge": null
+  },
+  "A_it": {
+    "status": "direct",
+    "repository": "sirius5005/SFT-and-DPO",
+    "repository_type": "model",
+    "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+    "subpath": "SFT_merged",
+    "anchor_files": [
+      {
+        "path": "model.safetensors",
+        "sha256": "1a2a404db755b04ac9385d8477f1853d86a586c8ec691abef9931701c0da50d5"
+      },
+      {
+        "path": "tokenizer.json",
+        "sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda"
+      }
+    ],
+    "base": null,
+    "verified_files": [
+      {
+        "path": "chat_template.jinja",
+        "sha256": "627d3690d3c2e1456798eff55a14f72b1daf341e033f3036998753767093d31a",
+        "size_bytes": 423
+      },
+      {
+        "path": "config.json",
+        "sha256": "96ccef258bdb198cfab70c7da280ec2192e58bc664495aa67b82fa77ecb49f4f",
+        "size_bytes": 738
+      },
+      {
+        "path": "generation_config.json",
+        "sha256": "a474c6e82f063ce0654bf5855ccee1244002848ed487f669921c5d29dc468d56",
+        "size_bytes": 171
+      },
+      {
+        "path": "model.safetensors",
+        "sha256": "1a2a404db755b04ac9385d8477f1853d86a586c8ec691abef9931701c0da50d5",
+        "size_bytes": 16060572712
+      },
+      {
+        "path": "tokenizer.json",
+        "sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda",
+        "size_bytes": 17210145
+      },
+      {
+        "path": "tokenizer_config.json",
+        "sha256": "459111b6c4c347e838dcdf2a0b81e0e67719e7bedb9479323512bcb5f4ffd038",
+        "size_bytes": 351
+      }
+    ],
+    "library_versions": {
+      "torch": "2.12.0+cu126",
+      "transformers": "5.14.1"
+    },
+    "tokenizer_fingerprint": "6c6deae554d7ccbdb9b89074580df71142ea22813aad77060a2314a93476cafe",
+    "special_token_ids": {
+      "bos_token_id": 128000,
+      "cls_token_id": null,
+      "eos_token_id": 128009,
+      "mask_token_id": null,
+      "pad_token_id": 128256,
+      "sep_token_id": null,
+      "unk_token_id": null
+    },
+    "vocab_size": 128257,
+    "num_hidden_layers": 32,
+    "merge": null
+  },
+  "B_dpo": {
+    "status": "merged",
+    "repository": "samarthraina/dsteer-results",
+    "repository_type": "dataset",
+    "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+    "subpath": "runs/dpo_training/openhermes-mistral-adapter/20260809T155221Z",
+    "anchor_files": [
+      {
+        "path": "adapter_model.safetensors",
+        "sha256": "79c81ebc54c040c305fd35524fafe0edb3facc6be91284ad3e5ddc97bb758517"
+      },
+      {
+        "path": "training_args.bin",
+        "sha256": "67afea1a9303f2ff05cbb845452e4396bb10ca2b82bf7ba9dbe4fdca81225642"
+      }
+    ],
+    "base": {
+      "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+      "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+      "subpath": "",
+      "repository_type": "model"
+    },
+    "verified_files": [
+      {
+        "path": "chat_template.jinja",
+        "sha256": "153280e3ff55d19da1398bdb3914ee2a51b80429bfaedde11d7d216c39db80f3",
+        "size_bytes": 196
+      },
+      {
+        "path": "config.json",
+        "sha256": "ee43c2450b4bcd63e9d5076a221c04a8313277e553f7798a60ee78e5144b771a",
+        "size_bytes": 693
+      },
+      {
+        "path": "generation_config.json",
+        "sha256": "d0ff17569e81b2cf6662b5d62fa72cf937b41e558c140e441641774977d14c58",
+        "size_bytes": 115
+      },
+      {
+        "path": "model-00001-of-00003.safetensors",
+        "sha256": "f234a024e3751a6ca9976ef5968463c8ad2dbd998eb56490ed4628184b5a7da3",
+        "size_bytes": 4886596088
+      },
+      {
+        "path": "model-00002-of-00003.safetensors",
+        "sha256": "0c4d19a4968d58ffa91b32e231f91331966cfd6afc83980f8de229323e4d05c3",
+        "size_bytes": 4915916184
+      },
+      {
+        "path": "model-00003-of-00003.safetensors",
+        "sha256": "242055f5b6506367e00f479a4bd19085ae8a8e0c94ce53a9e0445ae1bb02a791",
+        "size_bytes": 4681034912
+      },
+      {
+        "path": "model.safetensors.index.json",
+        "sha256": "36ac99fa1f9036a0b22d0eb185ed37692f30d7e4197284322b1a591d859cbc75",
+        "size_bytes": 23986
+      },
+      {
+        "path": "tokenizer.json",
+        "sha256": "baafe02ebbf1088ae3f0e5bc5e6aabbfd3b38c244b2e966fc095388ad56343e9",
+        "size_bytes": 3506135
+      },
+      {
+        "path": "tokenizer_config.json",
+        "sha256": "ca2664477d9ddb2648afdb1659ae25faba0b42a180c3ab657534fdff5458c58a",
+        "size_bytes": 489
+      }
+    ],
+    "library_versions": {
+      "peft": "0.19.1",
+      "torch": "2.12.0+cu126",
+      "transformers": "5.14.1"
+    },
+    "tokenizer_fingerprint": "702131d3fcd65b0354270795e5be63f01a2cdb62eb6b745bc9180fb388782efa",
+    "special_token_ids": {
+      "bos_token_id": 1,
+      "cls_token_id": null,
+      "eos_token_id": 32000,
+      "mask_token_id": null,
+      "pad_token_id": 32002,
+      "sep_token_id": null,
+      "unk_token_id": 0
+    },
+    "vocab_size": 32003,
+    "num_hidden_layers": 32,
+    "merge": {
+      "adapter_input_files": [
+        {
+          "path": "adapter_config.json",
+          "sha256": "6b8e7756125cecdfbd745cfb697af82e64005f186398d24ab8d8d84b45103683",
+          "size_bytes": 1173
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "sha256": "79c81ebc54c040c305fd35524fafe0edb3facc6be91284ad3e5ddc97bb758517",
+          "size_bytes": 692169616
+        },
+        {
+          "path": "chat_template.jinja",
+          "sha256": "153280e3ff55d19da1398bdb3914ee2a51b80429bfaedde11d7d216c39db80f3",
+          "size_bytes": 196
+        },
+        {
+          "path": "tokenizer.json",
+          "sha256": "baafe02ebbf1088ae3f0e5bc5e6aabbfd3b38c244b2e966fc095388ad56343e9",
+          "size_bytes": 3506135
+        },
+        {
+          "path": "tokenizer_config.json",
+          "sha256": "56bb3551fa1e9dc518b089978975a3301c594de688b0cb76ea7f604eb9f9524e",
+          "size_bytes": 490
+        },
+        {
+          "path": "training_args.bin",
+          "sha256": "67afea1a9303f2ff05cbb845452e4396bb10ca2b82bf7ba9dbe4fdca81225642",
+          "size_bytes": 5969
+        }
+      ],
+      "dtype": "bfloat16",
+      "max_shard_size": "5GB",
+      "merge_seed": 20260815,
+      "tokenizer_resolution": {
+        "adapter_fingerprint": "702131d3fcd65b0354270795e5be63f01a2cdb62eb6b745bc9180fb388782efa",
+        "adapter_special_token_ids": {
+          "bos_token_id": 1,
+          "cls_token_id": null,
+          "eos_token_id": 32000,
+          "mask_token_id": null,
+          "pad_token_id": 32002,
+          "sep_token_id": null,
+          "unk_token_id": 0
+        },
+        "adapter_vocab_size": 32003,
+        "added_token_ids": [
+          32002
+        ],
+        "base_fingerprint": "4e7dcd8ac1f61e776a7c4aa0cd85a334fce9b672d6b0d644ecb59d01953a3d4d",
+        "base_special_token_ids": {
+          "bos_token_id": 1,
+          "cls_token_id": null,
+          "eos_token_id": 32000,
+          "mask_token_id": null,
+          "pad_token_id": null,
+          "sep_token_id": null,
+          "unk_token_id": 0
+        },
+        "base_vocab_size": 32002,
+        "new_vocab_size": 32003,
+        "old_vocab_size": 32002,
+        "status": "append_only_extension"
+      }
+    }
+  },
+  "B_it": {
+    "status": "direct",
+    "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+    "repository_type": "model",
+    "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+    "subpath": "",
+    "anchor_files": [
+      {
+        "path": "model-00001-of-00002.safetensors",
+        "sha256": "0b712f11ea29f3b34fa132403f7cafc0568c722ba3a33f42b55ed77b47fa299d"
+      },
+      {
+        "path": "model-00002-of-00002.safetensors",
+        "sha256": "5e6249c1a1ceb365e219a0fe667a77f71ec005b3aecb145ff2d8adf46cdb574f"
+      }
+    ],
+    "base": null,
+    "verified_files": [
+      {
+        "path": "added_tokens.json",
+        "sha256": "cd7830d65a4906365316c3218e862ae231f52f9be0990e2f3fd7997201a83903",
+        "size_bytes": 51
+      },
+      {
+        "path": "config.json",
+        "sha256": "5fa042e353e385d8896985884d8436431b5a2bb17954855d55d173d9d31fc108",
+        "size_bytes": 624
+      },
+      {
+        "path": "generation_config.json",
+        "sha256": "bf0f38d563d8151656106888e47c0a8bbb1e87acf9395ee271e46180c2425624",
+        "size_bytes": 120
+      },
+      {
+        "path": "model-00001-of-00002.safetensors",
+        "sha256": "0b712f11ea29f3b34fa132403f7cafc0568c722ba3a33f42b55ed77b47fa299d",
+        "size_bytes": 9942998080
+      },
+      {
+        "path": "model-00002-of-00002.safetensors",
+        "sha256": "5e6249c1a1ceb365e219a0fe667a77f71ec005b3aecb145ff2d8adf46cdb574f",
+        "size_bytes": 4540532728
+      },
+      {
+        "path": "model.safetensors.index.json",
+        "sha256": "1091f1c539c348db701f2793eb511b8aca0d97b357aa63b003c30749b85be15e",
+        "size_bytes": 25125
+      },
+      {
+        "path": "special_tokens_map.json",
+        "sha256": "b454cf92b8686901e71f611ed4e6b93e70a2692dd3a5bb50b1c408efb9a47a03",
+        "size_bytes": 101
+      },
+      {
+        "path": "tokenizer.model",
+        "sha256": "dadfd56d766715c61d2ef780a525ab43b8e6da4de6865bda3d95fdef5e134055",
+        "size_bytes": 493443
+      },
+      {
+        "path": "tokenizer_config.json",
+        "sha256": "c587d38800147102ce81daf3f0b68eedb7e7e3b62c74e3c53890fffae50d55f2",
+        "size_bytes": 1598
+      }
+    ],
+    "library_versions": {
+      "torch": "2.12.0+cu126",
+      "transformers": "5.14.1"
+    },
+    "tokenizer_fingerprint": "4e7dcd8ac1f61e776a7c4aa0cd85a334fce9b672d6b0d644ecb59d01953a3d4d",
+    "special_token_ids": {
+      "bos_token_id": 1,
+      "cls_token_id": null,
+      "eos_token_id": 32000,
+      "mask_token_id": null,
+      "pad_token_id": null,
+      "sep_token_id": null,
+      "unk_token_id": 0
+    },
+    "vocab_size": 32002,
+    "num_hidden_layers": 32,
+    "merge": null
+  }
+}

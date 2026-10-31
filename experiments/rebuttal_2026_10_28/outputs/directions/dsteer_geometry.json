@@ -1,0 +1,81 @@
+{
+  "layers": [
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "construction": "build_vectors(method=mean, normalise=relative, device=cpu)",
+  "torch": "2.5.1",
+  "pairs": {
+    "A": {
+      "tensor_sha256": "5c2feb3efd84599a8e7475931f7448545107c30246a60ff8022012f89cd7ffa1",
+      "tensor_shape": {
+        "it": [
+          32,
+          1378,
+          4096
+        ],
+        "dpo": [
+          32,
+          1378,
+          4096
+        ],
+        "dtype": "torch.float32",
+        "keys": [
+          "dpo",
+          "it",
+          "manifest_hash",
+          "partition",
+          "prompt_hashes",
+          "source_ids"
+        ]
+      },
+      "n_construction_prompts": 1378,
+      "vectors_path": "outputs/directions/dsteer_vectors_pair_A.pt",
+      "vectors_sha256": "5ce75a7d7326cba04e61b57289b1ac1024cba325e06b43542c9a7da48bade4d1",
+      "relative_vector_norms": {
+        "27": 29.186815,
+        "28": 31.875074,
+        "29": 35.037285,
+        "30": 38.008438,
+        "31": 51.155922
+      }
+    },
+    "B": {
+      "tensor_sha256": "c02721c604964d4261b85852654276e49496a6fede78263d9330d6a5307adfc5",
+      "tensor_shape": {
+        "it": [
+          32,
+          1378,
+          4096
+        ],
+        "dpo": [
+          32,
+          1378,
+          4096
+        ],
+        "dtype": "torch.float32",
+        "keys": [
+          "dpo",
+          "it",
+          "manifest_hash",
+          "partition",
+          "prompt_hashes",
+          "source_ids"
+        ]
+      },
+      "n_construction_prompts": 1378,
+      "vectors_path": "outputs/directions/dsteer_vectors_pair_B.pt",
+      "vectors_sha256": "b03afc715f440981707d983255b6682f142924a73e6aae95b81e6bd414b3052e",
+      "relative_vector_norms": {
+        "27": 18.333206,
+        "28": 20.129206,
+        "29": 23.124054,
+        "30": 26.10223,
+        "31": 30.103846
+      }
+    }
+  }
+}

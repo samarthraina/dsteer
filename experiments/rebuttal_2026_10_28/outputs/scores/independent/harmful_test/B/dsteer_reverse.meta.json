@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T09:03:26.137381Z",
+  "failures": 0,
+  "file_sha256": "f6ec16895efe512635a4f7926da6981245ee295e43da4d168aae32545dced5a8",
+  "finalised_utc": "2026-10-29T09:04:07.120149Z",
+  "identity": {
+    "condition": "dsteer_reverse",
+    "evaluator": "independent",
+    "pair": "B",
+    "panel": "harmful_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "recovered:M+-B_reversal",
+    "subset": null
+  },
+  "identity_hash": "b15d3dbd3fbd8324e87317ee4c0651bb9f1f59cadd368534899feb2a25f03ad8",
+  "n_responses": 300,
+  "n_valid": 300,
+  "not_scored_invalid": [],
+  "records": 300
+}

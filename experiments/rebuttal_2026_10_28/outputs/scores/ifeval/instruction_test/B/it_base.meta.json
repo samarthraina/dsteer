@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-10-29T08:50:19.983559Z",
+  "failures": 0,
+  "file_sha256": "a46329d7e34ff898c7b42a04919036d1ea921cb82fa612b484bfe78fba3901de",
+  "finalised_utc": "2026-10-29T08:50:21.656073Z",
+  "identity": {
+    "condition": "it_base",
+    "evaluator": "ifeval",
+    "pair": "B",
+    "panel": "instruction_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/instruction_test/B/it_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "f83252a08ed5d031d894a251990bb12484eb52b77b0adfd17f5e8676faa9d7bf",
+  "records": 99
+}

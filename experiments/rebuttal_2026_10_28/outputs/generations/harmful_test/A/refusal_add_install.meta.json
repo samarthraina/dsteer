@@ -1,0 +1,72 @@
+{
+  "created_utc": "2026-10-29T07:05:51.710862Z",
+  "failures": 0,
+  "file_sha256": "8493caae95f80bbb86671fbf8e34d68fab3e0a566a726ac383430730074b1e2a",
+  "finalised_utc": "2026-10-29T07:09:34.592093Z",
+  "generation_gates": {
+    "complete": true,
+    "invalid_pass": true,
+    "invalid_rate": 0.016666666666666666,
+    "maxlen_pass": true,
+    "maxlen_rate": 0.02666666666666667,
+    "n": 300,
+    "n_invalid": 5,
+    "n_maxlen": 8,
+    "stopped_early": null
+  },
+  "identity": {
+    "condition": {
+      "coefficient": 0.05,
+      "direction": "installation",
+      "intervention": "refusal_add",
+      "layers": [
+        27,
+        28,
+        29,
+        30,
+        31
+      ],
+      "mandatory": true,
+      "multiplier": 1.0,
+      "name": "refusal_add_install",
+      "note": "matched additive: per-layer norm equal to D-STEER's actual perturbation",
+      "pair": "A",
+      "side": "it",
+      "vector_file": "outputs/directions/A/it/directions.pt",
+      "vector_norms": {
+        "27": 29.186813354492188,
+        "28": 31.875076293945312,
+        "29": 35.03728485107422,
+        "30": 38.00843811035156,
+        "31": 51.155921936035156
+      },
+      "vector_sha256": "adf86ae9cdef7c1aa4b06cfc8d0039b01b5fd7dadd2a1338cf0ac1ef6a80fcc5"
+    },
+    "decoding": {
+      "batch_size_policy": "suggest_batch_size(model), as frozen (batch_size: null)",
+      "do_sample": false,
+      "max_input_length": 2048,
+      "max_new_tokens": 768,
+      "mode": "greedy",
+      "seed": 42,
+      "stop_strings": [
+        "### Instruction:"
+      ],
+      "temperature": null,
+      "top_p": null
+    },
+    "endpoint": {
+      "identity_sha256": "56af296df533476af22bf63601fba0cbec3bfe085bddfde47d15bd76c1899629",
+      "repository": "sirius5005/SFT-and-DPO",
+      "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+      "subpath": "SFT_merged"
+    },
+    "limit": null,
+    "pair": "A",
+    "panel": "harmful_test",
+    "panel_digest": "7851299f7e15743e47c0e4604697a0770b8e9607a9dd4420a0f31a3529a53953",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04"
+  },
+  "identity_hash": "4a21e39a4fbb37301033fc62f7e6b257e1e5f4de9c5f3bef7c8760bfdb35d023",
+  "records": 300
+}

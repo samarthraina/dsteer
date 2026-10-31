@@ -1,0 +1,145 @@
+{
+  "fetched_utc": "2026-10-28T15:30:28Z",
+  "sources": {
+    "harmfulqa": {
+      "ref": "6f1a78aed47d16c0695e4595d0159abc38197bfd",
+      "use": "prompt text for the frozen HarmfulQA partitions; verified against manifest prompt_hash",
+      "files": {
+        "data_for_hub.json": {
+          "url": "https://huggingface.co/datasets/declare-lab/HarmfulQA/resolve/6f1a78aed47d16c0695e4595d0159abc38197bfd/data_for_hub.json",
+          "bytes": 58043601,
+          "sha256": "8d5a44a6c75fa46b558be84d3e7920252e822b40f717aca7c7edcf55d6428b6b"
+        }
+      }
+    },
+    "ifeval": {
+      "ref": "966cd89545d6b6acfd7638bc708b98261ca58e84",
+      "use": "instruction-following panel (Experiment B)",
+      "files": {
+        "ifeval_input_data.jsonl": {
+          "url": "https://huggingface.co/datasets/google/IFEval/resolve/966cd89545d6b6acfd7638bc708b98261ca58e84/ifeval_input_data.jsonl",
+          "bytes": 207111,
+          "sha256": "6a85310ca8ce15eff755aa08a3a4ff931c7e273e7515ebb3c492ea85fd8288f2"
+        }
+      }
+    },
+    "ifeval_checkers": {
+      "ref": "e6890f85757dd84e27ca6df2dd30651dafad28e0",
+      "use": "official strict/loose prompt-level checkers (executed, after review)",
+      "files": {
+        "instructions.py": {
+          "url": "https://raw.githubusercontent.com/google-research/google-research/e6890f85757dd84e27ca6df2dd30651dafad28e0/instruction_following_eval/instructions.py",
+          "bytes": 55162,
+          "sha256": "60e086f5342a03ce8e18b64bbcccf86308f523c08aa826707a562150a52f3edf"
+        },
+        "instructions_registry.py": {
+          "url": "https://raw.githubusercontent.com/google-research/google-research/e6890f85757dd84e27ca6df2dd30651dafad28e0/instruction_following_eval/instructions_registry.py",
+          "bytes": 7240,
+          "sha256": "ec92d72c264f6d906978613085db262356174300370a3fffe6fefd5969ce9cfc"
+        },
+        "instructions_util.py": {
+          "url": "https://raw.githubusercontent.com/google-research/google-research/e6890f85757dd84e27ca6df2dd30651dafad28e0/instruction_following_eval/instructions_util.py",
+          "bytes": 19538,
+          "sha256": "a73797261eee5bf447e279d82a2b700b1bdd3cb1193412dbab1270a85832bc6b"
+        },
+        "evaluation_lib.py": {
+          "url": "https://raw.githubusercontent.com/google-research/google-research/e6890f85757dd84e27ca6df2dd30651dafad28e0/instruction_following_eval/evaluation_lib.py",
+          "bytes": 6984,
+          "sha256": "35decc06000718487f44d7deafa6d3f48a8ec0886281edf40162c0265b7d248c"
+        }
+      }
+    },
+    "xstest": {
+      "ref": "475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5",
+      "use": "250 safe prompts (Experiment B); unsafe contrast rows excluded from the denominator",
+      "files": {
+        "xstest_prompts.csv": {
+          "url": "https://raw.githubusercontent.com/paul-rottger/xstest/475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5/xstest_prompts.csv",
+          "bytes": 38719,
+          "sha256": "11783fb294ed017473ee53c207d71f2161c7672c8d0b037501e78387f801cb5a"
+        },
+        "evaluation__classify_completions_gpt.py": {
+          "url": "https://raw.githubusercontent.com/paul-rottger/xstest/475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5/evaluation/classify_completions_gpt.py",
+          "bytes": 2721,
+          "sha256": "81dc9d69587f257ea53cde08f3af0569de58ba1b209a44bbabc3a5610cfd9962"
+        },
+        "evaluation__classify_completions_strmatch.py": {
+          "url": "https://raw.githubusercontent.com/paul-rottger/xstest/475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5/evaluation/classify_completions_strmatch.py",
+          "bytes": 1368,
+          "sha256": "ee530f9dceceee55b89d582befb93db94a328f80c87dcac27072548e9f99c95f"
+        },
+        "evaluation__automated_evaluation_labels__xstest_v2_completions_mistralinstruct_streval.csv": {
+          "url": "https://raw.githubusercontent.com/paul-rottger/xstest/475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5/evaluation/automated_evaluation_labels/xstest_v2_completions_mistralinstruct_streval.csv",
+          "bytes": 379544,
+          "sha256": "a1ad24b837a13380a88f9748b39663add74cd992d5841db782271490dcbb41d3"
+        },
+        "evaluation__automated_evaluation_labels__xstest_v2_completions_llama2new_streval.csv": {
+          "url": "https://raw.githubusercontent.com/paul-rottger/xstest/475f10bf0a3d6a9dfb174b6de1a38afbfdff98a5/evaluation/automated_evaluation_labels/xstest_v2_completions_llama2new_streval.csv",
+          "bytes": 524368,
+          "sha256": "605183b95c8859673ff23898456a1fea24fbbd5993b9033dc7c12159227e3555"
+        }
+      }
+    },
+    "refusal_direction_reference": {
+      "ref": "0b9c8bc56a73b42f595fd173156d4aefe9a9143c",
+      "use": "harmless construction prompts (Alpaca-derived, as in the reference); reference code READ for the audit, never executed",
+      "files": {
+        "dataset__splits__harmless_train.json": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/dataset/splits/harmless_train.json",
+          "bytes": 2344466,
+          "sha256": "86623b1f8a25aa35df153fc97a556dbcebb6a7c881538ae43ee479ca17f2e002"
+        },
+        "dataset__splits__harmless_val.json": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/dataset/splits/harmless_val.json",
+          "bytes": 780532,
+          "sha256": "772010758e7d771ef4c7e5e4acdfd7598dcece1a6f383f20d382f640913a2a4d"
+        },
+        "dataset__splits__harmless_test.json": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/dataset/splits/harmless_test.json",
+          "bytes": 783466,
+          "sha256": "1b5930ce5e855ada758b3116ce7c4aaea9b9d05f8cdd77b385511d4c84173b19"
+        },
+        "pipeline__submodules__generate_directions.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/submodules/generate_directions.py",
+          "bytes": 3075,
+          "sha256": "2e2c838e9cae0ed112f2608580867d101243f77a2737d88355edd765a3ede63c"
+        },
+        "pipeline__submodules__select_direction.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/submodules/select_direction.py",
+          "bytes": 15188,
+          "sha256": "2ea223df732a085dad4dba4a582fae5589a9d0cf57d5b07f25b0da8f394ee6f7"
+        },
+        "pipeline__utils__hook_utils.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/utils/hook_utils.py",
+          "bytes": 4597,
+          "sha256": "0fa5de8d6a739f9f3ecfcb462d027d8ade269f6ce469e320c3238ef4a1d0cd56"
+        },
+        "pipeline__config.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/config.py",
+          "bytes": 704,
+          "sha256": "7ed4f5b5853cdede02c47c8bcc377da9c1cad5e1af1a403e16bba4cd4ec5aca0"
+        },
+        "pipeline__run_pipeline.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/run_pipeline.py",
+          "bytes": 10579,
+          "sha256": "515fac15b458c3c8f5fc1febd35631aca7716436c462ab331b0d6548e3bc174b"
+        },
+        "pipeline__model_utils__model_base.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/model_utils/model_base.py",
+          "bytes": 3401,
+          "sha256": "d4bae081fe06b5bf31638a992c732934d0581cf1d178d7ce7084a0ee9d2d5a88"
+        },
+        "pipeline__model_utils__llama3_model.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/model_utils/llama3_model.py",
+          "bytes": 4801,
+          "sha256": "6fc14c29c36c123d6105ea998d06cc01e1b786d44a26c1ebf4795090960c2a0c"
+        },
+        "pipeline__model_utils__qwen_model.py": {
+          "url": "https://raw.githubusercontent.com/andyrdt/refusal_direction/0b9c8bc56a73b42f595fd173156d4aefe9a9143c/pipeline/model_utils/qwen_model.py",
+          "bytes": 5334,
+          "sha256": "600ee8950931fd72a7cee61f6de644f6dc8b07b806d9e8cb125c245bbf9f0e04"
+        }
+      }
+    }
+  }
+}

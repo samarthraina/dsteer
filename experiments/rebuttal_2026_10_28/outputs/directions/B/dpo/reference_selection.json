@@ -1,0 +1,10 @@
+{
+  "selected": null,
+  "baseline_harmful_refusal_score": -2.421334930739855,
+  "baseline_harmless_refusal_score": -7.446648778264129,
+  "n_harmful": 5,
+  "n_harmless": 58,
+  "pair": "B",
+  "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+  "reference_commit": "0b9c8bc56a73b42f595fd173156d4aefe9a9143c"
+}

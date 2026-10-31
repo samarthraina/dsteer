@@ -1,0 +1,17 @@
+{
+  "created_utc": "2026-10-29T08:50:18.312913Z",
+  "failures": 0,
+  "file_sha256": "6bf36d8d7a1f0c472a30d6a1781cedb8c149b5d9858ba0635002d29dee900178",
+  "finalised_utc": "2026-10-29T08:50:19.665792Z",
+  "identity": {
+    "condition": "refusal_add_reverse",
+    "evaluator": "ifeval",
+    "pair": "A",
+    "panel": "instruction_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/instruction_test/A/refusal_add_reverse.jsonl",
+    "subset": null
+  },
+  "identity_hash": "b96d4b1b51e4f42b28ebcaf1f6fc687ee914ccb503756bb9ffec263c0a0d6172",
+  "records": 55
+}

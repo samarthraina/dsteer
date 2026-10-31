@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T07:36:03.295102Z",
+  "failures": 0,
+  "file_sha256": "d6e5a37292e42167eb9f2b1840311044e1aa9247c5d1710e55f34c4dede72a4a",
+  "finalised_utc": "2026-10-29T07:40:31.591301Z",
+  "identity": {
+    "condition": "refusal_add_reverse",
+    "evaluator": "original",
+    "pair": "B",
+    "panel": "harmful_test",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/harmful_test/B/refusal_add_reverse.jsonl",
+    "subset": null
+  },
+  "identity_hash": "234df3140159cf009f2efb2daa9d70448915146ec812bb310c3ad0526c0e5e9a",
+  "n_responses": 300,
+  "n_valid": 300,
+  "not_scored_invalid": [],
+  "records": 900
+}

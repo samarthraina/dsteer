@@ -1,0 +1,202 @@
+{
+  "A_dpo": {
+    "repository": "sirius5005/SFT-and-DPO",
+    "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+    "subpath": "DPO_merged",
+    "checked": "endpoint files",
+    "files": [
+      {
+        "path": "chat_template.jinja",
+        "status": "present_non_lfs_size_match",
+        "server_size": 423,
+        "recorded_size": 423
+      },
+      {
+        "path": "config.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "96ccef258bdb198cfab70c7da280ec2192e58bc664495aa67b82fa77ecb49f4f",
+        "recorded_sha256": "96ccef258bdb198cfab70c7da280ec2192e58bc664495aa67b82fa77ecb49f4f"
+      },
+      {
+        "path": "generation_config.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "a474c6e82f063ce0654bf5855ccee1244002848ed487f669921c5d29dc468d56",
+        "recorded_sha256": "a474c6e82f063ce0654bf5855ccee1244002848ed487f669921c5d29dc468d56"
+      },
+      {
+        "path": "model.safetensors",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "5eedaac41dcbc1fcab7446ba40b53b21d7c392e0ffe896da1b801c3be873b004",
+        "recorded_sha256": "5eedaac41dcbc1fcab7446ba40b53b21d7c392e0ffe896da1b801c3be873b004"
+      },
+      {
+        "path": "tokenizer.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda",
+        "recorded_sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "459111b6c4c347e838dcdf2a0b81e0e67719e7bedb9479323512bcb5f4ffd038",
+        "recorded_sha256": "459111b6c4c347e838dcdf2a0b81e0e67719e7bedb9479323512bcb5f4ffd038"
+      }
+    ]
+  },
+  "A_it": {
+    "repository": "sirius5005/SFT-and-DPO",
+    "revision": "2932781b06bb062fb0fde146be0ebc13315fbbd3",
+    "subpath": "SFT_merged",
+    "checked": "endpoint files",
+    "files": [
+      {
+        "path": "chat_template.jinja",
+        "status": "present_non_lfs_size_match",
+        "server_size": 423,
+        "recorded_size": 423
+      },
+      {
+        "path": "config.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "96ccef258bdb198cfab70c7da280ec2192e58bc664495aa67b82fa77ecb49f4f",
+        "recorded_sha256": "96ccef258bdb198cfab70c7da280ec2192e58bc664495aa67b82fa77ecb49f4f"
+      },
+      {
+        "path": "generation_config.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "a474c6e82f063ce0654bf5855ccee1244002848ed487f669921c5d29dc468d56",
+        "recorded_sha256": "a474c6e82f063ce0654bf5855ccee1244002848ed487f669921c5d29dc468d56"
+      },
+      {
+        "path": "model.safetensors",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "1a2a404db755b04ac9385d8477f1853d86a586c8ec691abef9931701c0da50d5",
+        "recorded_sha256": "1a2a404db755b04ac9385d8477f1853d86a586c8ec691abef9931701c0da50d5"
+      },
+      {
+        "path": "tokenizer.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda",
+        "recorded_sha256": "8c5bbfc28fa7ce7c55165a2c11eee1765f6eed6ee6fcdc69ef6d9c2f17a41bda"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "459111b6c4c347e838dcdf2a0b81e0e67719e7bedb9479323512bcb5f4ffd038",
+        "recorded_sha256": "459111b6c4c347e838dcdf2a0b81e0e67719e7bedb9479323512bcb5f4ffd038"
+      }
+    ]
+  },
+  "B_dpo": {
+    "repository": "samarthraina/dsteer-results",
+    "revision": "613e550682436b83593aee0b6444ab0dfa56b659",
+    "subpath": "runs/dpo_training/openhermes-mistral-adapter/20260809T155221Z",
+    "checked": "adapter inputs (merged outputs are produced and verified on the box)",
+    "files": [
+      {
+        "path": "adapter_config.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 1173,
+        "recorded_size": 1173
+      },
+      {
+        "path": "adapter_model.safetensors",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "79c81ebc54c040c305fd35524fafe0edb3facc6be91284ad3e5ddc97bb758517",
+        "recorded_sha256": "79c81ebc54c040c305fd35524fafe0edb3facc6be91284ad3e5ddc97bb758517"
+      },
+      {
+        "path": "chat_template.jinja",
+        "status": "present_non_lfs_size_match",
+        "server_size": 196,
+        "recorded_size": 196
+      },
+      {
+        "path": "tokenizer.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 3506135,
+        "recorded_size": 3506135
+      },
+      {
+        "path": "tokenizer_config.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 490,
+        "recorded_size": 490
+      },
+      {
+        "path": "training_args.bin",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "67afea1a9303f2ff05cbb845452e4396bb10ca2b82bf7ba9dbe4fdca81225642",
+        "recorded_sha256": "67afea1a9303f2ff05cbb845452e4396bb10ca2b82bf7ba9dbe4fdca81225642"
+      }
+    ]
+  },
+  "B_it": {
+    "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+    "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+    "subpath": "",
+    "checked": "endpoint files",
+    "files": [
+      {
+        "path": "added_tokens.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 51,
+        "recorded_size": 51
+      },
+      {
+        "path": "config.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 624,
+        "recorded_size": 624
+      },
+      {
+        "path": "generation_config.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 120,
+        "recorded_size": 120
+      },
+      {
+        "path": "model-00001-of-00002.safetensors",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "0b712f11ea29f3b34fa132403f7cafc0568c722ba3a33f42b55ed77b47fa299d",
+        "recorded_sha256": "0b712f11ea29f3b34fa132403f7cafc0568c722ba3a33f42b55ed77b47fa299d"
+      },
+      {
+        "path": "model-00002-of-00002.safetensors",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "5e6249c1a1ceb365e219a0fe667a77f71ec005b3aecb145ff2d8adf46cdb574f",
+        "recorded_sha256": "5e6249c1a1ceb365e219a0fe667a77f71ec005b3aecb145ff2d8adf46cdb574f"
+      },
+      {
+        "path": "model.safetensors.index.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 25125,
+        "recorded_size": 25125
+      },
+      {
+        "path": "special_tokens_map.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 101,
+        "recorded_size": 101
+      },
+      {
+        "path": "tokenizer.model",
+        "status": "server_hash_match",
+        "server_lfs_sha256": "dadfd56d766715c61d2ef780a525ab43b8e6da4de6865bda3d95fdef5e134055",
+        "recorded_sha256": "dadfd56d766715c61d2ef780a525ab43b8e6da4de6865bda3d95fdef5e134055"
+      },
+      {
+        "path": "tokenizer_config.json",
+        "status": "present_non_lfs_size_match",
+        "server_size": 1598,
+        "recorded_size": 1598
+      }
+    ]
+  },
+  "B_dpo_merge_base": {
+    "repository": "teknium/OpenHermes-2.5-Mistral-7B",
+    "revision": "24c0bea14d53e6f67f1fbe2eca5bfe7cae389b33",
+    "note": "same repository and revision as B_it, checked above"
+  },
+  "level": "remote presence + server-reported hash; NOT local byte verification"
+}

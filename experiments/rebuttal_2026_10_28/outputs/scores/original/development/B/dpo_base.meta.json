@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-10-29T00:23:54.676399Z",
+  "failures": 0,
+  "file_sha256": "0ca4640ab08e48f1611a4fe585f28af707a849a1fef23e8e62e554adf509cb0b",
+  "finalised_utc": "2026-10-29T00:24:51.112602Z",
+  "identity": {
+    "condition": "dpo_base",
+    "evaluator": "original",
+    "pair": "B",
+    "panel": "development",
+    "protocol_hash": "3163500b7df3fa5e367f82bc87bd8ea22c27f7b49b3ae87fa3dfdb81d1decb04",
+    "source": "outputs/generations/development/B/dpo_base.jsonl",
+    "subset": null
+  },
+  "identity_hash": "6e05a5ca37b671be553f8212ae1b5b12f752ed232113147ecf4dea0436fa3ad7",
+  "n_responses": 60,
+  "n_valid": 60,
+  "not_scored_invalid": [],
+  "records": 180
+}

@@ -1,0 +1,55 @@
+panel,pair,condition,source,requested,completed,missing,duplicates,file_sha256,status
+harmful_test,A,it_base,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,A,dpo_base,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,A,dsteer_install,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,A,dsteer_reverse,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,A,refusal_add_install,new,300,300,0,0,8493caae95f80bbb86671fbf8e34d68fab3e0a566a726ac383430730074b1e2a,complete
+harmful_test,A,refusal_add_reverse,new,300,300,0,0,970d459e5bdff7d34e27ff8d543d98de1d1839ad9bec275f70775b6d00a1cd6a,complete
+harmful_test,A,refusal_add_tuned_install,new,300,0,300,0,,not_run
+harmful_test,A,refusal_add_tuned_reverse,new,300,0,300,0,,not_run
+harmful_test,A,refusal_ablate_reference,new,300,0,300,0,,not_run
+harmful_test,B,it_base,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,B,dpo_base,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,B,dsteer_install,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,B,dsteer_reverse,recovered,300,300,0,0,recovered (see manifests/recovered_artifacts.json),complete
+harmful_test,B,refusal_add_install,new,300,300,0,0,84e8d7cfe20aaed5bf5d0226b29286795a1d04c4b65223a1bd1796ca2740c045,complete
+harmful_test,B,refusal_add_reverse,new,300,300,0,0,1315fe108c96fc07ba7567d0f6c69054fa97ea3ce15a4e521e3a428a1c92f513,complete
+harmful_test,B,refusal_add_tuned_install,new,300,0,300,0,,not_run
+harmful_test,B,refusal_add_tuned_reverse,new,300,0,300,0,,not_run
+harmful_test,B,refusal_ablate_reference,new,300,0,300,0,,not_run
+xstest_safe,A,it_base,new,250,250,0,0,bafe6d9bd3b052159e88ff48c0380dc6d4cbdbde69853a113992392ccc0070b7,complete
+xstest_safe,A,dpo_base,new,250,250,0,0,19c392a8d453b19ee78060a7e609254b2973529ccb50fe361f023f27c7bbb641,complete
+xstest_safe,A,dsteer_install,new,250,250,0,0,18d3b75128004cf50aa9ae69cfb8bd72e0828f1087f3fe8f6187217da9d18a90,complete
+xstest_safe,A,dsteer_reverse,new,250,250,0,0,fb69f70f45f42520022785ab96d2fafa061e5365078bba16ea1537dfba0abf9d,complete
+xstest_safe,A,refusal_add_install,new,250,250,0,0,6072320f335177fdf87cd8fce27ea808f92013816398e36ed58b28fec7cd17a7,complete
+xstest_safe,A,refusal_add_reverse,new,250,250,0,0,4a5a4de4ce2ca83ed823c85a8cb46ffdc8c950fdc83591550d25a7f15b272187,complete
+xstest_safe,A,refusal_add_tuned_install,new,250,0,250,0,,not_run
+xstest_safe,A,refusal_add_tuned_reverse,new,250,0,250,0,,not_run
+xstest_safe,A,refusal_ablate_reference,new,250,0,250,0,,not_run
+xstest_safe,B,it_base,new,250,250,0,0,f8dada5577a60a21c86e58c1937abd1be440a5c6b0f08f024abcfc33e595ab4c,complete
+xstest_safe,B,dpo_base,new,250,250,0,0,b9a44b49599a7a525e75e18f234eda7b43dab1eb33228897eb84bac5510d54f9,complete
+xstest_safe,B,dsteer_install,new,250,250,0,0,64c46f4f1e26e7918814a940d0a22075ef97d39965c56368af5123e2f5d4f174,complete
+xstest_safe,B,dsteer_reverse,new,250,250,0,0,e72c66236d983af2566dd296fc81d99b9bd6759c4108b2b6b9d462c3cb6d3ed6,complete
+xstest_safe,B,refusal_add_install,new,250,250,0,0,05388994ae93ac6951e533f1494e33886b6aa27469c1bf303f94bbbc00d69609,complete
+xstest_safe,B,refusal_add_reverse,new,250,250,0,0,95ce268a5039cabc8c4bb8b2147a441b846c2c5af237e7304c0f943182a864f0,complete
+xstest_safe,B,refusal_add_tuned_install,new,250,0,250,0,,not_run
+xstest_safe,B,refusal_add_tuned_reverse,new,250,0,250,0,,not_run
+xstest_safe,B,refusal_ablate_reference,new,250,0,250,0,,not_run
+instruction_test,A,it_base,new,100,100,0,0,cc6a1f78775c1ae3fd60bb54dac09dbed224a374b5715cc05c04bf8953f0b75c,complete
+instruction_test,A,dpo_base,new,100,100,0,0,f2963818c97068516cd9ea453d7c98d353e4348171acee111f119a9297ba7651,complete
+instruction_test,A,dsteer_install,new,100,100,0,0,78bc91799a011bc1ee5f2caa9d25f89b1a19b1fbb8bab3838a390c3ce183355f,complete
+instruction_test,A,dsteer_reverse,new,100,100,0,0,1c7d608a4a280a148d743d80ec352624ad1aac4f319b079beb533220ee2d649e,complete
+instruction_test,A,refusal_add_install,new,100,100,0,0,d24f4950806e8904a3254b40fd7cc41eccc70580400949ca41d4991b75ce6464,complete
+instruction_test,A,refusal_add_reverse,new,100,100,0,0,cee4ce8eae0a5877f1ffc4977901bc669e69d0755d1475577ac0da5f9032f456,complete
+instruction_test,A,refusal_add_tuned_install,new,100,0,100,0,,not_run
+instruction_test,A,refusal_add_tuned_reverse,new,100,0,100,0,,not_run
+instruction_test,A,refusal_ablate_reference,new,100,0,100,0,,not_run
+instruction_test,B,it_base,new,100,100,0,0,0022e6e287bb79a11daace80fab2257251c765c9d10ec4faced73531d7bc877c,complete
+instruction_test,B,dpo_base,new,100,100,0,0,8b42066bb07800b99ada12e7fad385bb9f7aa2aa356db8d232f6b9170f200b6a,complete
+instruction_test,B,dsteer_install,new,100,100,0,0,4187a78faa55020dcc31d08444663ee1fc24aea4b24f51d831c5d2b48dde8dcc,complete
+instruction_test,B,dsteer_reverse,new,100,100,0,0,912580300393756ad71f0da9a58ca31a4bf45ea205625cbdfc3bafe275c25a26,complete
+instruction_test,B,refusal_add_install,new,100,100,0,0,d6e4c77203c5c7ecd46c54039f5b74df3d32cf2df295e355f830cb29e9f4d5b7,complete
+instruction_test,B,refusal_add_reverse,new,100,100,0,0,0e3c18affdc8b8c8f7090d342eba35677d35d97c6ffa79f7830105119f396efc,complete
+instruction_test,B,refusal_add_tuned_install,new,100,0,100,0,,not_run
+instruction_test,B,refusal_add_tuned_reverse,new,100,0,100,0,,not_run
+instruction_test,B,refusal_ablate_reference,new,100,0,100,0,,not_run

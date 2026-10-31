@@ -1,0 +1,17 @@
+{
+  "generated_utc": "2026-10-27T23:24:03Z",
+  "search_roots_checked": [
+    "/Users/samarthraina/Documents/Research2026/D-STEER/figures-final/data/task027-final/steer"
+  ],
+  "conditions_found": 29,
+  "conditions_with_run_meta": 29,
+  "conditions_with_response_records": 0,
+  "response_level_files_found": 0,
+  "index_relative": "manifests/original_responses.jsonl",
+  "index_sha256": "3f5482d780218c88bb9c6779688b39f1d01de8b8e816fef06ee465a8b5c8b871",
+  "determination": "NO original response-level generations located. Every task027-final condition directory carries run_meta.json and generation_gates.json only. Independent rescoring of the original responses (Experiment C primary target, 2,400 responses) is therefore BLOCKED and cannot be unblocked by GPU access alone. Any fresh run must be labelled a replication, not a rescoring.",
+  "claims_no_longer_validatable_by_rescoring": [
+    "evaluator-dependence of the submitted held-out effects on the exact submitted responses",
+    "judge-vs-judge agreement on the submitted response set"
+  ]
+}
