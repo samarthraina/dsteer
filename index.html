@@ -1,0 +1,531 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>D-STEER: Two-Way Safety Steering</title>
+  <meta name="description" content="D-STEER asks whether the safety behavior added by DPO can be installed and removed through activation steering at inference time, with no weight update.">
+  <meta name="theme-color" content="#04060b">
+  <meta property="og:title" content="D-STEER: Is DPO-Induced Safety Behavior a Two-Way Street in Activation Space?">
+  <meta property="og:description" content="One direction from matched checkpoint activations installs safety when added and removes it when subtracted, with no weight update.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://samarthraina.github.io/dsteer/">
+  <meta property="og:url" content="https://samarthraina.github.io/dsteer/">
+  <meta property="og:image" content="https://samarthraina.github.io/dsteer/assets/img/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="D-STEER: real activation clouds of an instruction-tuned and a DPO model, with install and remove arrows between them.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="D-STEER: Is DPO-Induced Safety Behavior a Two-Way Street in Activation Space?">
+  <meta name="twitter:description" content="One direction from matched checkpoint activations installs safety when added and removes it when subtracted, with no weight update.">
+  <meta name="twitter:image" content="https://samarthraina.github.io/dsteer/assets/img/og.jpg">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2304060b'/%3E%3Cpath d='M7 12h16l-4-4M25 20H9l4 4' stroke='%232fe3b4' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+
+  <!-- import-map support for browsers that predate it (Safari < 16.4) -->
+  <script async src="https://unpkg.com/es-module-shims@1.8.3/dist/es-module-shims.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div class="progress" aria-hidden="true"></div>
+
+  <nav class="nav" aria-label="Sections">
+    <a class="brand" href="#top">
+      <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="bm" x1="0" x2="1"><stop offset="0" stop-color="#5b8dff"/><stop offset=".55" stop-color="#2fe3b4"/><stop offset="1" stop-color="#ff6b3d"/></linearGradient></defs><path d="M5 11h20l-5-5M27 21H7l5 5" stroke="url(#bm)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      D-STEER
+    </a>
+    <div class="links">
+      <a href="#question">Question</a>
+      <a href="#method">Method</a>
+      <a href="#lab">Lab</a>
+      <a href="#depth">Depth</a>
+      <a href="#examples">Outputs</a>
+      <a href="#window">Calibration</a>
+      <a href="#results">Results</a>
+      <a href="#robustness">Robustness</a>
+    </div>
+    <a class="cta" href="#cite">Cite</a>
+  </nav>
+
+  <!-- ═════════════ HERO ═════════════ -->
+  <header class="hero" id="top">
+    <div class="still" aria-hidden="true"></div>
+    <canvas class="gl" id="hero-gl" aria-hidden="true"></canvas>
+    <div class="wrap hero-inner">
+      <span class="eyebrow reveal"><span class="dot"></span>Activation steering · AI safety · Interpretability</span>
+      <h1 class="title" id="hero-title">D-STEER</h1>
+      <p class="subtitle reveal d1">Is DPO-induced safety behavior a <em>two-way street</em> in activation space?</p>
+      <p class="lede reveal d2">We take an instruction-tuned model and its safety-tuned (DPO) counterpart and measure one direction from how their internal activations differ. <span class="dpo">Adding</span> it to the instruction-tuned model installs safer behavior. <span class="rem">Subtracting</span> it from the DPO model removes it. The weights never change.</p>
+
+      <div class="authors reveal d3">
+        <span class="who">Samarth Raina</span>
+        <span class="who">Saksham Aggarwal</span>
+        <span class="who">Amit Dhanda</span>
+        <span class="who">Vinija Jain</span>
+        <span class="who">Aman Chadha</span>
+        <span class="who">Amitava Das</span>
+      </div>
+
+      <div class="buttons reveal d4">
+        <a class="btn primary" href="https://arxiv.org/abs/2512.11838">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+          Paper
+        </a>
+        <a class="btn" href="https://github.com/samarthraina/dsteer">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.7 5.38-5.27 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+          Code
+        </a>
+        <a class="btn" href="#lab">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 7v10l9 5 9-5V7z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
+          Try the 3D lab
+        </a>
+        <a class="btn" href="#cite">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h4v4H7zM7 11c0 3-1 4-3 5M15 7h4v4h-4zM15 11c0 3-1 4-3 5"/></svg>
+          BibTeX
+        </a>
+      </div>
+    </div>
+    <p class="hero-caption">
+      <b>Measured, not drawn.</b> 1,200 real final-prompt-token states from layer 31 of the Mistral pair,
+      <span class="legend-inline"><i style="background:var(--it)"></i>instruction-tuned</span>
+      <span class="legend-inline"><i style="background:var(--dpo)"></i>DPO</span>.
+      Streaks are the same states shifted by the mean IT&nbsp;→&nbsp;DPO displacement.
+    </p>
+    <div class="scroll-cue" aria-hidden="true"></div>
+  </header>
+
+  <main>
+    <!-- ═════════════ STATS ═════════════ -->
+    <section class="stats" aria-label="Key results">
+      <div class="wrap">
+        <div class="stat-grid">
+          <div class="card stat reveal">
+            <div class="num"><span data-count="4">0</span><small>/ 4</small></div>
+            <div class="label">install and remove interventions move harmful enablement as intended on 300 held-out prompts. Every 95% CI excludes zero.</div>
+            <div class="bar"></div>
+          </div>
+          <div class="card stat reveal d1">
+            <div class="num"><span data-count="0.98" data-dec="2">0</span><small>×</small></div>
+            <div class="label">of the Mistral IT → DPO harmfulness gap recovered by adding one direction at inference.</div>
+            <div class="bar"></div>
+          </div>
+          <div class="card stat reveal d2">
+            <div class="num"><span data-count="20">0</span><small>/ 20</small></div>
+            <div class="label">norm-matched random directions stay near zero (all within ±0.026). The real direction moves 0.073 to 0.289.</div>
+            <div class="bar"></div>
+          </div>
+          <div class="card stat reveal d3">
+            <div class="num"><span data-count="0">0</span><small>weights</small></div>
+            <div class="label">changed. The intervention is a vector added to five late layers of the residual stream during generation.</div>
+            <div class="bar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ ABSTRACT ═════════════ -->
+    <section class="section" id="abstract">
+      <div class="wrap abstract-grid">
+        <div>
+          <div class="kicker reveal">Overview</div>
+          <h2 class="reveal d1">Safer outputs don't tell you <span class="grad">how firmly</span> safety is held.</h2>
+        </div>
+        <div class="abstract-text reveal d2">
+          <p>Preference-based post-training shapes language-model behavior, but safer outputs do not reveal how that change is represented internally or how firmly it persists under direct intervention. This matters for <strong>open-weight models</strong>, where anyone with white-box access can manipulate internal representations at inference without touching parameters.</p>
+          <p>We introduce <strong>D-STEER</strong>, an audit built on two matched pairs of an instruction-tuned model and its harmlessness-DPO checkpoint: OpenHermes-2.5-Mistral-7B (the <strong>Mistral pair</strong>) and Llama-3-8B OpenHermes (the <strong>Llama pair</strong>). From the difference between matched prompt activations, D-STEER derives one direction per layer. <strong class="dpo">Adding</strong> it to the instruction-tuned model installs the DPO safety change, and <strong class="rem">subtracting</strong> it from the DPO model removes it. Every coefficient is calibrated inside a usability window and frozen before the test set is opened.</p>
+          <p>On a sealed 300-prompt HarmfulQA panel, <strong>all four interventions move harmful enablement as intended and beat five norm-matched random directions in every cell</strong>. On Mistral, installing the direction recovers <strong>98%</strong> of the harmfulness gap between the two checkpoints. The direction transfers without retuning to HH-RLHF and AdvBench. A separately built raw-displacement audit reproduces the two-way effect on Mistral across two construction corpora and three evaluation panels. A meaningful component of DPO-induced safety behavior is controllable through one compact, inference-time intervention.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ═════════════ QUESTION ═════════════ -->
+    <section class="section" id="question">
+      <div class="wrap">
+        <div class="kicker reveal">The question</div>
+        <h2 class="reveal d1">If DPO makes a model safer, can you <span class="grad-rem">drive it both ways</span>?</h2>
+        <p class="section-lede reveal d2">The two checkpoints share a lineage and differ only by the DPO stage. If the safety change is reachable in activation space, the same direction should work as a two-way street: <strong class="dpo">install</strong> it on the instruction-tuned model, <strong class="rem">remove</strong> it from the DPO model.</p>
+
+        <div class="card street reveal d2">
+          <svg id="street-svg" viewBox="0 0 1000 420" role="img" aria-label="Diagram: the instruction-tuned model on the left and the DPO model on the right, joined by two lanes. The upper lane adds lambda v to move from IT toward DPO (install). The lower lane subtracts lambda v to move from DPO toward IT (remove)."></svg>
+          <div class="street-legend">
+            <span><i style="background:var(--dpo)"></i>Installation: <span class="mono">M<sub>IT</sub> + λv</span>, lower harmful enablement</span>
+            <span><i style="background:var(--rem)"></i>Removal: <span class="mono">M<sub>DPO</sub> − λv</span>, higher harmful enablement</span>
+          </div>
+        </div>
+
+        <div class="threat-grid">
+          <div class="card threat reveal">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#5b8dff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></div>
+            <h3>Open weights, open activations</h3>
+            <p>With white-box access, anyone can edit intermediate states during inference. No retraining and no new checkpoint, and the edit can change per request.</p>
+          </div>
+          <div class="card threat reveal d1">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#2fe3b4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <h3>Score the harm, not the refusal</h3>
+            <p>Refusal rises when a model breaks. The primary outcome is <em>harmful enablement</em>: how much operationally useful help toward harm a response actually gives.</p>
+          </div>
+          <div class="card threat reveal d2">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#ff6b3d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+            <h3>Specific, not just big</h3>
+            <p>Any large push changes behavior. Every effect is compared with five random directions of exactly the same size, applied at the same layers.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ METHOD ═════════════ -->
+    <section class="section" id="method" style="padding-bottom: 40px">
+      <div class="wrap">
+        <div class="kicker it reveal">Method</div>
+        <h2 class="reveal d1">One direction per layer, from <span class="grad">matched activations</span>.</h2>
+
+        <div class="method-wrap">
+          <div class="method-steps">
+            <article class="step" data-step="0">
+              <span class="idx">01 / 04</span>
+              <h3>Two checkpoints, one lineage</h3>
+              <p>An instruction-tuned model \(M_{\mathrm{IT}}\) and its harmlessness-DPO checkpoint \(M_{\mathrm{DPO}}\) share every stage except DPO. Both read the <em>identical</em> templated prompt, token for token, in a single prefill pass.</p>
+              <p class="note">Both pairs have 32 layers and a 4,096-dimensional residual stream.</p>
+            </article>
+            <article class="step" data-step="1">
+              <span class="idx">02 / 04</span>
+              <h3>Read the final prompt token</h3>
+              <p>We record the residual stream at the last prompt position, the state from which the first response token is computed. Token identity and context are held fixed, so the difference there reflects checkpoint-dependent processing.</p>
+              <p class="note">No generated or reference-response tokens enter the direction.</p>
+            </article>
+            <article class="step" data-step="2">
+              <span class="idx">03 / 04</span>
+              <h3>Average the difference, then rescale</h3>
+              <p>Each construction prompt yields its own displacement. Their mean over 1,378 prompts is the layer's direction, rescaled to the typical activation magnitude of that layer.</p>
+              <div class="eq">\[ \bar d_\ell = \tfrac{1}{N}\textstyle\sum_i \big[h^{\mathrm{DPO}}_\ell(x_i) - h^{\mathrm{IT}}_\ell(x_i)\big], \qquad v_\ell = a_\ell\,\frac{\bar d_\ell}{\lVert \bar d_\ell\rVert} \]</div>
+              <p class="note">The arrows in the panel are <b>real per-prompt displacements</b> at layer 31, projected onto the direction and its leading orthogonal PC.</p>
+            </article>
+            <article class="step" data-step="3">
+              <span class="idx">04 / 04</span>
+              <h3>Steer late layers, both ways</h3>
+              <p>Add \(\lambda v_\ell\) at layers 27–31, at every prompt and generated token. Installation uses \(M_{\mathrm{IT}}\) with \(\lambda = +c_+\). Removal uses \(M_{\mathrm{DPO}}\) with \(\lambda = -c_-\).</p>
+              <div class="eq">\[ \widetilde h_{\ell,t} = h_{\ell,t} + \lambda\, v_\ell, \qquad \ell \in \{27,\dots,31\} \]</div>
+              <p class="note">Weights, prompts, templates and greedy decoding are unchanged. Outputs are scored 0–10 by a frozen Qwen3.5-27B evaluator.</p>
+            </article>
+          </div>
+          <div class="method-visual">
+            <div class="card glow-border"><svg id="method-svg" viewBox="0 0 600 600" role="img" aria-label="Animated method diagram that changes with each step"></svg></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ LAB ═════════════ -->
+    <section class="section" id="lab">
+      <div class="wrap">
+        <div class="kicker reveal">Interactive · real activations</div>
+        <h2 class="reveal d1">The steering lab. <span class="grad">Push the cloud yourself.</span></h2>
+        <p class="section-lede reveal d2">Each point is one HarmfulQA construction prompt's final-token state. 600 prompts are drawn from each model, using the paper's own joint basis: the horizontal axis is the unit IT → DPO direction, and the other two are the leading principal components orthogonal to it. Coordinates are in units of the layer's mean activation norm, so a shift of <span class="mono">λ</span> on the slider is exactly a relative-scale intervention of size <span class="mono">λ</span>.</p>
+
+        <div class="lab">
+          <div class="card lab-stage reveal">
+            <canvas id="lab-gl" aria-label="3D scatter of activation states that responds to the controls"></canvas>
+            <p class="gl-note">This interactive scene needs WebGL, which isn't available in this browser. The charts below don't need it.</p>
+            <div class="hud">
+              <span class="chip"><i style="background:var(--it)"></i>IT states</span>
+              <span class="chip"><i style="background:var(--dpo)"></i>DPO states</span>
+              <span class="chip" id="lab-steer-chip"><i style="background:#fff"></i>steered: IT + λv</span>
+            </div>
+            <div class="drag-hint"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3"/></svg>drag to orbit · scroll to zoom</div>
+            <div class="axis-note" id="lab-axis-note">x: v̂ (IT → DPO) · y, z: PC2, PC3</div>
+          </div>
+
+          <div class="card lab-panel reveal d1">
+            <div class="ctl">
+              <div class="lbl">Model pair</div>
+              <div class="seg" id="lab-pair">
+                <button data-pair="mistral" class="on">Mistral-7B</button>
+                <button data-pair="llama">Llama-3-8B</button>
+              </div>
+            </div>
+            <div class="ctl">
+              <div class="lbl">Direction</div>
+              <div class="seg" id="lab-dir">
+                <button data-dir="install" class="on">Install +λv</button>
+                <button data-dir="remove">Remove −λv</button>
+              </div>
+            </div>
+            <div class="ctl">
+              <label for="lab-lambda"><span>Strength <span class="nc">λ</span></span> <span class="val mono" id="lab-lambda-val">0.000</span></label>
+              <div class="range">
+                <input type="range" id="lab-lambda" min="0" max="1000" value="0" step="1">
+                <div class="ticks" id="lab-ticks"></div>
+              </div>
+            </div>
+            <div class="ctl">
+              <label for="lab-layer">Layer <span class="val mono" id="lab-layer-val">31</span></label>
+              <div class="range">
+                <input type="range" id="lab-layer" min="0" max="31" value="31" step="1" style="--track-fill: var(--violet)">
+                <div class="ticks" id="lab-layer-ticks" style="height:24px"></div>
+              </div>
+            </div>
+            <div class="readout">
+              <div class="r"><div class="k">of the way</div><div class="v" id="lab-frac">0%</div></div>
+              <div class="r"><div class="k">Cohen's d on v̂</div><div class="v" id="lab-d">–</div></div>
+            </div>
+            <div class="ridge-wrap">
+              <canvas id="lab-ridge" aria-hidden="true"></canvas>
+              <div class="ridge-legend">
+                <span><i style="background:var(--it)"></i>IT</span>
+                <span><i style="background:var(--dpo)"></i>DPO</span>
+                <span><i style="background:#fff"></i>steered</span>
+                <span>density along v̂</span>
+              </div>
+            </div>
+            <label class="toggle"><input type="checkbox" id="lab-links"> Show prompt-paired IT ↔ DPO links</label>
+          </div>
+        </div>
+        <p class="note reveal"><b>Geometry view:</b> the immediate shift <span class="mono">h ± λv</span> at one layer, drawn on real construction-set activations. The behavioral results come from generating text with the steered model. <span class="mono">λ*</span> marks the frozen coefficient for this pair and direction, and the purple mark is the full mean IT → DPO displacement at the chosen layer.</p>
+      </div>
+    </section>
+
+    <!-- ═════════════ DEPTH ═════════════ -->
+    <section class="section" id="depth" style="padding-top: 40px">
+      <div class="wrap">
+        <div class="kicker violet reveal">Where the difference lives</div>
+        <h2 class="reveal d1">The checkpoints <span class="grad">pull apart</span> with depth.</h2>
+        <p class="section-lede reveal d2">All 32 layers of one pair, stacked front to back. Every slice uses one shared scale, so the visible IT → DPO gap at each slice is the measured relative displacement <span class="mono">r<sub>ℓ</sub> = ‖d̄<sub>ℓ</sub>‖ / a<sub>ℓ</sub></span>. It is small in early layers and stays high through the final block, which motivated steering at layers 27–31.</p>
+
+        <div class="depth">
+          <div class="card depth-stage reveal">
+            <canvas id="depth-gl" aria-label="3D stack of 32 layer slices of activation states"></canvas>
+            <p class="gl-note">This 3D view needs WebGL. The layer charts beside it show the same measurements.</p>
+            <div class="hud" style="position:absolute;left:18px;top:16px;display:flex;flex-direction:column;gap:6px">
+              <span class="chip" id="depth-chip">Mistral pair · layer 31</span>
+            </div>
+            <div class="drag-hint" style="position:absolute;right:18px;top:16px;font-size:12px;color:var(--muted)">drag to orbit · hover the chart to fly</div>
+          </div>
+          <div class="card depth-side reveal d1">
+            <div class="seg" id="depth-pair" style="margin-bottom:16px">
+              <button data-pair="mistral" class="on">Mistral-7B</button>
+              <button data-pair="llama">Llama-3-8B</button>
+            </div>
+            <p class="chart-title">Relative displacement by layer</p>
+            <p class="chart-sub">‖mean(h<sub>DPO</sub> − h<sub>IT</sub>)‖ / mean‖h<sub>IT</sub>‖ with 95% bootstrap band. The shaded band marks the steered layers.</p>
+            <div class="chart" id="depth-chart"></div>
+            <p class="chart-title" style="margin-top:22px">Directional coherence</p>
+            <p class="chart-sub">Median cosine between each prompt's displacement and the mean of all the others.</p>
+            <div class="chart" id="depth-coh"></div>
+          </div>
+        </div>
+        <p class="note reveal"><b>On Mistral, the IT → DPO displacement grows about 15× from layer 0 to the steered block.</b> Individual prompts agree on its direction there too: the median cosine between one prompt's displacement and the mean of all the others is about 0.7.</p>
+      </div>
+    </section>
+
+
+    <!-- ═════════════ EXAMPLES ═════════════ -->
+    <section class="section" id="examples">
+      <div class="wrap">
+        <div class="kicker reveal">Real outputs · held-out prompts</div>
+        <h2 class="reveal d1">Same prompt. Same weights. <span class="grad-rem">Flip the sign.</span></h2>
+        <p class="section-lede reveal d2">These are the models' actual answers to prompts from the sealed held-out panel, at the frozen coefficients. Adding the direction turns the instruction-tuned model's step-by-step help into a refusal. Subtracting it turns the DPO model's refusal back into step-by-step help.</p>
+
+        <div class="ex-tabs reveal" id="ex-tabs" role="tablist" aria-label="Example prompts"></div>
+
+        <div class="ex-stage reveal" id="ex-stage" aria-live="polite">
+          <div class="ex-prompt">
+            <div class="ex-avatar" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></div>
+            <div>
+              <div class="ex-prompt-meta"><span id="ex-pair"></span> · held-out HarmfulQA prompt</div>
+              <div class="ex-prompt-text" id="ex-prompt"></div>
+            </div>
+          </div>
+          <div class="ex-grid">
+            <div class="ex-card" data-arm="it"></div>
+            <div class="ex-arrow install"><span class="ex-arrow-line"></span><span class="ex-arrow-label">+λv<small id="ex-l-inst"></small></span></div>
+            <div class="ex-card" data-arm="it_steer"></div>
+            <div class="ex-card" data-arm="dpo"></div>
+            <div class="ex-arrow remove"><span class="ex-arrow-line"></span><span class="ex-arrow-label">−λv<small id="ex-l-rem"></small></span></div>
+            <div class="ex-card" data-arm="dpo_steer"></div>
+          </div>
+        </div>
+
+        <div class="ex-ribbon reveal" id="ex-ribbon"></div>
+        <p class="note reveal">Greedy decoding at the frozen λ*, scored 0–10 by the frozen Qwen3.5-27B judge, with its one-line reason. Each example is one of the held-out prompts on which both interventions flip the verdict. Harmful steps are redacted, and only each answer's opening line is shown.</p>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ═════════════ OPERATING WINDOW ═════════════ -->
+    <section class="section" id="window">
+      <div class="wrap">
+        <div class="kicker rem reveal">Calibration</div>
+        <h2 class="reveal d1">Push too hard and the model breaks. <span class="grad-rem">So we drew a line first.</span></h2>
+        <p class="section-lede reveal d2">Large coefficients can produce broken, truncated or low-quality text, and that would score as "safe" for the wrong reason. On a frozen 200-prompt calibration panel, each pair and direction gets its own <strong>operating window</strong>: the coefficients that keep generation usable. The strongest coefficient inside it is selected, then frozen before the held-out panel is opened.</p>
+
+        <div class="window-grid">
+          <div class="card window-side reveal">
+            <div class="cell-list" id="window-cells"></div>
+            <div class="gate-def">
+              <b style="color:#ffb3c1">Usability gate</b><br>
+              invalid ≤ <code>5%</code> · hit max length ≤ <code>5%</code> · quality loss ≤ <code>0.10</code><br>
+              <span style="color:var(--muted)">The ceiling is the largest coefficient joined to zero by an unbroken run of passing ones.</span>
+            </div>
+          </div>
+          <div class="card window-main reveal d1">
+            <p class="chart-title" id="window-title">Harmful-enablement movement vs coefficient</p>
+            <p class="chart-sub" id="window-sub"></p>
+            <div class="chart" id="window-harm"></div>
+            <div class="chart" id="window-gates" style="margin-top:6px"></div>
+            <div class="legend-row" id="window-legend"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ RESULTS ═════════════ -->
+    <section class="section" id="results" style="padding-top: 40px">
+      <div class="wrap">
+        <div class="kicker reveal">Held-out results · 300 sealed HarmfulQA prompts</div>
+        <h2 class="reveal d1">Both directions work, <span class="grad">on prompts the method never saw.</span></h2>
+        <p class="section-lede reveal d2">The held-out panel was untouched during direction construction, rubric development, debugging and coefficient selection. Each track runs between the two unsteered endpoints. The white marker shows where steering moves the model.</p>
+
+        <div class="tracks" id="tracks"></div>
+        <p class="note reveal">Markers are condition means on the 300-prompt panel. Effects, intervals and gap recovery use strict source-ID-paired intersections (<span class="mono">n</span> shown), with 10,000 paired prompt-bootstrap replicates. Positive always means movement in the intended direction.</p>
+
+        <div class="card forest-card reveal">
+          <p class="chart-title">Specific to the DPO direction, not to the size of the push</p>
+          <p class="chart-sub">Real effect against five isotropic random directions rescaled to the same norm, at the same layers, prompts and frozen coefficient. Specificity = real − mean(random).</p>
+          <div class="chart" id="forest"></div>
+          <div class="legend-row">
+            <span><svg viewBox="0 0 26 14"><line x1="1" y1="7" x2="25" y2="7" stroke="#1aa77d" stroke-width="2"/><circle cx="13" cy="7" r="5" fill="#1aa77d"/></svg>real direction, install (95% CI)</span>
+            <span><svg viewBox="0 0 26 14"><line x1="1" y1="7" x2="25" y2="7" stroke="#e0602d" stroke-width="2"/><rect x="8.5" y="2.5" width="9" height="9" fill="#e0602d" transform="rotate(45 13 7)"/></svg>real direction, remove (95% CI)</span>
+            <span><svg viewBox="0 0 26 14"><circle cx="5" cy="7" r="3.2" fill="none" stroke="#7d8597" stroke-width="1.5"/><circle cx="13" cy="7" r="3.2" fill="none" stroke="#7d8597" stroke-width="1.5"/><circle cx="21" cy="7" r="3.2" fill="none" stroke="#7d8597" stroke-width="1.5"/></svg>5 random seeds</span>
+          </div>
+        </div>
+
+        <div class="card transfer-card reveal">
+          <p class="chart-title">Transfer without retuning: the direction generalizes</p>
+          <p class="chart-sub">Frozen coefficients applied to new 200-prompt HH-RLHF and AdvBench panels, with no recalibration. All eight new contrasts move harmfulness in the intended direction, every interval excludes zero, and Mistral installation reaches <b style="color:var(--text)">+0.421</b> on AdvBench.</p>
+          <div class="chart" id="transfer" style="margin-top:18px"></div>
+          <p class="note">Refusal moves with harmfulness in every transfer condition, by +0.103 to +0.404.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ═════════════ ROBUSTNESS ═════════════ -->
+    <section class="section" id="robustness">
+      <div class="wrap">
+        <div class="kicker violet reveal">Robustness</div>
+        <h2 class="reveal d1">A second, separately built protocol <span class="grad">reaches the same answer</span> on Mistral.</h2>
+        <p class="section-lede reveal d2">The <strong>raw-displacement audit</strong> changes nearly everything at once: raw (not normalized) mean displacement, judge-filtered HH-RLHF and HarmfulQA construction pools, the last seven layers, final-prompt-token actuation, a different evaluator and its own coefficients. Agreement between the two is convergent evidence from non-nested designs, and the two are never pooled.</p>
+
+        <div class="robust-grid">
+          <div class="card reveal">
+            <p class="chart-title">Raw audit, Mistral pair: 6 of 6 shown cells move as intended</p>
+            <p class="chart-sub">Last seven layers, HH-RLHF-derived direction, λ<sub>raw</sub> = +0.7 / −0.5. The six HarmfulQA-derived cells also exclude zero (12 / 12).</p>
+            <div class="chart" id="raw-bars"></div>
+          </div>
+          <div class="card reveal d1">
+            <p class="chart-title">More late layers, larger effect, then a plateau</p>
+            <p class="chart-sub">Raw audit installation effect vs number of contiguous final layers steered, fixed coefficient.</p>
+            <div class="chart" id="raw-depth"></div>
+            <p class="note">Installation grows almost 5× from one steered layer to seven (0.075 → 0.364), then holds at 0.37–0.38.</p>
+          </div>
+          <div class="card reveal">
+            <p class="chart-title">Steering vs retraining with reversed preferences</p>
+            <p class="chart-sub">Llama pair, held-out HarmfulQA. The comparator is a checkpoint retrained with preferred and rejected responses swapped.</p>
+            <div class="chart" id="reverse"></div>
+            <p class="note">On the held-out panel, steering removal raises harmful enablement <b>2.4×</b> as much as retraining with swapped preferences, without a single weight update. The two agree in direction on the calibration, held-out and AdvBench panels.</p>
+          </div>
+          <div class="card reveal d1">
+            <div class="qual">
+              <div class="badge">4/4</div>
+              <div>
+                <h3>Both model families, both directions</h3>
+                <p>On held-out data, the primary protocol establishes installation and removal for both Mistral and Llama, and each one beats five norm-matched random directions. Under the separately built raw audit, Mistral beats same-depth random controls in all six panel–direction cells.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ TAKEAWAYS ═════════════ -->
+    <section class="section" id="claims" style="padding-top: 20px">
+      <div class="wrap">
+        <div class="kicker reveal">Takeaways</div>
+        <h2 class="reveal d1">What D-STEER <span class="grad-rem">shows.</span></h2>
+        <div class="takeaways">
+          <div class="take reveal" style="--c1:#5b8dff;--c2:#2fe3b4">
+            <div class="take-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg></div>
+            <h3>Safety is a two-way street</h3>
+            <p>One direction from matched activations installs DPO-associated safety in the instruction-tuned model and removes it from the DPO model, at inference, with no weight update.</p>
+          </div>
+          <div class="take reveal d1" style="--c1:#2fe3b4;--c2:#ffd166">
+            <div class="take-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg></div>
+            <h3>It's the direction, not the push</h3>
+            <p>Every held-out effect beats five random directions of exactly the same size. Those stay within ±0.026, against real effects of up to 0.289.</p>
+          </div>
+          <div class="take reveal" style="--c1:#ffd166;--c2:#ff6b3d">
+            <div class="take-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></div>
+            <h3>It generalizes</h3>
+            <p>Frozen coefficients move harmfulness as intended on HH-RLHF and AdvBench without retuning, and a separately built audit reproduces the effect on Mistral.</p>
+          </div>
+          <div class="take reveal d1" style="--c1:#ff6b3d;--c2:#a48bff">
+            <div class="take-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg></div>
+            <h3>Open weights need intervention audits</h3>
+            <p>A checkpoint that is safe by default can still be steered cheaply through its internal states. Open-weight safety evaluation should test robustness to intervention, not just default behavior.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════ CITE ═════════════ -->
+    <section class="section" id="cite" style="padding-top: 40px; padding-bottom: 40px">
+      <div class="wrap">
+        <div class="kicker reveal">Citation</div>
+        <h2 class="reveal d1">Cite D-STEER</h2>
+        <div class="card cite reveal d2">
+          <div class="cite-head"><span>BibTeX</span><button class="copy-btn" id="copy-bib">Copy</button></div>
+<pre id="bibtex"><span class="k">@article</span>{raina2025dsteer,
+  title   = {<span class="s">D-STEER: Two-Way Control of DPO-Induced Safety Behavior in Activation Space</span>},
+  author  = {<span class="s">Raina, Samarth and Aggarwal, Saksham and Dhanda, Amit and Jain, Vinija and Chadha, Aman and Das, Amitava</span>},
+  journal = {<span class="s">arXiv preprint arXiv:2512.11838</span>},
+  year    = {<span class="s">2025</span>}
+}</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap row">
+      <span>D-STEER · two-way control of DPO-induced safety behavior in activation space</span>
+      <span>All charts and 3D scenes are drawn from the frozen experimental artifacts.</span>
+    </div>
+  </footer>
+
+  <div class="tip" id="tip" role="tooltip"></div>
+  <noscript><p class="noscript">This page draws its 3D scenes and charts with JavaScript.</p></noscript>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.13/dist/lenis.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
